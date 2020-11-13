@@ -80,6 +80,8 @@ config_bt:
 
 config_usbdev:
 
+config_secure:
+
 get_app_info:
 
 eclipse:
@@ -94,7 +96,7 @@ vscode:
 # Targets that do not require a second build stage
 #
 all getlibs clean help:
-open modlibs config config_bt config_usbdev:
+open modlibs config config_bt config_usbdev config_secure:
 bsp check get_app_info get_env_info printlibs:
 app memcalc help_default:
 
@@ -264,10 +266,10 @@ ifeq ($(CY_SECONDSTAGE),)
 
 # Check that there's only 1 version of tools and inform the user if there is not.
 ifneq ($(sort $(notdir $(wildcard $(CY_TOOLS_PATHS)))),$(notdir $(CY_TOOLS_DIR)))
-CY_MESSAGE_multi_tools=INFO: Multiple tools versions were found in CY_TOOLS_PATHS="$(sort $(CY_TOOLS_PATHS))".\
-				This build is currently using CY_TOOLS_DIR="$(CY_TOOLS_DIR)".\
+CY_MESSAGE_multi_tools=INFO: Multiple tools versions were found in "$(sort $(CY_TOOLS_PATHS))".\
+				This build is currently using "$(CY_TOOLS_DIR)".\
 				Check that this is the correct version that should be used in this build.\
-				To stop seeing this message, explicitly set the CY_TOOLS_PATHS environment variable to the location of\
+				To stop seeing this message, set the CY_TOOLS_PATHS environment variable to the location of\
 				the tools directory. This can be done either as an environment variable or set in the application Makefile.
 $(eval $(call CY_MACRO_INFO,CY_MESSAGE_multi_tools,$(CY_MESSAGE_multi_tools)))
 endif
@@ -594,7 +596,7 @@ endif
 # Identify the phony targets
 #
 .PHONY: all getlibs clean help
-.PHONY: open modlibs config config_bt config_usbdev
+.PHONY: open modlibs config config_bt config_usbdev config_secure
 .PHONY: bsp check get_app_info get_env_info printlibs
 .PHONY: app memcalc help_default
 

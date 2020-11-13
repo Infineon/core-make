@@ -57,23 +57,6 @@ CY_OPEN_project_creator_TOOL_NEWCFG_FLAGS=
 
 
 ################################################################################
-# Data verification
-################################################################################
-
-# Verify that the tool is supported
-ifneq ($(CY_OPEN_TYPE),)
-ifeq ($(filter $(CY_OPEN_TYPE),$(CY_OPEN_TYPE_LIST)),)
-$(call CY_MACRO_ERROR,Unsupported tool type - $(CY_OPEN_TYPE). $(CY_NEWLINE)Supported types are: $(CY_OPEN_TYPE_LIST))
-endif
-endif
-
-# Extension construction from given file
-ifneq ($(CY_OPEN_FILE)),)
-CY_OPEN_EXT=$(subst .,,$(suffix $(CY_OPEN_FILE)))
-endif
-
-
-################################################################################
 # New configurations
 ################################################################################
 
@@ -121,6 +104,11 @@ CY_OPEN_FILTERED_SUPPORTED_TYPES=$(sort $(CY_OPEN_NEWCFG_POSSIBLE_TYPES) $(CY_OP
 # Prepare tool launch
 ################################################################################
 
+# Extension construction from given file
+ifneq ($(CY_OPEN_FILE)),)
+CY_OPEN_EXT=$(subst .,,$(suffix $(CY_OPEN_FILE)))
+endif
+
 # Only file is given. Use the default type for that file extension
 ifneq ($(CY_OPEN_FILE),)
 ifeq ($(CY_OPEN_TYPE),)
@@ -153,6 +141,11 @@ open:
 ifeq ($(CY_OPEN_FILE),)
 ifeq ($(CY_OPEN_TYPE),)
 	$(call CY_MACRO_ERROR,Neither tool type or file specified to launch a tool)
+endif
+endif
+ifneq ($(CY_OPEN_TYPE),)
+ifeq ($(filter $(CY_OPEN_TYPE),$(CY_OPEN_TYPE_LIST)),)
+	$(call CY_MACRO_ERROR,Unsupported tool type - $(CY_OPEN_TYPE). $(CY_NEWLINE)Supported types are: $(sort $(CY_OPEN_TYPE_LIST)))
 endif
 endif
 ifeq ($(CY_OPEN_TOOL_LAUNCH),)

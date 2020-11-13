@@ -527,6 +527,7 @@ endif
 	$(info =======================================)
 	$(info CY_IGNORE=$(CY_IGNORE_DIRS))
 	$(info CY_SKIP_RECIPE=$(CY_SKIP_RECIPE))
+	$(info CY_SKIP_CDB=$(CY_SKIP_CDB))
 	$(info CY_EXTRA_INCLUDES=$(CY_EXTRA_INCLUDES))
 	$(info CY_LIBS_SEARCH_DEPTH=$(CY_LIBS_SEARCH_DEPTH))
 	$(info CY_UTILS_SEARCH_DEPTH=$(CY_UTILS_SEARCH_DEPTH))

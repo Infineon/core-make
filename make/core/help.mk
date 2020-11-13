@@ -32,7 +32,9 @@ endif
 CY_HELP_all=Same as build.
 CY_HELP_all_VERBOSE=This target is equivalent to the "build" target.
 CY_HELP_getlibs=Clones the repositories and checks out the identified commit.
-CY_HELP_getlibs_VERBOSE=The repos are cloned to the libs directory. By default, this directory is\
+CY_HELP_getlibs_VERBOSE=When using .mtb files, the repos are cloned to the shared location (CY_GETLIBS_SHARED_PATH)\
+					if the file is declared shared. Otherwise it is placed in the application's libs directory.\
+					When using .lib files, the repos are cloned to the libs directory. By default, this directory is\
 					created in the application directory. It may be directed to other locations using\
 					the CY_GETLIBS_PATH variable.
 CY_HELP_build=Builds the application.
@@ -99,6 +101,8 @@ CY_HELP_config_bt=Runs the bt-configurator on the target .cybt file.
 CY_HELP_config_bt_VERBOSE=If no existing bt-configuration files are found, the configurator is launched to create one.
 CY_HELP_config_usbdev=Runs the usbdev-configurator on the target .cyusbdev file.
 CY_HELP_config_usbdev_VERBOSE=If no existing usbdev-configuration files are found, the configurator is launched to create one.
+CY_HELP_config_secure=Runs the secure-policy-configurator.
+CY_HELP_config_secure_VERBOSE=The secure-policy-configurator is intended only for devices that support secure provisioning.
 
 #
 # Utility targets
@@ -181,7 +185,7 @@ CY_HELP_INCLUDES_VERBOSE=Note: These MUST NOT have -I prepended.\
 CY_HELP_DEFINES=Specifies additional defines passed to the compiler.
 CY_HELP_DEFINES_VERBOSE=Note: These MUST NOT have -D prepended.\
 						$(CY_NEWLINE)$(CY_NEWLINE)Example Usage (within makefile): DEFINES+=EXAMPLE_DEFINE=0x01
-CY_HELP_VFP_SELECT=Selects hard/soft ABI for floating-point operations [softfp hardfp].
+CY_HELP_VFP_SELECT=Selects hard/soft ABI or full software for floating-point operations [softfp hardfp softfloat].
 CY_HELP_VFP_SELECT_VERBOSE=If not defined, this value defaults to softfp.\
 							$(CY_NEWLINE)$(CY_NEWLINE)Example Usage (within makefile): VFP_SELECT=hardfp
 CY_HELP_CFLAGS=Prepends additional C compiler flags.
@@ -421,6 +425,9 @@ CY_HELP_CY_CONFIG_FILE_EXT_VERBOSE=This variable accepts a space-separated list 
 CY_HELP_CY_SKIP_RECIPE=Skip including the recipe make files.
 CY_HELP_CY_SKIP_RECIPE_VERBOSE=Setting this to [true/1] allows the application to not include any recipe makefiles and only\
 					include the start.mk file from the tools install.
+CY_HELP_CY_SKIP_CDB=Skip creating .cdb files.
+CY_HELP_CY_SKIP_CDB_VERBOSE=Constant Database (CDB) files are generated during the build process.\
+					Setting this to [true] allows the build process to skip the .cdb files creation.
 CY_HELP_CY_SUPPORTED_TOOL_TYPES=Defines the supported tools for a BSP.
 CY_HELP_CY_SUPPORTED_TOOL_TYPES_VERBOSE=BSPs can define the supported tools that can be launched using the\
 					"open" target. The supported tool types are $(sort $(CY_OPEN_TYPE_LIST)). The BSP can make adjustments to the\
@@ -442,7 +449,7 @@ CY_HELP_CY_EXTRA_INCLUDES_VERBOSE=This variable provides a way of injecting addi
 
 # Pass these to CY_HELP to get the full verbose info
 CY_HELP_TARGETS_ALL=all getlibs build qbuild program qprogram debug qdebug attach clean help eclipse vscode ewarm8 uvision5 open modlibs \
-					config config_bt config_usbdev bsp progtool check get_app_info get_env_info printlibs import_deps lib2mtbx
+					config config_bt config_usbdev config_secure bsp progtool check get_app_info get_env_info printlibs import_deps lib2mtbx
 CY_HELP_BASIC_CFG_ALL=TARGET APPNAME LIBNAME TOOLCHAIN CONFIG VERBOSE
 CY_HELP_ADVANCED_CFG_ALL=SOURCES INCLUDES DEFINES VFP_SELECT CFLAGS CXXFLAGS ASFLAGS LDFLAGS LDLIBS LINKER_SCRIPT \
 					PREBUILD POSTBUILD COMPONENTS DISABLE_COMPONENTS SEARCH_LIBS_AND_INCLUDES \
@@ -531,6 +538,7 @@ else
 	$(info $(CY_SPACE)config              $(CY_HELP_config))
 	$(info $(CY_SPACE)config_bt           $(CY_HELP_config_bt))
 	$(info $(CY_SPACE)config_usbdev       $(CY_HELP_config_usbdev))
+	$(info $(CY_SPACE)config_secure       $(CY_HELP_config_secure))
 	$(info                                                               )
 	$(info =======================================                       )
 	$(info $(CY_SPACE)Utility make targets                               )
@@ -620,6 +628,7 @@ else
 	$(info =======================================                       )
 	$(info $(CY_SPACE)CY_IGNORE           $(CY_HELP_CY_IGNORE))
 	$(info $(CY_SPACE)CY_SKIP_RECIPE      $(CY_HELP_CY_SKIP_RECIPE))
+	$(info $(CY_SPACE)CY_SKIP_CDB         $(CY_HELP_CY_SKIP_CDB))
 	$(info $(CY_SPACE)CY_EXTRA_INCLUDES   $(CY_HELP_CY_EXTRA_INCLUDES))
 	$(info $(CY_SPACE)CY_LIBS_SEARCH_DEPTH  $(CY_HELP_CY_LIBS_SEARCH_DEPTH))
 	$(info $(CY_SPACE)CY_UTILS_SEARCH_DEPTH  $(CY_HELP_CY_UTILS_SEARCH_DEPTH))

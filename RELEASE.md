@@ -17,6 +17,9 @@ The this release of the core GNU make Build System includes a framework to suppo
 This also includes the getlibs.bash script that can be used directly, or via the make target to download additional git repo based libraries for the application.
 
 ### What Changed?
+#### v1.6.0
+* Moved more code from recipe files into core
+* Improved compatibility with different tool releases
 #### v1.5.0
 * Initial release supporting build/program/debug on gcc/iar/armv6 toolchains.
 NOTE: This was formerly part of psoc6make but is now split out for improved reuse

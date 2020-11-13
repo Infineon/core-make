@@ -80,24 +80,24 @@ else
 endif
 	$(CY_NOISE)$$($(2)_EXPLICIT_COMPILE_ARGS) $$@ $$<
 
-
+ifeq ($(CY_SKIP_CDB),)
 ifneq ($(CY_FILE_TYPE),file)
 
 $(CY_CONFIG_DIR)/$(patsubst %.o,%.cdb,$(2)): CY_BUILD_cdb_preprint
-	$(CY_NOISE)printf "\n {\n  \"directory\": \"$$(CY_INTERNAL_APP_ABS_PATH)\",\n  \"file\": \"$(1)\",\n  \"command\": \"$$(subst ",\\\\\",$$($(2)_CDB_EXPLICIT_COMPILE_ARGS) $(CY_CONFIG_DIR)/$(2) $(1))\"\n }," >$$@
+	$(CY_NOISE)printf "\n {\n  \"directory\": \"$$(CY_INTERNAL_APPLOC)\",\n  \"file\": \"$(1)\",\n  \"command\": \"$$(subst ",\\\\\",$$($(2)_CDB_EXPLICIT_COMPILE_ARGS) $(CY_CONFIG_DIR)/$(2) $(1))\"\n }," >$$@
 
 CY_CDB_FILES+=$(CY_CONFIG_DIR)/$(patsubst %.o,%.cdb,$(2))
 
 else
 
 CY_CDB_INFO+=$(CY_NEWLINE_MARKER) {$(CY_NEWLINE_MARKER)
-CY_CDB_INFO+=$$(CY_SPACE)"directory": "$$(CY_INTERNAL_APP_ABS_PATH)",$(CY_NEWLINE_MARKER)
+CY_CDB_INFO+=$$(CY_SPACE)"directory": "$$(CY_INTERNAL_APPLOC)",$(CY_NEWLINE_MARKER)
 CY_CDB_INFO+=$$(CY_SPACE)"file": "$(1)",$(CY_NEWLINE_MARKER)
 CY_CDB_INFO+=$$(CY_SPACE)"command": "$$(subst ",\",$$($(2)_CDB_EXPLICIT_COMPILE_ARGS) $(CY_CONFIG_DIR)/$(2) $(1))"$(CY_NEWLINE_MARKER)
 CY_CDB_INFO+=},
 
 endif
-
+endif
 
 endef
 
@@ -291,10 +291,14 @@ CY_BUILD_COMPILE_AS_UC:=$(AS) $(CY_BUILD_ALL_ASFLAGS_UC) $(CY_TOOLCHAIN_INCRSPFI
 						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_OUTPUT_OPTION)
 CY_BUILD_COMPILE_AS_LC:=$(AS) $(CY_BUILD_ALL_ASFLAGS_LC) $(CY_TOOLCHAIN_INCRSPFILE_ASM)$(CY_CONFIG_DIR)/inclist.rsp \
 						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_OUTPUT_OPTION)
-CY_BUILD_COMPILE_C:=$(CC) $(CY_BUILD_ALL_CFLAGS) $(CY_TOOLCHAIN_INCRSPFILE)$(CY_CONFIG_DIR)/inclist.rsp \
+# Meant for custom rules. 
+# Note: Use = assignment as CY_TOOLCHAIN_DEPENDENCIES needs to expand properly in the rule
+CY_BUILD_COMPILE_C=$(CC) $(CY_BUILD_ALL_CFLAGS) $(CY_TOOLCHAIN_INCRSPFILE)$(CY_CONFIG_DIR)/inclist.rsp \
 						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_DEPENDENCIES) $(CY_TOOLCHAIN_OUTPUT_OPTION) 
-CY_BUILD_COMPILE_CPP:=$(CXX) $(CY_BUILD_ALL_CXXFLAGS) $(CY_TOOLCHAIN_INCRSPFILE)$(CY_CONFIG_DIR)/inclist.rsp \
+CY_BUILD_COMPILE_CPP=$(CXX) $(CY_BUILD_ALL_CXXFLAGS) $(CY_TOOLCHAIN_INCRSPFILE)$(CY_CONFIG_DIR)/inclist.rsp \
 						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_DEPENDENCIES) $(CY_TOOLCHAIN_OUTPUT_OPTION)
+# Used in CY_MACRO_EXPLICIT_RULE. 
+# Note: Use := for speed improvement. CY_TOOLCHAIN_EXPLICIT_DEPENDENCIES expands properly due to double $
 CY_BUILD_COMPILE_EXPLICIT_C:=$(CC) $(CY_BUILD_ALL_CFLAGS) $(CY_TOOLCHAIN_INCRSPFILE)$(CY_CONFIG_DIR)/inclist.rsp \
 						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_EXPLICIT_DEPENDENCIES) $(CY_TOOLCHAIN_OUTPUT_OPTION) 
 CY_BUILD_COMPILE_EXPLICIT_CPP:=$(CXX) $(CY_BUILD_ALL_CXXFLAGS) $(CY_TOOLCHAIN_INCRSPFILE)$(CY_CONFIG_DIR)/inclist.rsp \
@@ -327,14 +331,6 @@ CY_BUILD_LINK_STANDALONE=$(LD) $(CY_RECIPE_LDFLAGS) $(CY_TOOLCHAIN_OUTPUT_OPTION
 # Archiver arguments
 #
 CY_BUILD_ARCHIVE=$(AR) $(CY_RECIPE_ARFLAGS) $(CY_TOOLCHAIN_OUTPUT_OPTION) $@ $(CY_TOOLCHAIN_OBJRSPFILE)$(CY_CONFIG_DIR)/objlist.rsp 
-
-#
-# Absolute path to the appliation
-#
-CY_INTERNAL_APP_ABS_PATH:=$(abspath $(CY_INTERNAL_APP_PATH))
-ifneq ($(CY_WHICH_CYGPATH),)
-CY_INTERNAL_APP_ABS_PATH:=$(shell cygpath -m --absolute $(subst \,/,$(CY_INTERNAL_APP_ABS_PATH)))
-endif
 
 
 ################################################################################
@@ -605,7 +601,11 @@ CY_BUILD_cdb_preprint: CY_BUILD_mkdirs
 	$(info -> $(CY_CDB_FILE))
 
 CY_BUILD_cdb_postprint: $(CY_CDB_FILE)
+ifeq ($(CY_SKIP_CDB),)
 	$(info Compilation database file generation complete)
+else
+	$(info Compilation database file generation skipped)
+endif
 
 #
 # Indicate all phony targets that should be built regardless

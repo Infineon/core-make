@@ -231,5 +231,9 @@ else
 	$(CY_NOISE) $(CY_CONFIG_CYUSBDEV_GUI) $(CY_CONFIG_CYUSBDEV_GUI_FLAGS) $(CY_CONFIG_CYUSBDEV_FILE) $(CY_CONFIG_JOB_CONTROL)
 endif
 
+config_secure:
+	$(info $(CY_NEWLINE)Launching secure-policy-configurator on $(CY_INTERNAL_APP_PATH))
+	$(CY_NOISE)$(CY_INTERNAL_TOOLS)/$(CY_TOOL_secure-policy-configurator_EXE) $(CY_CONFIG_JOB_CONTROL)
+
 .PHONY: gen_config
-.PHONY: config config_bt config_usbdev
+.PHONY: config config_bt config_usbdev config_secure

@@ -1,0 +1,44 @@
+{
+    "version": 4,
+    "env": {
+        "mtbCompilerArgs": [
+            "&&CY_C_FLAGS&&"
+        ],
+        "mtbDefaultIncludePath": [
+            &&CY_INCLUDE_LIST&&
+            "&&CY_GCC_DIRECTORY&&/lib/gcc/arm-none-eabi/&&CY_GCC_VERSION&&/include",
+            "&&CY_GCC_DIRECTORY&&/lib/gcc/arm-none-eabi/&&CY_GCC_VERSION&&/include-fixed",
+            "&&CY_GCC_DIRECTORY&&/arm-none-eabi/include",
+            "&&CY_GCC_DIRECTORY&&/arm-none-eabi/include/c++/&&CY_GCC_VERSION&&",
+            "&&CY_GCC_DIRECTORY&&/arm-none-eabi/include/c++/&&CY_GCC_VERSION&&&&CY_VSCODE_CPU&&&&CY_VSCODE_VFP&&",
+            "&&CY_GCC_DIRECTORY&&/arm-none-eabi/include/c++/&&CY_GCC_VERSION&&/backward"
+        ],
+        "mtbDefaultDefines": [
+            &&CY_DEFINE_LIST&&
+            "__GNUC__"
+        ]
+    },
+    "configurations": [
+        {
+            "name": "MTB",
+            "compilerPath": "&&CY_GCC_DIRECTORY&&/bin/arm-none-eabi-gcc",
+            "compilerArgs": [
+                "${mtbCompilerArgs}"
+            ],
+            "compileCommands": "&&CY_CDB_FILE&&",
+            "intelliSenseMode": "gcc-x86",
+            "cStandard": "c99",
+            "cppStandard": "c++11",
+            "includePath": [
+                "${mtbDefaultIncludePath}"
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "defines": [
+                "${mtbDefaultDefines}"
+            ]
+        }
+    ]
+}

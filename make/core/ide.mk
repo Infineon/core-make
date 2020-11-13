@@ -82,6 +82,24 @@ CY_IDE_HEADERS=$(sort $(call CY_MACRO_FILTER_FILES,H) $(call CY_MACRO_FILTER_FIL
 # LIBS
 CY_IDE_LIBS=$(CY_RECIPE_LIBS)
 
+# PREBUILD
+CY_IDE_PREBUILD_CMD=$(strip $(if $(CY_BSP_PREBUILD),$(CY_BSP_PREBUILD);)\
+							$(if $(PREBUILD),$(PREBUILD);)\
+							$(if $(CY_RECIPE_PREBUILD),$(CY_RECIPE_PREBUILD);))
+CY_IDE_PREBUILD_MSG=$(if $(CY_IDE_PREBUILD_CMD),\
+					echo 'Note: Building the application runs the following prebuild operations.\
+					You may want to include them as part of the project prebuild step(s):';\
+					echo '  $(CY_IDE_PREBUILD_CMD)';)
+
+# POSTBUILD
+CY_IDE_POSTBUILD_CMD=$(strip $(if $(CY_RECIPE_POSTBUILD),$(CY_RECIPE_POSTBUILD);)\
+							$(if $(CY_BSP_POSTBUILD),$(CY_BSP_POSTBUILD);)\
+							$(if $(POSTBUILD),$(POSTBUILD);))
+CY_IDE_POSTBUILD_MSG=$(if $(CY_IDE_POSTBUILD_CMD),\
+					echo 'Note: Building the application runs the following postbuild operations.\
+						You may want to include them as part of the project postbuild step(s):';\
+					echo '  $(CY_IDE_POSTBUILD_CMD)';)
+
 
 ################################################################################
 # Eclipse
@@ -89,14 +107,18 @@ CY_IDE_LIBS=$(CY_RECIPE_LIBS)
 
 ifeq ($(filter eclipse,$(MAKECMDGOALS)),eclipse)
 
-CY_ECLIPSE_OUT_PATH=$(CY_INTERNAL_APP_PATH)/.mtbLaunchConfigs
-CY_ECLIPSE_TEMPLATE_PATH=$(CY_INTERNAL_BASELIB_PATH)/make/scripts/eclipse
+CY_ECLIPSE_OUT_PATH=$(CY_INTERNAL_APPLOC)/.mtbLaunchConfigs
+CY_ECLIPSE_TEMPLATE_PATH=$(CY_BASELIB_CORE_PATH)/make/scripts/eclipse
+# Only include if using separate core-make and recipe-make
+ifneq ($(CY_INTERNAL_BASELIB_PATH),$(CY_BASELIB_CORE_PATH))
+CY_ECLIPSE_TEMPLATE_RECIPE_SEARCH=$(CY_INTERNAL_BASELIB_PATH)/make/scripts/eclipse/$(CY_ECLIPSE_TEMPLATES_WILDCARD)
+endif
 CY_ECLIPSE_LAUNCH_TEMPFILE=$(CY_CONFIG_DIR)/eclipse_launch.temp
 CY_ECLIPSE_PROJECT_TEMPFILE=$(CY_CONFIG_DIR)/eclipse_project.temp
 CY_ECLIPSE_TEMPLATES_WILDCARD?=*
 
-ifneq ($(wildcard $(CY_INTERNAL_APP_PATH)/.cproject),)
-ifneq ($(wildcard $(CY_INTERNAL_APP_PATH)/.project),)
+ifneq ($(wildcard $(CY_INTERNAL_APPLOC)/.cproject),)
+ifneq ($(wildcard $(CY_INTERNAL_APPLOC)/.project),)
 CY_ECLIPSE_SKIP_PRJ=true
 CY_MESSAGE_eclipse_prj=INFO: Eclipse project files ".cproject" and ".project" already exist. \
 Skipping project generation...
@@ -165,12 +187,18 @@ endif #ifneq ($(CY_ECLIPSE_SKIP_PRJ),true)
 
 # Note: CY_ECLIPSE_ARGS is expected to come from the recipe
 eclipse: CY_IDE_preprint
+ifeq ($(CY_ECLIPSE_ARGS),)
+	$(call CY_MACRO_ERROR,Unable to proceed. Export is not supported for this device)
+endif
 ifeq ($(LIBNAME),)
 # Generate launch configurations
 	$(CY_NOISE)mkdir -p $(CY_CONFIG_DIR);\
 	mkdir -p $(CY_ECLIPSE_OUT_PATH);\
 	echo $(CY_ECLIPSE_ARGS) > $(CY_ECLIPSE_LAUNCH_TEMPFILE);\
-	for launch in $(CY_ECLIPSE_TEMPLATE_PATH)/$(CY_ECLIPSE_TEMPLATES_WILDCARD); do\
+	for launch in $(CY_ECLIPSE_TEMPLATE_PATH)/$(CY_ECLIPSE_TEMPLATES_WILDCARD) $(CY_ECLIPSE_TEMPLATE_RECIPE_SEARCH); do\
+		if [[ ! -f "$$launch" ]]; then\
+			continue;\
+		fi;\
 		if [[ $$launch == *"project" ]]; then\
 			continue;\
 		fi;\
@@ -184,7 +212,7 @@ ifeq ($(LIBNAME),)
 	echo Generated Eclipse launch config files: "$$launchConfigs"
 ifneq ($(CY_ECLIPSE_SKIP_PRJ),true)
 # Generate .project and .cproject files
-	$(CY_NOISE)cp -rf $(CY_ECLIPSE_TEMPLATE_PATH)/project/.cproject $(CY_INTERNAL_APP_PATH);\
+	$(CY_NOISE)cp -f $(CY_ECLIPSE_TEMPLATE_PATH)/project/.cproject $(CY_INTERNAL_APPLOC);\
 	echo $(CY_IDE_PRJNAME) > $(CY_ECLIPSE_PROJECT_TEMPFILE);\
 	echo $(CY_ECLIPSE_PROJECT_SOURCES) >> $(CY_ECLIPSE_PROJECT_TEMPFILE);\
 	echo $(CY_ECLIPSE_PROJECT_INCLUDES) >> $(CY_ECLIPSE_PROJECT_TEMPFILE);\
@@ -192,7 +220,7 @@ ifneq ($(CY_ECLIPSE_SKIP_PRJ),true)
 	echo $(CY_IDE_ALL_SEARCHES_QUOTED) >> $(CY_ECLIPSE_PROJECT_TEMPFILE);\
 	echo $(CY_IDE_SHARED) >> $(CY_ECLIPSE_PROJECT_TEMPFILE);\
 	echo
-	$(CY_NOISE)$(CY_PYTHON_PATH) $(CY_INTERNAL_BASELIB_PATH)/make/scripts/eclipse/eclipse_export.py -i $(CY_ECLIPSE_PROJECT_TEMPFILE) -p $(CY_ECLIPSE_TEMPLATE_PATH)/project/.project -o $(CY_INTERNAL_APP_PATH)/.project;
+	$(CY_NOISE)$(CY_PYTHON_PATH) $(CY_ECLIPSE_TEMPLATE_PATH)/eclipse_export.py -i $(CY_ECLIPSE_PROJECT_TEMPFILE) -p $(CY_ECLIPSE_TEMPLATE_PATH)/project/.project -o $(CY_INTERNAL_APPLOC)/.project;
 	$(CY_NOISE)rm -f $(CY_ECLIPSE_PROJECT_TEMPFILE);\
 	echo;\
 	echo Generated Eclipse project files: ".project .cproject";\
@@ -217,7 +245,8 @@ ifeq ($(filter ewarm8,$(MAKECMDGOALS)),ewarm8)
 
 CY_IAR_TEMPFILE=$(CY_CONFIG_DIR)/iardata.temp
 CY_IAR_OUTFILE=$(CY_IDE_PRJNAME).ipcf
-CY_IAR_CYIGNORE_PATH=$(CY_INTERNAL_APP_PATH)/.cyignore
+CY_IAR_CYIGNORE_PATH=$(CY_INTERNAL_APPLOC)/.cyignore
+CY_IAR_TEMPLATE_PATH=$(CY_BASELIB_CORE_PATH)/make/scripts/iar
 
 # Note: All paths are expected to be relative of the Makefile(Project Directory)
 CY_IAR_DEFINES=$(foreach onedef,$(CY_IDE_DEFINES),\"$(onedef)\",)
@@ -232,7 +261,7 @@ ifneq ($(TOOLCHAIN), IAR)
 	$(call CY_MACRO_ERROR,Unable to proceed. TOOLCHAIN must be set to IAR. Use TOOLCHAIN=IAR on the command line, or edit the Makefile)
 endif
 ifeq ($(CY_IAR_DEVICE_NAME),)
-	$(call CY_MACRO_ERROR,Unable to proceed. Export not supported for this device)
+	$(call CY_MACRO_ERROR,Unable to proceed. Export is not supported for this device)
 endif
 	$(CY_NOISE)mkdir -p $(CY_CONFIG_DIR);\
 	echo $(CY_IDE_PRJNAME) > $(CY_IAR_TEMPFILE);\
@@ -248,7 +277,7 @@ endif
 	echo $(CY_IDE_ALL_SEARCHES_QUOTED) >> $(CY_IAR_TEMPFILE);\
 	echo $(CY_IDE_SHARED) >> $(CY_IAR_TEMPFILE);\
 	echo
-	$(CY_NOISE)$(CY_PYTHON_PATH) $(CY_INTERNAL_BASELIB_PATH)/make/scripts/iar/iar_export.py -i $(CY_IAR_TEMPFILE) -o $(CY_IAR_OUTFILE);
+	$(CY_NOISE)$(CY_PYTHON_PATH) $(CY_IAR_TEMPLATE_PATH)/iar_export.py -i $(CY_IAR_TEMPFILE) -o $(CY_INTERNAL_APPLOC)/$(CY_IAR_OUTFILE);
 	$(CY_NOISE)rm -rf $(CY_IAR_TEMPFILE);\
 	echo;\
 	echo "Instructions:";\
@@ -266,10 +295,13 @@ endif
 	echo "C++ Compiler Flags: $(CY_TOOLCHAIN_CXXFLAGS)";\
 	echo "Assembler Flags: $(CY_TOOLCHAIN_ASFLAGS)";\
 	echo "Linker Flags: $(CY_TOOLCHAIN_LDFLAGS)";\
-	echo;
+	echo;\
+	$(CY_IDE_PREBUILD_MSG)\
+	$(CY_IDE_POSTBUILD_MSG)
 ifeq ($(filter FREERTOS,$(COMPONENTS)),FREERTOS)
 	# Note: If the FreeRTOS-specific flags set in IAR.mk are modified, this section should be updated to reflect the changes.
-	$(CY_NOISE)echo "WARNING: Since FreeRTOS is enabled for this project, the compiler and linker settings must be manually updated in IAR EW.";\
+	$(CY_NOISE)echo;\
+	echo "WARNING: Since FreeRTOS is enabled for this project, the compiler and linker settings must be manually updated in IAR EW.";\
 	echo "Option 1: Set the project options";\
 	echo "    1. Project->Options->General Options->Library Configuration";\
 	echo "    2. Set the \"Library:\" dropdown to \"Full\"";\
@@ -307,10 +339,11 @@ endif #ifeq ($(filter ewarm8,$(MAKECMDGOALS)),ewarm8)
 ifeq ($(filter uvision5,$(MAKECMDGOALS)),uvision5)
 
 CY_CMSIS_TEMPFILE=$(CY_CONFIG_DIR)/cmsisdata.temp
-CY_CMSIS_CPDSC=$(CY_IDE_PRJNAME).cpdsc
-CY_CMSIS_GPDSC=$(CY_IDE_PRJNAME).gpdsc
-CY_CMSIS_CPRJ=$(CY_IDE_PRJNAME).cprj
-CY_CMSIS_CYIGNORE_PATH=$(CY_INTERNAL_APP_PATH)/.cyignore
+CY_CMSIS_CPDSC=$(CY_INTERNAL_APPLOC)/$(CY_IDE_PRJNAME).cpdsc
+CY_CMSIS_GPDSC=$(CY_INTERNAL_APPLOC)/$(CY_IDE_PRJNAME).gpdsc
+CY_CMSIS_CPRJ=$(CY_INTERNAL_APPLOC)/$(CY_IDE_PRJNAME).cprj
+CY_CMSIS_CYIGNORE_PATH=$(CY_INTERNAL_APPLOC)/.cyignore
+CY_CMSIS_TEMPLATE_PATH=$(CY_BASELIB_CORE_PATH)/make/scripts/cmsis
 
 # All paths are expected to be relative of the Makefile(Project Directory)
 CY_CMSIS_DEFINES=$(foreach onedef,$(CY_IDE_DEFINES),\"$(onedef)\",)
@@ -328,6 +361,9 @@ $(call CY_MACRO_ERROR,Unable to proceed. TOOLCHAIN must be set to ARM. Use TOOLC
 endif
 
 uvision5: CY_IDE_preprint
+ifeq ($(CY_CMSIS_ARCH_NAME),)
+	$(call CY_MACRO_ERROR,Unable to proceed. Export is not supported for this device)
+endif
 	$(CY_NOISE)mkdir -p $(CY_CONFIG_DIR);\
 	echo $(CY_IDE_PRJNAME) > $(CY_CMSIS_TEMPFILE);\
 	echo $(DEVICE) >> $(CY_CMSIS_TEMPFILE);\
@@ -341,13 +377,18 @@ uvision5: CY_IDE_preprint
 	echo $(CY_CMSIS_LIBS) >> $(CY_CMSIS_TEMPFILE);\
 	echo $(CY_IDE_ALL_SEARCHES_QUOTED) >> $(CY_CMSIS_TEMPFILE);\
 	echo $(CY_IDE_SHARED) >> $(CY_CMSIS_TEMPFILE);\
+	echo $(CY_CMSIS_ARCH_NAME) >> $(CY_CMSIS_TEMPFILE);\
 	echo
-	$(CY_NOISE)$(CY_PYTHON_PATH) $(CY_INTERNAL_BASELIB_PATH)/make/scripts/cmsis/cmsis_export.py -i $(CY_CMSIS_TEMPFILE) -cpdsc $(CY_CMSIS_CPDSC) -gpdsc $(CY_CMSIS_GPDSC) -cprj $(CY_CMSIS_CPRJ);
+	$(CY_NOISE)$(CY_PYTHON_PATH) $(CY_CMSIS_TEMPLATE_PATH)/cmsis_export.py -i $(CY_CMSIS_TEMPFILE) -cpdsc $(CY_CMSIS_CPDSC) -gpdsc $(CY_CMSIS_GPDSC) -cprj $(CY_CMSIS_CPRJ);
 	$(CY_NOISE)rm -rf $(CY_CMSIS_TEMPFILE);\
 	echo Keil uVision version \<\= 5.29: double-click the .cpdsc file. The .gpdsc file is loaded automatically.;\
-	echo Keil uVision version \>\= 5.30: double-click the .cprj file. The .gpdsc file is loaded automatically.;
+	echo Keil uVision version \>\= 5.30: double-click the .cprj file. The .gpdsc file is loaded automatically.;\
+	echo;\
+	$(CY_IDE_PREBUILD_MSG)\
+	$(CY_IDE_POSTBUILD_MSG)
 ifeq ($(TOOLCHAIN), GCC_ARM)
-	$(CY_NOISE)echo To switch the project to use GCC toolchain, open Project - Manage - Project Items - Folders/Extensions, and set GCC prefix and path.
+	$(CY_NOISE)echo;\
+	echo To switch the project to use GCC toolchain, open Project - Manage - Project Items - Folders/Extensions, and set GCC prefix and path.
 endif
 	$(CY_NOISE)if  [ ! -f $(CY_CMSIS_CYIGNORE_PATH) ] || ! grep -q "$(CY_IDE_PRJNAME)_build" $(CY_CMSIS_CYIGNORE_PATH) || ! grep -q "RTE" $(CY_CMSIS_CYIGNORE_PATH);\
 	then \
@@ -372,14 +413,18 @@ endif # ifeq ($(filter uvision5,$(MAKECMDGOALS)),uvision5)
 
 ifeq ($(filter vscode,$(MAKECMDGOALS)),vscode)
 
-CY_VSCODE_OUT_PATH=$(CY_INTERNAL_APP_PATH)/.vscode
+CY_VSCODE_OUT_PATH=$(CY_INTERNAL_APPLOC)/.vscode
 CY_VSCODE_OUT_TEMPLATE_PATH=$(CY_VSCODE_OUT_PATH)/cytemplates
 CY_VSCODE_BACKUP_PATH=$(CY_VSCODE_OUT_PATH)/backup
-CY_VSCODE_TEMPLATE_PATH=$(CY_INTERNAL_BASELIB_PATH)/make/scripts/vscode
+CY_VSCODE_TEMPLATE_PATH=$(CY_BASELIB_CORE_PATH)/make/scripts/vscode
+# Only include if using separate core-make and recipe-make
+ifneq ($(CY_INTERNAL_BASELIB_PATH),$(CY_BASELIB_CORE_PATH))
+CY_VSCODE_TEMPLATE_RECIPE_SEARCH=$(CY_INTERNAL_BASELIB_PATH)/make/scripts/vscode/*
+endif
 CY_VSCODE_TEMPFILE=$(CY_CONFIG_DIR)/vscode_launch.temp
 CY_VSCODE_WORKSPACE_NAME=$(CY_IDE_PRJNAME).code-workspace
 
-ifneq ($(wildcard $(CY_INTERNAL_APP_PATH)/$(CY_VSCODE_WORKSPACE_NAME)),)
+ifneq ($(wildcard $(CY_INTERNAL_APPLOC)/$(CY_VSCODE_WORKSPACE_NAME)),)
 CY_VSCODE_BACKUP_WORKSPACE=true
 endif
 
@@ -396,26 +441,146 @@ CY_VSCODE_INCLUDES_LIST=$(subst $(CY_SPACE),$(CY_NEWLINE_MARKER),$(CY_VSCODE_INC
 CY_VSCODE_DEFINES=$(foreach onedef,$(subst -D,,$(CY_IDE_DEFINES)),\"$(onedef)\",)
 CY_VSCODE_DEFINES_LIST=$(subst $(CY_SPACE),$(CY_NEWLINE_MARKER),$(CY_VSCODE_DEFINES))
 
+# Toolchain-specific VFP and CPU settings for c_cpp_properties.json
+ifeq ($(TOOLCHAIN),GCC_ARM)
+
+ifeq ($(VFP_SELECT),hardfp)
+CY_VSCODE_VFP=/hard
+else
+CY_VSCODE_VFP=/softfp
+endif
+
+ifeq ($(CORE),CM0)
+CY_VSCODE_CPU=/arm-none-eabi/thumb/v6e-m
+CY_VSCODE_VFP=
+else ifeq ($(CORE),CM0P)
+CY_VSCODE_CPU=/arm-none-eabi/thumb/v6e-m
+CY_VSCODE_VFP=
+else ifeq ($(CORE),CM4)
+CY_VSCODE_CPU=/arm-none-eabi/thumb/v7e-m/fpv4-sp
+else ifeq ($(CORE),CM33)
+CY_VSCODE_CPU=/arm-none-eabi/thumb/v8-m.main/fpv5-sp
+else
+CY_VSCODE_CPU=
+CY_VSCODE_VFP=
+endif
+
+else ifeq ($(TOOLCHAIN),IAR)
+
+CY_VSCODE_VFP=
+
+# Note: IAR requires intrinsic defines. Use the following to generate them to intrinsic.txt file
+# CFLAGS= --predef_macros intrinsic.txt
+# Then list only the difference here
+ifneq ($(filter $(CORE),CM0 CM0P),)
+CY_VSCODE_CPU=$(subst $(CY_SPACE),$(CY_NEWLINE_MARKER),$(foreach onedef,\
+            __ARM_ARCH=6\
+            __ARM_ARCH_ISA_THUMB=1\
+            __ARM_FEATURE_COPROC=0\
+            __CORE__=__ARM6M__\
+            __JMP_BUF_NUM_ELEMENTS__=8\
+            __STDC_NO_ATOMICS__=1\
+            __SUBNORMAL_FLOATING_POINTS__=0\
+            ,\"$(onedef)\",))
+else ifeq ($(CORE),CM4)
+CY_VSCODE_VFP=$(subst $(CY_SPACE),$(CY_NEWLINE_MARKER),$(foreach onedef,\
+            __ARMVFPV1__=1\
+            __ARMVFPV2__=2\
+            __ARMVFPV3_D16__=1\
+            __ARMVFPV3_FP16__=1\
+            __ARMVFPV3__=3\
+            __ARMVFPV4__=4\
+            __ARMVFP_D16__=1\
+            __ARMVFP_FP16__=1\
+            __ARMVFP_SP__=1\
+            __ARMVFP__=__ARMVFPV4__\
+            ,\"$(onedef)\",))
+CY_VSCODE_CPU=$(subst $(CY_SPACE),$(CY_NEWLINE_MARKER),$(foreach onedef,\
+            __ARM6MEDIA__=6\
+            __ARM6T2__=6\
+            __ARM7EM__=13\
+            __ARM7M__=7\
+            __ARM7__=7\
+            __ARM_ARCH=7\
+            __ARM_ARCH_ISA_THUMB=2\
+            __ARM_FEATURE_CLZ=1\
+            __ARM_FEATURE_COPROC=15\
+            __ARM_FEATURE_DSP=1\
+            __ARM_FEATURE_FMA=1\
+            __ARM_FEATURE_IDIV=1\
+            __ARM_FEATURE_LDREX=7\
+            __ARM_FEATURE_QBIT=1\
+            __ARM_FEATURE_SAT=1\
+            __ARM_FEATURE_SIMD32=1\
+            __ARM_FEATURE_UNALIGNED=1\
+            __ARM_FP=6\
+            __ARM_MEDIA__=1\
+            __ATOMIC_BOOL_LOCK_FREE=2\
+            __ATOMIC_CHAR16_T_LOCK_FREE=2\
+            __ATOMIC_CHAR32_T_LOCK_FREE=2\
+            __ATOMIC_CHAR_LOCK_FREE=2\
+            __ATOMIC_INT_LOCK_FREE=2\
+            __ATOMIC_LLONG_LOCK_FREE=0\
+            __ATOMIC_LONG_LOCK_FREE=2\
+            __ATOMIC_POINTER_LOCK_FREE=2\
+            __ATOMIC_SHORT_LOCK_FREE=2\
+            __ATOMIC_WCHAR_T_LOCK_FREE=2\
+            __CORE__=__ARM7EM__\
+            __EDG_TYPE_TRAITS_ENABLED=1\
+            __JMP_BUF_NUM_ELEMENTS__=16\
+            __MEMORY_ORDER_ACQUIRE__=2\
+            __MEMORY_ORDER_ACQ_REL__=4\
+            __MEMORY_ORDER_CONSUME__=1\
+            __MEMORY_ORDER_RELAXED__=0\
+            __MEMORY_ORDER_RELEASE__=3\
+            __MEMORY_ORDER_SEQ_CST__=5\
+            __SUBNORMAL_FLOATING_POINTS__=1\
+            ,\"$(onedef)\",))
+else ifeq ($(CORE),CM33)
+CY_VSCODE_CPU=
+else
+CY_VSCODE_CPU=
+endif
+
+endif #ifeq ($(TOOLCHAIN),GCC_ARM)
+
 # Note: CY_VSCODE_ARGS is expected to come from the recipe
 # Note: CDB generation happens in build.mk
 # Note: Series of sed substitutions are intentional as macOs default BSD sed does not understand \t and \n
+#
+# When updating the settings.json file, we have to account for all of the different ways that the user may have
+# added information to this file.  We will perform these steps to do that:
+#    1. Create a new file (TMP1) with our settings and comments removed from the old settings.json file
+#    2. Create a new file (TMP2) from TMP1 with all user comments removed
+#    3. Delete all empty lines and trailing whitespace from the TMP2 file
+#    4. Pull the last line (lastLine) from the TMP2 file
+#    5. If the lastLine doesn’t have a comma at the end, find that line in the TMP1 file and replace it with the same
+#       line with a comma at the end
+#    6. Create a new settings.json file with the information in the TMP1 file
+#    7. Tack on our updated comments and settings to that new settings.json file
+# 
 vscode: CY_IDE_preprint CY_BUILD_cdb_postprint
+ifeq ($(CY_VSCODE_ARGS),)
+	$(call CY_MACRO_ERROR,Unable to proceed. Export is not supported for this device)
+endif
 ifeq ($(LIBNAME),)
 	$(CY_NOISE)mkdir -p $(CY_CONFIG_DIR);\
 	mkdir -p $(CY_VSCODE_OUT_TEMPLATE_PATH);\
 	mkdir -p $(CY_VSCODE_BACKUP_PATH);\
 	echo $(CY_VSCODE_ARGS) > $(CY_VSCODE_TEMPFILE);\
+	echo "s|&&CY_VSCODE_CPU&&|$(CY_VSCODE_CPU)|" >> $(CY_VSCODE_TEMPFILE);\
+	echo "s|&&CY_VSCODE_VFP&&|$(CY_VSCODE_VFP)|" >> $(CY_VSCODE_TEMPFILE);\
 	echo "s|&&CY_INCLUDE_LIST&&|$(CY_VSCODE_INCLUDES_LIST)|" >> $(CY_VSCODE_TEMPFILE);\
 	echo "s|&&CY_DEFINE_LIST&&|$(CY_VSCODE_DEFINES_LIST)|"   >> $(CY_VSCODE_TEMPFILE);\
 	echo "s|&&CY_SEARCH_DIRS&&|$(CY_VSCODE_SEARCH)|" | sed s/'\\t'/'    '/g | sed s/'\\n'/'$(CY_NEWLINE_MARKER)'/g >> $(CY_VSCODE_TEMPFILE);\
 	echo;
 ifeq ($(CY_VSCODE_BACKUP_WORKSPACE),true)
-	$(CY_NOISE) mv -f $(CY_INTERNAL_APP_PATH)/$(CY_VSCODE_WORKSPACE_NAME) $(CY_VSCODE_BACKUP_PATH)/$(CY_VSCODE_WORKSPACE_NAME);
+	$(CY_NOISE) mv -f $(CY_INTERNAL_APPLOC)/$(CY_VSCODE_WORKSPACE_NAME) $(CY_VSCODE_BACKUP_PATH)/$(CY_VSCODE_WORKSPACE_NAME);
 	echo "The existing $(CY_VSCODE_WORKSPACE_NAME) file has been saved to .vscode/backup";
 endif
 	$(CY_NOISE)sed -f $(CY_VSCODE_TEMPFILE) $(CY_VSCODE_TEMPLATE_PATH)/do_not_copy/wks.code-workspace | \
-		sed s/'$(CY_NEWLINE_MARKER)'/$$'\\\n'/g > $(CY_INTERNAL_APP_PATH)/$(CY_VSCODE_WORKSPACE_NAME);
-	$(CY_NOISE)for json in $(CY_VSCODE_TEMPLATE_PATH)/*; do\
+		sed s/'$(CY_NEWLINE_MARKER)'/$$'\\\n'/g > $(CY_INTERNAL_APPLOC)/$(CY_VSCODE_WORKSPACE_NAME);
+	$(CY_NOISE)for json in $(CY_VSCODE_TEMPLATE_PATH)/* $(CY_VSCODE_TEMPLATE_RECIPE_SEARCH); do\
 		jsonFile="$${json##*/}";\
 		if [ $$jsonFile == "do_not_copy" ]; then\
 			continue;\
@@ -423,7 +588,7 @@ endif
 		if [[ $$jsonFile == *"c_cpp_properties"* ]] && [[ $$jsonFile != *"c_cpp_properties_$(TOOLCHAIN).json" ]]; then\
 			continue;\
 		fi;\
-		sed -f $(CY_VSCODE_TEMPFILE) $(CY_VSCODE_TEMPLATE_PATH)/$$jsonFile | \
+		sed -f $(CY_VSCODE_TEMPFILE) $$json | \
 			sed s/'$(CY_NEWLINE_MARKER)'/$$'\\\n            '/g > $(CY_VSCODE_OUT_TEMPLATE_PATH)/$$jsonFile;\
 		if [[ $$jsonFile == *"c_cpp_properties_$(TOOLCHAIN).json" ]]; then\
 			jsonFile="c_cpp_properties.json";\
@@ -434,14 +599,33 @@ endif
 		if [ -f $(CY_VSCODE_OUT_PATH)/$$jsonFile ] && [[ $$jsonFile == *"settings.json" ]]; then\
 			echo "Modifying existing settings.json file. Check against the backup copy in .vscode/backup";\
 			mv -f $(CY_VSCODE_OUT_PATH)/$$jsonFile $(CY_VSCODE_BACKUP_PATH)/$$jsonFile;\
-			sed -e 's/\/bin\/openocd\"/\/bin\/openocd\",/g' $(CY_VSCODE_OUT_TEMPLATE_PATH)/$$jsonFile |\
-				grep -v -e "^}" > $(CY_VSCODE_OUT_PATH)/$$jsonFile;\
 			sed -e '/^{/d'\
 			    -e '/\/\/mtb\/\//d'\
 			    -e '/modustoolbox.toolsPath/d'\
 			    -e '/cortex-debug.armToolchainPath/d'\
 			    -e '/cortex-debug.openocdPath/d'\
-			    $(CY_VSCODE_BACKUP_PATH)/$$jsonFile >> $(CY_VSCODE_OUT_PATH)/$$jsonFile;\
+			    -e '/^}/d'\
+			    $(CY_VSCODE_BACKUP_PATH)/$$jsonFile > $(CY_VSCODE_OUT_PATH)/__TMP1__$$jsonFile;\
+			if [[ -z $$(grep '[^[:space:]]' $(CY_VSCODE_OUT_PATH)/__TMP1__$$jsonFile) ]]; then\
+				cp -f $(CY_VSCODE_OUT_TEMPLATE_PATH)/$$jsonFile $(CY_VSCODE_OUT_PATH)/$$jsonFile;\
+			else\
+				sed 's/\/\/.*//g' $(CY_VSCODE_OUT_PATH)/__TMP1__$$jsonFile > $(CY_VSCODE_OUT_PATH)/__TMP2__$$jsonFile;\
+				if [[ ! -z $$(grep '[^[:space:]]' $(CY_VSCODE_OUT_PATH)/__TMP2__$$jsonFile) ]]; then\
+					sed -i.tmp '/^[[:space:]]*$$/d' $(CY_VSCODE_OUT_PATH)/__TMP2__$$jsonFile;\
+					rm $(CY_VSCODE_OUT_PATH)/__TMP2__$$jsonFile.tmp;\
+					lastLine=$$(tail -n 1 $(CY_VSCODE_OUT_PATH)/__TMP2__$$jsonFile);\
+					lastLine=`echo "$$lastLine" | sed 's/[[:space:]]*$$//g'`;\
+					echo "{" > $(CY_VSCODE_OUT_PATH)/$$jsonFile;\
+					if [[ $${lastLine: -1} != "," ]]; then\
+						sed -i.tmp "s/$$lastLine/$$lastLine,/" $(CY_VSCODE_OUT_PATH)/__TMP1__$$jsonFile;\
+						rm $(CY_VSCODE_OUT_PATH)/__TMP1__$$jsonFile.tmp;\
+					fi;\
+				fi;\
+				cat $(CY_VSCODE_OUT_PATH)/__TMP1__$$jsonFile >> $(CY_VSCODE_OUT_PATH)/$$jsonFile;\
+				grep -v -e "^{" $(CY_VSCODE_OUT_TEMPLATE_PATH)/$$jsonFile >> $(CY_VSCODE_OUT_PATH)/$$jsonFile;\
+				rm $(CY_VSCODE_OUT_PATH)/__TMP2__$$jsonFile;\
+			fi;\
+			rm $(CY_VSCODE_OUT_PATH)/__TMP1__$$jsonFile;\
 		else\
 			if [ -f $(CY_VSCODE_OUT_PATH)/$$jsonFile ]; then\
 				echo "The existing $$jsonFile file has been saved to .vscode/backup";\
@@ -451,7 +635,7 @@ endif
 		fi;\
 	done;\
 	$(CY_VSCODE_OPENOCD_PROCESSING)\
-	mv $(CY_VSCODE_OUT_PATH)/openocd.tcl $(CY_INTERNAL_APP_PATH)/openocd.tcl;\
+	mv $(CY_VSCODE_OUT_PATH)/openocd.tcl $(CY_INTERNAL_APPLOC)/openocd.tcl;\
 	rm $(CY_VSCODE_TEMPFILE);\
 	rm -rf $(CY_VSCODE_OUT_TEMPLATE_PATH);\
 	echo;\

@@ -258,6 +258,14 @@ ifeq ($(CY_TOOL_gcc_BASE),)
 # tools_2.1 or tools_2.0
 CY_ECLIPSE_GDB=\$$\{cy_tools_path:gcc-7.2.1\}/bin/arm-none-eabi-gdb
 else
-# tools_2.2 or later
+# tools_2.2 (or later)
 CY_ECLIPSE_GDB=\$$\{cy_tools_path:CY_TOOL_arm-none-eabi-gdb_EXE\}
+
+# Special case to account for IDE 2.1 + tools 2.2 (or later)
+ifeq ($(CY_MAKE_IDE),eclipse)
+ifeq ($(CY_MAKE_IDE_VERSION),)
+CY_ECLIPSE_GDB=\$$\{cy_tools_path:gcc\}/bin/arm-none-eabi-gdb
+endif
+endif
+
 endif
