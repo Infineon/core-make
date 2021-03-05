@@ -47,7 +47,7 @@ def create_eclipse_uri(path):
     parent_count = 0
     parent_path = path
     while parent_path.startswith('../'):
-        parent_path = parent_path.lstrip('../')
+        parent_path = parent_path[3:]
         parent_count += 1
     return 'PARENT-{0}-PROJECT_LOC/{1}'.format(parent_count, parent_path)
 

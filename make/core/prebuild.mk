@@ -209,7 +209,7 @@ CY_PREBUILD_GEN_CONFIG_LIST=all build qbuild program debug
 ifneq ($(filter $(CY_PREBUILD_GEN_CONFIG_LIST),$(MAKECMDGOALS)),)
 CY_PREBUILD_GEN_CONFIG=gen_config
 # Note: configurators cannot be run in parallel. Therefore linearize using dependencies
-$(CY_CONFIG_MODUS_FILE) $(CY_CONFIG_CYBT_FILE) $(CY_CONFIG_CYUSBDEV_FILE) : shared_libs $(CY_SHAREDLIB_LIST) dependent_apps
+$(CY_CONFIG_MODUS_FILE) $(CY_CONFIG_CYBT_FILE) $(CY_CONFIG_CYUSBDEV_FILE) $(CY_CONFIG_MTBEZPD_FILE) $(CY_CONFIG_MTBLIN_FILE) : shared_libs $(CY_SHAREDLIB_LIST) dependent_apps
 endif
 
 

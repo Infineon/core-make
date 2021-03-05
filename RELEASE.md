@@ -17,6 +17,9 @@ The this release of the core GNU make Build System includes a framework to suppo
 This also includes the getlibs.bash script that can be used directly, or via the make target to download additional git repo based libraries for the application.
 
 ### What Changed?
+#### v1.7.0
+* Added make update_bsp commmand to change the target device a custom bsp
+* Added support for the secure-tools configurator, ml-configurator, ez-pd configurator and lin configurator
 #### v1.6.0
 * Moved more code from recipe files into core
 * Improved compatibility with different tool releases
@@ -34,7 +37,7 @@ This version of the core make build system was validated for compatibility with 
 
 | Software and Tools                        | Version |
 | :---                                      | :----:  |
-| ModusToolbox Software Environment         | 2.2     |
+| ModusToolbox Software Environment         | 2.3     |
 | GCC Compiler                              | 9.2     |
 | IAR Compiler                              | 8.4     |
 | ARM Compiler                              | 6.11    |

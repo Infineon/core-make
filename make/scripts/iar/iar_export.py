@@ -49,6 +49,8 @@ REMOVE_QUOTE_REGEX = re.compile(r"^\"|\"$")
 # .S Asm Files (Comma separated list)
 # .h Header files (Comma separated list)
 # .a Lib files (Comma separated list)
+# Search directories (Comma separated list)
+# mtb_shared directory
 # --------------------------------------
 
 def parseIarData(fileName):
@@ -57,7 +59,7 @@ def parseIarData(fileName):
 
     Returns a tuple of (project_name device_name core linker_script defineList includePathList cSrcList asmSrcList headersList libsList)
     """
-    ProjectData = namedtuple("ProjectData", "projectName deviceName core linkerScript defineList includePathList cSrcList asmSrcList headersList libsList, searches, sharedLibDir")
+    ProjectData = namedtuple("ProjectData", "projectName deviceName core linkerScript defineList includePathList cSrcList asmSrcList headersList libsList searches sharedLibDir")
 
     with open(fileName, 'r') as fp:
         projectName = fp.readline().strip()

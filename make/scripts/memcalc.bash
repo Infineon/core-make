@@ -54,7 +54,7 @@ memcalc() {
                 heapCheckArray+=($sectionElement)
 
                 # Only consider non-zero size sections
-                if [[ $addrElement != "00000000" ]]; then
+                if [[ $((16#$sizeElement)) != "0" ]]; then
                     printf "  | %-20s |  0x%-10s |  %-10s | \n" $sectionElement $addrElement $((16#$sizeElement))
                     # Use the section headers for SRAM tally
                     if [[ "0x$addrElement" -ge "$STARTSRAM" ]] && [[ "0x$addrElement" -lt "$ENDSRAM" ]]; then

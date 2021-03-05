@@ -90,14 +90,20 @@ CY_OPEN_NEWCFG_XML_TYPES+=$(shell \
 )
 endif
 
-endif
-
 # Tools for existing files
 CY_OPEN_NEWCFG_EXISTING_TYPES=$(foreach ext,$(subst .,,$(suffix $(CY_CONFIG_FILES))),$($(addsuffix _DEFAULT_TYPE,$(ext))))
+# filter out tools that don't exist
+CY_ALL_TOOLS_DIRS=$(foreach tool,$(filter CY_OPEN_%_TOOL,$(.VARIABLES)),\
+	$(if $(wildcard $($(tool))),$(tool)))
+CY_EXISTING_TOOL_TYPES=$(foreach tool,$(CY_SUPPORTED_TOOL_TYPES),\
+	$(if $(filter $(patsubst %,CY_OPEN_%_TOOL,$(subst -,_,$(tool))),$(CY_ALL_TOOLS_DIRS)),$(tool)))
 # Tools that do not have an existing file
-CY_OPEN_NEWCFG_POSSIBLE_TYPES=$(filter-out $(CY_OPEN_NEWCFG_EXISTING_TYPES) $(CY_OPEN_NEWCFG_XML_TYPES),$(CY_SUPPORTED_TOOL_TYPES))
+CY_OPEN_NEWCFG_POSSIBLE_TYPES=$(filter-out $(CY_OPEN_NEWCFG_EXISTING_TYPES) $(CY_OPEN_NEWCFG_XML_TYPES),$(CY_EXISTING_TOOL_TYPES))
 # Complete list of supported files
 CY_OPEN_FILTERED_SUPPORTED_TYPES=$(sort $(CY_OPEN_NEWCFG_POSSIBLE_TYPES) $(CY_OPEN_NEWCFG_EXISTING_TYPES))
+
+endif
+
 
 
 ################################################################################

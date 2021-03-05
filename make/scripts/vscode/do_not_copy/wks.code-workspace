@@ -2,7 +2,7 @@
 	"folders": [
 		{
 			"path": "."
-		}&&CY_SEARCH_DIRS&&
+		}&&CY_SEARCH_DIRS&&&&CY_VSCODE_DEPENDENT_APP_PATHS&&
 	],
     "settings": {
         //mtb//  If this project will be shared with multiple users, the

@@ -36,47 +36,65 @@ CY_CONFIG_FILE_EXT?=modus
 # Search
 ################################################################################
 
+CY_CONFIG_FILES_SEARCHES=$(call CY_MACRO_SEARCH,.$(1),$(CY_INTERNAL_APP_PATH))\
+					$(if $(CY_INTERNAL_EXTAPP_PATH),$(call CY_MACRO_SEARCH,.$(1),$(CY_INTERNAL_EXTAPP_PATH)))\
+					$(if $(SEARCH_LIBS_AND_INCLUDES),$(foreach d,$(SEARCH_LIBS_AND_INCLUDES),$(call CY_MACRO_SEARCH,.$(1),$(d))))\
+					$(if $(SEARCH),$(foreach d,$(SEARCH),$(call CY_MACRO_SEARCH,.$(1),$(d))))
+
 CY_CONFIG_MODUS_EXT=modus
 CY_CONFIG_CYBT_EXT=cybt
 CY_CONFIG_CYUSBDEV_EXT=cyusbdev
+CY_CONFIG_MTBEZPD_EXT=mtbezpd
+CY_CONFIG_MTBLIN_EXT=mtblin
 
 #
 # Search for configuration files and filter
 #
-CY_CONFIG_MODUS_FILES:=$(call CY_MACRO_SEARCH,.$(CY_CONFIG_MODUS_EXT),$(CY_INTERNAL_APP_PATH))\
-					$(if $(CY_INTERNAL_EXTAPP_PATH),$(call CY_MACRO_SEARCH,.$(CY_CONFIG_MODUS_EXT),$(CY_INTERNAL_EXTAPP_PATH)))\
-					$(if $(SEARCH_LIBS_AND_INCLUDES),$(foreach d,$(SEARCH_LIBS_AND_INCLUDES),$(call CY_MACRO_SEARCH,.$(CY_CONFIG_MODUS_EXT),$(d))))\
-					$(if $(SEARCH),$(foreach d,$(SEARCH),$(call CY_MACRO_SEARCH,.$(CY_CONFIG_MODUS_EXT),$(d))))
-CY_CONFIG_CYBT_FILES:=$(call CY_MACRO_SEARCH,.$(CY_CONFIG_CYBT_EXT),$(CY_INTERNAL_APP_PATH))\
-					$(if $(CY_INTERNAL_EXTAPP_PATH),$(call CY_MACRO_SEARCH,.$(CY_CONFIG_CYBT_EXT),$(CY_INTERNAL_EXTAPP_PATH)))\
-					$(if $(SEARCH_LIBS_AND_INCLUDES),$(foreach d,$(SEARCH_LIBS_AND_INCLUDES),$(call CY_MACRO_SEARCH,.$(CY_CONFIG_CYBT_EXT),$(d))))\
-					$(if $(SEARCH),$(foreach d,$(SEARCH),$(call CY_MACRO_SEARCH,.$(CY_CONFIG_CYBT_EXT),$(d))))
-CY_CONFIG_CYUSBDEV_FILES:=$(call CY_MACRO_SEARCH,.$(CY_CONFIG_CYUSBDEV_EXT),$(CY_INTERNAL_APP_PATH))\
-					$(if $(CY_INTERNAL_EXTAPP_PATH),$(call CY_MACRO_SEARCH,.$(CY_CONFIG_CYUSBDEV_EXT),$(CY_INTERNAL_EXTAPP_PATH)))\
-					$(if $(SEARCH_LIBS_AND_INCLUDES),$(foreach d,$(SEARCH_LIBS_AND_INCLUDES),$(call CY_MACRO_SEARCH,.$(CY_CONFIG_CYUSBDEV_EXT),$(d))))\
-					$(if $(SEARCH),$(foreach d,$(SEARCH),$(call CY_MACRO_SEARCH,.$(CY_CONFIG_CYUSBDEV_EXT),$(d))))
+CY_CONFIG_MODUS_FILES:=$(call CY_CONFIG_FILES_SEARCHES,$(CY_CONFIG_MODUS_EXT))
+CY_CONFIG_CYBT_FILES:=$(call CY_CONFIG_FILES_SEARCHES,$(CY_CONFIG_CYBT_EXT))
+CY_CONFIG_CYUSBDEV_FILES:=$(call CY_CONFIG_FILES_SEARCHES,$(CY_CONFIG_CYUSBDEV_EXT))
+CY_CONFIG_MTBEZPD_FILES:=$(call CY_CONFIG_FILES_SEARCHES,$(CY_CONFIG_MTBEZPD_EXT))
+CY_CONFIG_MTBLIN_FILES:=$(call CY_CONFIG_FILES_SEARCHES,$(CY_CONFIG_MTBLIN_EXT))
 
 CY_SEARCH_PRUNED_MODUS_FILES:=$(filter-out $(foreach d,$(CY_IGNORE_DIRS),$(filter $(d)%,$(CY_CONFIG_MODUS_FILES))),$(CY_CONFIG_MODUS_FILES))
 CY_SEARCH_PRUNED_CYBT_FILES:=$(filter-out $(foreach d,$(CY_IGNORE_DIRS),$(filter $(d)%,$(CY_CONFIG_CYBT_FILES))),$(CY_CONFIG_CYBT_FILES))
 CY_SEARCH_PRUNED_CYUSBDEV_FILES:=$(filter-out $(foreach d,$(CY_IGNORE_DIRS),$(filter $(d)%,$(CY_CONFIG_CYUSBDEV_FILES))),$(CY_CONFIG_CYUSBDEV_FILES))
+CY_SEARCH_PRUNED_MTBEZPD_FILES:=$(filter-out $(foreach d,$(CY_IGNORE_DIRS),$(filter $(d)%,$(CY_CONFIG_MTBEZPD_FILES))),$(CY_CONFIG_MTBEZPD_FILES))
+CY_SEARCH_PRUNED_MTBLIN_FILES:=$(filter-out $(foreach d,$(CY_IGNORE_DIRS),$(filter $(d)%,$(CY_CONFIG_MTBLIN_FILES))),$(CY_CONFIG_MTBLIN_FILES))
 
 CY_SEARCH_AVAILABLE_MODUS_SOURCES=$(call CY_MACRO_FILTER_FILES,MODUS)
 CY_SEARCH_AVAILABLE_CYBT_SOURCES=$(call CY_MACRO_FILTER_FILES,CYBT)
 CY_SEARCH_AVAILABLE_CYUSBDEV_SOURCES=$(call CY_MACRO_FILTER_FILES,CYUSBDEV)
+CY_SEARCH_AVAILABLE_MTBEZPD_SOURCES=$(call CY_MACRO_FILTER_FILES,MTBEZPD)
+CY_SEARCH_AVAILABLE_MTBLIN_SOURCES=$(call CY_MACRO_FILTER_FILES,MTBLIN)
 
 ifneq ($(words $(CY_SEARCH_AVAILABLE_MODUS_SOURCES)),1)
 ifneq ($(words $(CY_SEARCH_AVAILABLE_MODUS_SOURCES)),0)
 $(call CY_MACRO_ERROR,Multiple device configuration files detected: $(CY_SEARCH_AVAILABLE_MODUS_SOURCES))
 endif
 endif
+
 ifneq ($(words $(CY_SEARCH_AVAILABLE_CYBT_SOURCES)),1)
 ifneq ($(words $(CY_SEARCH_AVAILABLE_CYBT_SOURCES)),0)
 $(call CY_MACRO_ERROR,Multiple BT configuration files detected: $(CY_SEARCH_AVAILABLE_CYBT_SOURCES))
 endif
 endif
+
 ifneq ($(words $(CY_SEARCH_AVAILABLE_CYUSBDEV_SOURCES)),1)
 ifneq ($(words $(CY_SEARCH_AVAILABLE_CYUSBDEV_SOURCES)),0)
 $(call CY_MACRO_ERROR,Multiple USBDEV configuration files detected: $(CY_SEARCH_AVAILABLE_CYUSBDEV_SOURCES))
+endif
+endif
+
+ifneq ($(words $(CY_SEARCH_AVAILABLE_MTBEZPD_SOURCES)),1)
+ifneq ($(words $(CY_SEARCH_AVAILABLE_MTBEZPD_SOURCES)),0)
+$(call CY_MACRO_ERROR,Multiple MTBEZPD configuration files detected: $(CY_SEARCH_AVAILABLE_MTBEZPD_SOURCES))
+endif
+endif
+
+ifneq ($(words $(CY_SEARCH_AVAILABLE_MTBLIN_SOURCES)),1)
+ifneq ($(words $(CY_SEARCH_AVAILABLE_MTBLIN_SOURCES)),0)
+$(call CY_MACRO_ERROR,Multiple LIN configuration files detected: $(CY_SEARCH_AVAILABLE_MTBLIN_SOURCES))
 endif
 endif
 
@@ -155,6 +173,39 @@ CY_CONFIG_CYUSBDEV_GUI_FLAGS=\
 	--config
 
 
+#########################
+# .mtbezpd (SW)
+#########################
+
+CY_CONFIG_MTBEZPD_FILE?=$(CY_SEARCH_AVAILABLE_MTBEZPD_SOURCES)
+CY_CONFIG_MTBEZPD_OUTPUT=$(call CY_MACRO_DIR,$(CY_CONFIG_MTBEZPD_FILE))/GeneratedSource
+
+
+CY_CONFIG_MTBEZPD_EXEC=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_ez-pd-configurator-cli_EXE)
+CY_CONFIG_MTBEZPD_EXEC_FLAGS=\
+	--config $(CY_CONFIG_MTBEZPD_FILE)
+
+CY_CONFIG_MTBEZPD_GUI=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_ez-pd-configurator_EXE)
+CY_CONFIG_MTBEZPD_GUI_FLAGS=\
+	--config
+
+	
+#########################
+# .mtblin (SW)
+#########################
+
+CY_CONFIG_MTBLIN_FILE?=$(CY_SEARCH_AVAILABLE_MTBLIN_SOURCES)
+CY_CONFIG_MTBLIN_OUTPUT=$(call CY_MACRO_DIR,$(CY_CONFIG_MTBLIN_FILE))/GeneratedSource
+
+
+CY_CONFIG_MTBLIN_EXEC=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_lin-configurator-cli_EXE)
+CY_CONFIG_MTBLIN_EXEC_FLAGS=\
+	--config $(CY_CONFIG_MTBLIN_FILE)
+
+CY_CONFIG_MTBLIN_GUI=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_lin-configurator_EXE)
+CY_CONFIG_MTBLIN_GUI_FLAGS=\
+	--config
+
 ################################################################################
 # Source generation
 ################################################################################
@@ -162,8 +213,11 @@ CY_CONFIG_CYUSBDEV_GUI_FLAGS=\
 CY_CONFIG_MODUS_TIMESTAMP=$(CY_CONFIG_MODUS_OUTPUT)/cycfg.timestamp
 CY_CONFIG_CYBT_TIMESTAMP=$(CY_CONFIG_CYBT_OUTPUT)/cycfg_bt.timestamp
 CY_CONFIG_CYUSBDEV_TIMESTAMP=$(CY_CONFIG_CYUSBDEV_OUTPUT)/cycfg_usbdev.timestamp
+CY_CONFIG_MTBEZPD_TIMESTAMP=$(CY_CONFIG_MTBEZPD_OUTPUT)/mtbcfg_ezpd.timestamp
+CY_CONFIG_MTBLIN_TIMESTAMP=$(CY_CONFIG_MTBLIN_OUTPUT)/mtbcfg_lin.timestamp
 
-gen_config: $(CY_CONFIG_MODUS_TIMESTAMP) $(CY_CONFIG_CYBT_TIMESTAMP) $(CY_CONFIG_CYUSBDEV_TIMESTAMP)
+gen_config: $(CY_CONFIG_MODUS_TIMESTAMP) $(CY_CONFIG_CYBT_TIMESTAMP) $(CY_CONFIG_CYUSBDEV_TIMESTAMP)\
+	$(CY_CONFIG_MTBEZPD_TIMESTAMP) $(CY_CONFIG_MTBLIN_TIMESTAMP)
 
 $(CY_CONFIG_MODUS_TIMESTAMP): $(CY_CONFIG_MODUS_FILE)
 ifneq ($(CY_CONFIG_MODUS_FILE),)
@@ -187,6 +241,22 @@ ifneq ($(CY_CONFIG_CYUSBDEV_FILE),)
 	$(info Running usbdev-configurator to update stale files...)
 	$(CY_NOISE)$(CY_CONFIG_CYUSBDEV_EXEC) $(CY_CONFIG_CYUSBDEV_EXEC_FLAGS)
 	$(CY_NOISE)echo "-> Generated usbdev configuration file(s) in $(CY_CONFIG_CYUSBDEV_OUTPUT)"
+endif
+
+$(CY_CONFIG_MTBEZPD_TIMESTAMP): $(CY_CONFIG_MTBEZPD_FILE)
+ifneq ($(CY_CONFIG_MTBEZPD_FILE),)
+	$(info )
+	$(info Running ez-pd-configurator to update stale files...)
+	$(CY_NOISE)$(CY_CONFIG_MTBEZPD_EXEC) $(CY_CONFIG_MTBEZPD_EXEC_FLAGS)
+	$(CY_NOISE)echo "-> Generated ez-pd configuration file(s) in $(CY_CONFIG_MTBEZPD_OUTPUT)"
+endif
+
+$(CY_CONFIG_MTBLIN_TIMESTAMP): $(CY_CONFIG_MTBLIN_FILE)
+ifneq ($(CY_CONFIG_MTBLIN_FILE),)
+	$(info )
+	$(info Running lin-configurator to update stale files...)
+	$(CY_NOISE)$(CY_CONFIG_MTBLIN_EXEC) $(CY_CONFIG_MTBLIN_EXEC_FLAGS)
+	$(CY_NOISE)echo "-> Generated lin configuration file(s) in $(CY_CONFIG_MTBLIN_OUTPUT)"
 endif
 
 
@@ -231,9 +301,30 @@ else
 	$(CY_NOISE) $(CY_CONFIG_CYUSBDEV_GUI) $(CY_CONFIG_CYUSBDEV_GUI_FLAGS) $(CY_CONFIG_CYUSBDEV_FILE) $(CY_CONFIG_JOB_CONTROL)
 endif
 
+CY_CYSECURETOOLS_TARGET=$(shell echo $(TARGET) | tr A-Z a-z)
 config_secure:
 	$(info $(CY_NEWLINE)Launching secure-policy-configurator on $(CY_INTERNAL_APP_PATH))
-	$(CY_NOISE)$(CY_INTERNAL_TOOLS)/$(CY_TOOL_secure-policy-configurator_EXE) $(CY_CONFIG_JOB_CONTROL)
+	$(CY_NOISE) $(CY_INTERNAL_TOOLS)/$(CY_TOOL_secure-policy-configurator_EXE) --target=$(CY_CYSECURETOOLS_TARGET) $(CY_CONFIG_JOB_CONTROL)
+
+config_ezpd:
+ifeq ($(CY_CONFIG_MTBEZPD_FILE),)
+	$(info $(CY_NEWLINE)Could not find any ez-pd-configuration files)
+	$(info Launching ez-pd-configurator for a new configuration)
+	$(CY_NOISE) $(CY_CONFIG_MTBEZPD_GUI_FLAGS) $(CY_CONFIG_JOB_CONTROL)
+else
+	$(info $(CY_NEWLINE)Launching ez-pd-configurator on $(CY_CONFIG_MTBEZPD_FILE))
+	$(CY_NOISE) $(CY_CONFIG_MTBEZPD_GUI) $(CY_CONFIG_MTBEZPD_GUI_FLAGS) $(CY_CONFIG_MTBEZPD_FILE) $(CY_CONFIG_JOB_CONTROL)
+endif
+
+config_lin:
+ifeq ($(CY_CONFIG_MTBLIN_FILE),)
+	$(info $(CY_NEWLINE)Could not find any lin-configuration files)
+	$(info Launching ez-pd-configurator for a new configuration)
+	$(CY_NOISE) $(CY_CONFIG_MTBLIN_GUI_FLAGS) $(CY_CONFIG_JOB_CONTROL)
+else
+	$(info $(CY_NEWLINE)Launching lin-configurator on $(CY_CONFIG_MTBLIN_FILE))
+	$(CY_NOISE) $(CY_CONFIG_MTBLIN_GUI) $(CY_CONFIG_MTBLIN_GUI_FLAGS) $(CY_CONFIG_MTBLIN_FILE) $(CY_CONFIG_JOB_CONTROL)
+endif
 
 .PHONY: gen_config
-.PHONY: config config_bt config_usbdev config_secure
+.PHONY: config config_bt config_usbdev config_secure config_ezpd config_lin

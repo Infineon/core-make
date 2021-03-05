@@ -318,6 +318,18 @@ endif
 ################################################################################
 
 ifeq ($(filter bsp,$(MAKECMDGOALS)),bsp)
+CY_INTERNAL_IS_RUNNING_BSP_TARGET=true
+CY_INTERNAL_BSP_TARGET_CREATE_BACK_UP=false
+else
+ifeq ($(filter update_bsp,$(MAKECMDGOALS)),update_bsp)
+CY_INTERNAL_IS_RUNNING_BSP_TARGET=true
+CY_INTERNAL_BSP_TARGET_CREATE_BACK_UP=true
+else
+CY_INTERNAL_IS_RUNNING_BSP_TARGET=false
+endif
+endif
+
+ifeq ($(CY_INTERNAL_IS_RUNNING_BSP_TARGET),true)
 # Applicable for tools_2.2 and above
 ifneq ($(CY_TOOL_library-manager-cli_EXE),)
 ifneq ($(CY_GETLIBS_OFFLINE),)
@@ -341,13 +353,26 @@ bsp:
 	$(info $(CY_NEWLINE)Creating $(TARGET_GEN) TARGET from $(TARGET)...)
 	$(CY_NOISE)cp -rf $(CY_TARGET_DIR) $(CY_TARGET_GEN_DIR);\
 	rm -rf $(CY_TARGET_GEN_DIR)/.git;\
-	sed -e s/$(TARGET)/"$(TARGET_GEN)"/g -e /DEVICE/s%=.*%="$(DEVICE_GEN)"\% -e /ADDITIONAL_DEVICES/s%=.*%="$(ADDITIONAL_DEVICES_GEN)"\% \
-		$(CY_TARGET_GEN_DIR)/$(TARGET).mk > $(CY_TARGET_GEN_DIR)/$(TARGET_GEN).mk;\
-	rm -rf $(CY_TARGET_GEN_DIR)/$(TARGET).mk;\
+	mv -f $(CY_TARGET_GEN_DIR)/$(TARGET).mk $(CY_TARGET_GEN_DIR)/$(TARGET_GEN).mk;\
+	sed -i -e s/$(TARGET)/"$(TARGET_GEN)"/g $(CY_TARGET_GEN_DIR)/$(TARGET_GEN).mk;\
+	sed -i -e /^DEVICE/s%=.*%="$(DEVICE_GEN)"\% $(CY_TARGET_GEN_DIR)/$(TARGET_GEN).mk;\
+	$(CY_BACK_OLD_BSP_TEMPLATES_CMD)\
 	$(CY_BSP_TEMPLATES_CMD)\
 	$(CY_BSP_DEVICES_CMD)\
 	$(CY_BSP_DEPENDENCIES_CMD)\
 	echo ""$(TARGET_GEN)" TARGET created at "$(CY_TARGET_GEN_DIR)""; echo;
+
+update_bsp:
+	$(if $(TARGET_GEN),,$(info )$(call CY_MACRO_ERROR, TARGET_GEN variable must be specified to update a BSP))
+	$(if $(wildcard $(CY_TARGET_GEN_DIR)),,$(info )$(call CY_MACRO_ERROR,"$(TARGET_GEN)" TARGET does not exists at "$(CY_TARGET_GEN_DIR)"))
+	$(info $(CY_NEWLINE)Updating $(TARGET_GEN) TARGET...)
+	$(CY_NOISE)sed -i -e s/$(TARGET)/"$(TARGET_GEN)"/g $(CY_TARGET_GEN_DIR)/$(TARGET_GEN).mk;\
+	sed -i -e /^DEVICE/s%=.*%="$(DEVICE_GEN)"\% $(CY_TARGET_GEN_DIR)/$(TARGET_GEN).mk;\
+	$(CY_BACK_OLD_BSP_TEMPLATES_CMD)\
+	$(CY_BSP_TEMPLATES_CMD)\
+	$(CY_BSP_DEVICES_CMD)\
+	$(CY_BSP_DEPENDENCIES_CMD)\
+	echo ""$(TARGET_GEN) TARGET was updated ""$(CY_TARGET_GEN_DIR)""; echo;
 
 # Default conversion type set to local
 CONVERSION_TYPE?=local
@@ -490,10 +515,8 @@ endif
 	$(info  User: BSP variables)
 	$(info =======================================)
 	$(info DEVICE=$(DEVICE))
-	$(info ADDITIONAL_DEVICES=$(ADDITIONAL_DEVICES))
 	$(info TARGET_GEN=$(TARGET_GEN))
 	$(info DEVICE_GEN=$(DEVICE_GEN))
-	$(info ADDITIONAL_DEVICES_GEN=$(ADDITIONAL_DEVICES_GEN))
 	$(info )
 	$(info =======================================)
 	$(info  User: Getlibs variables)

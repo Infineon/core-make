@@ -78,6 +78,10 @@ config:
 
 config_bt:
 
+config_ezpd:
+
+config_lin:
+
 config_usbdev:
 
 config_secure:
@@ -96,7 +100,7 @@ vscode:
 # Targets that do not require a second build stage
 #
 all getlibs clean help:
-open modlibs config config_bt config_usbdev config_secure:
+open modlibs config config_bt config_usbdev config_secure config_ezpd config_lin:
 bsp check get_app_info get_env_info printlibs:
 app memcalc help_default:
 
@@ -183,7 +187,13 @@ CY_PREBUILD_BUILD_LOC:=$(call CY_MACRO_DIR,$(CY_INTERNAL_BUILD_LOC))
 # Default toolchain locations
 #
 CY_COMPILER_GCC_ARM_DEFAULT_DIR:=$(CY_INTERNAL_TOOL_gcc_BASE)
+ifeq ($(OS),Windows_NT)
 CY_COMPILER_IAR_DEFAULT_DIR:="C:/Program Files (x86)/IAR Systems/Embedded Workbench 8.2/arm"
+else
+# Use 8.42.1 IAR version because it has support for Ubuntu
+CY_COMPILER_IAR_DEFAULT_DIR:=~/IAR-BuildLx-Arm-8.42.1
+endif
+
 CY_COMPILER_ARM_DEFAULT_DIR:="C:/Program Files/ARMCompiler6.11"
 CY_COMPILER_A_Clang_DEFAULT_DIR:=/Library/Developer/CommandLineTools/usr/lib/clang/10.0.0
 
@@ -596,7 +606,7 @@ endif
 # Identify the phony targets
 #
 .PHONY: all getlibs clean help
-.PHONY: open modlibs config config_bt config_usbdev config_secure
+.PHONY: open modlibs config config_bt config_usbdev config_secure config_ezpd config_lin
 .PHONY: bsp check get_app_info get_env_info printlibs
 .PHONY: app memcalc help_default
 

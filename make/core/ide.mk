@@ -100,7 +100,6 @@ CY_IDE_POSTBUILD_MSG=$(if $(CY_IDE_POSTBUILD_CMD),\
 						You may want to include them as part of the project postbuild step(s):';\
 					echo '  $(CY_IDE_POSTBUILD_CMD)';)
 
-
 ################################################################################
 # Eclipse
 ################################################################################
@@ -182,6 +181,7 @@ endif
 CY_ECLIPSE_PROJECT_SOURCES=$(foreach item,$(CY_ECLIPSE_SOURCES),\"$(item)\",)
 CY_ECLIPSE_PROJECT_INCLUDES=$(foreach item,$(CY_ECLIPSE_INCLUDES),\"$(item)\",)
 CY_ECLIPSE_PROJECT_EXTAPP=$(foreach item,$(CY_ECLIPSE_EXTAPP),\"$(item)\",)
+CY_ECLIPSE_PROJECT_INCLUDES+=$(DEPENDENT_APP_PATHS)
 
 endif #ifneq ($(CY_ECLIPSE_SKIP_PRJ),true)
 
@@ -200,6 +200,9 @@ ifeq ($(LIBNAME),)
 			continue;\
 		fi;\
 		if [[ $$launch == *"project" ]]; then\
+			continue;\
+		fi;\
+		if [[ $$launch == *"eclipse_export"* ]]; then\
 			continue;\
 		fi;\
 		launchFile="$${launch##*/}";\
@@ -286,16 +289,31 @@ endif
 	echo "3. Finish creating the new empty project";\
 	echo "4. Project->Add Project Connection...";\
 	echo "5. Navigate to the app directory and open the .ipcf";\
-	echo;\
-	echo "Note: Custom compiler, assembler, and linker flags are not exported.  If you wish to include any flag that is not set by default in the IAR EW project options, it must be added manually.";\
-	echo "See Project->Options->C/C++ Compiler->Extra Options, Project->Options->Assembler->Extra Options, and Project->Options->Linker->Extra Options.";\
-	echo;\
-	echo "The current flags for this project are the following:";\
+	echo ;\
+	echo "The following flags will be automatically added to the IAR ewarm project:";\
 	echo "C Compiler Flags: $(CY_TOOLCHAIN_CFLAGS)";\
 	echo "C++ Compiler Flags: $(CY_TOOLCHAIN_CXXFLAGS)";\
 	echo "Assembler Flags: $(CY_TOOLCHAIN_ASFLAGS)";\
 	echo "Linker Flags: $(CY_TOOLCHAIN_LDFLAGS)";\
 	echo;\
+	echo "To add additional build options: See Project->Options->C/C++ Compiler->Extra Options, Project->Options->Assembler->Extra Options, and Project->Options->Linker->Extra Options.";\
+	echo;
+ifneq ($(CFLAGS)$(CXXFLAGS)$(ASFLAGS)$(LDFLAGS),)
+	$(CY_NOISE)echo -e "\033[31mThe following Flags are not automatically added to the IAR ewarm project and must be added manually:\e[0m";
+endif 
+ifneq ($(CFLAGS),)
+	$(CY_NOISE)echo -e "\033[31mC Compiler Flags: $(CFLAGS)\e[0m";
+endif
+ifneq ($(CXXFLAGS),)
+	$(CY_NOISE)echo -e "\033[31mC++ Compiler Flags: $(CXXFLAGS)\e[0m";
+endif
+ifneq ($(ASFLAGS),)
+	$(CY_NOISE)echo -e "\033[31mAssembler Flags: $(ASFLAGS)\e[0m";
+endif
+ifneq ($(LDFLAGS),)
+	$(CY_NOISE)echo -e "\033[31mLinker Flags: $(LDFLAGS)\e[0m";
+endif
+	$(CY_NOISE)echo;\
 	$(CY_IDE_PREBUILD_MSG)\
 	$(CY_IDE_POSTBUILD_MSG)
 ifeq ($(filter FREERTOS,$(COMPONENTS)),FREERTOS)
@@ -312,7 +330,7 @@ ifeq ($(filter FREERTOS,$(COMPONENTS)),FREERTOS)
 	echo "    2. Check the box for \"Use command line options\"";\
 	echo "    3. Enter \"--dlib_config=full\" in the text box";\
 	echo "    4. Project->Options->Linker->Extra Options";\
-	echo "    2. Check the box for \"Use command line options\"";\
+	echo "    5. Check the box for \"Use command line options\"";\
 	echo "    6. Enter \"--threaded_lib\" in the text box";\
 	echo "    7. Click \"OK\"";\
 	echo;
@@ -435,7 +453,18 @@ CY_VSCODE_SEARCH=\,\\n\\t\\t{\\n\\t\\t\\t\"path\": \"$(CY_IDE_SHARED)\"\\n\\t\\t
 endif
 endif
 
+CY_VSCODE_DEPENDENT_APP_PATHS=
+ifneq ($(DEPENDENT_APP_PATHS),)
+CY_VSCODE_DEPENDENT_APP_PATHS=$(foreach onedef,$(subst -I,,$(DEPENDENT_APP_PATHS)),\\,\\n\\t\\t{\\n\\t\\t\\t\"path\": \"$(onedef)\"\\n\\t\\t})
+endif
+
 CY_VSCODE_INCLUDES=$(foreach onedef,$(subst -I,,$(CY_IDE_INCLUDES)),\"$(onedef)\",)
+ifneq ($(DEPENDENT_APP_PATHS),)
+CY_VSCODE_INCLUDES+=$(foreach onedef,$(subst -I,,$(DEPENDENT_APP_PATHS)),\"$(onedef)\",)
+endif
+ifneq ($(CY_EXTAPP_PATH),)
+CY_VSCODE_INCLUDES+=$(foreach onedef,$(subst -I,,$(CY_EXTAPP_PATH)),\"$(onedef)\",)
+endif
 CY_VSCODE_INCLUDES_LIST=$(subst $(CY_SPACE),$(CY_NEWLINE_MARKER),$(CY_VSCODE_INCLUDES))
 
 CY_VSCODE_DEFINES=$(foreach onedef,$(subst -D,,$(CY_IDE_DEFINES)),\"$(onedef)\",)
@@ -554,7 +583,7 @@ endif #ifeq ($(TOOLCHAIN),GCC_ARM)
 #    2. Create a new file (TMP2) from TMP1 with all user comments removed
 #    3. Delete all empty lines and trailing whitespace from the TMP2 file
 #    4. Pull the last line (lastLine) from the TMP2 file
-#    5. If the lastLine doesn’t have a comma at the end, find that line in the TMP1 file and replace it with the same
+#    5. If the lastLine doesn't have a comma at the end, find that line in the TMP1 file and replace it with the same
 #       line with a comma at the end
 #    6. Create a new settings.json file with the information in the TMP1 file
 #    7. Tack on our updated comments and settings to that new settings.json file
@@ -573,9 +602,10 @@ ifeq ($(LIBNAME),)
 	echo "s|&&CY_INCLUDE_LIST&&|$(CY_VSCODE_INCLUDES_LIST)|" >> $(CY_VSCODE_TEMPFILE);\
 	echo "s|&&CY_DEFINE_LIST&&|$(CY_VSCODE_DEFINES_LIST)|"   >> $(CY_VSCODE_TEMPFILE);\
 	echo "s|&&CY_SEARCH_DIRS&&|$(CY_VSCODE_SEARCH)|" | sed s/'\\t'/'    '/g | sed s/'\\n'/'$(CY_NEWLINE_MARKER)'/g >> $(CY_VSCODE_TEMPFILE);\
+	echo "s|&&CY_VSCODE_DEPENDENT_APP_PATHS&&|$(CY_VSCODE_DEPENDENT_APP_PATHS)|" | sed s/'\\t'/'    '/g | sed s/'\\n'/'$(CY_NEWLINE_MARKER)'/g >> $(CY_VSCODE_TEMPFILE);\
 	echo;
 ifeq ($(CY_VSCODE_BACKUP_WORKSPACE),true)
-	$(CY_NOISE) mv -f $(CY_INTERNAL_APPLOC)/$(CY_VSCODE_WORKSPACE_NAME) $(CY_VSCODE_BACKUP_PATH)/$(CY_VSCODE_WORKSPACE_NAME);
+	$(CY_NOISE) mv -f $(CY_INTERNAL_APPLOC)/$(CY_VSCODE_WORKSPACE_NAME) $(CY_VSCODE_BACKUP_PATH)/$(CY_VSCODE_WORKSPACE_NAME);\
 	echo "The existing $(CY_VSCODE_WORKSPACE_NAME) file has been saved to .vscode/backup";
 endif
 	$(CY_NOISE)sed -f $(CY_VSCODE_TEMPFILE) $(CY_VSCODE_TEMPLATE_PATH)/do_not_copy/wks.code-workspace | \
@@ -635,9 +665,12 @@ endif
 		fi;\
 	done;\
 	$(CY_VSCODE_OPENOCD_PROCESSING)\
-	mv $(CY_VSCODE_OUT_PATH)/openocd.tcl $(CY_INTERNAL_APPLOC)/openocd.tcl;\
-	rm $(CY_VSCODE_TEMPFILE);\
+
+	$(CY_NOISE)rm $(CY_VSCODE_TEMPFILE);\
 	rm -rf $(CY_VSCODE_OUT_TEMPLATE_PATH);\
+	if [ -s $(CY_VSCODE_OUT_PATH)/openocd.tcl ]; then\
+		mv $(CY_VSCODE_OUT_PATH)/openocd.tcl $(CY_INTERNAL_APPLOC)/openocd.tcl;\
+	fi;\
 	echo;\
 	echo Generated Visual Studio Code files: $$jsonFiles;\
 	echo;\
