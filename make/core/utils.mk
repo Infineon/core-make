@@ -358,8 +358,8 @@ bsp:
 	sed -i -e /^DEVICE/s%=.*%="$(DEVICE_GEN)"\% $(CY_TARGET_GEN_DIR)/$(TARGET_GEN).mk;\
 	$(CY_BACK_OLD_BSP_TEMPLATES_CMD)\
 	$(CY_BSP_TEMPLATES_CMD)\
-	$(CY_BSP_DEVICES_CMD)\
 	$(CY_BSP_DEPENDENCIES_CMD)\
+	$(CY_BSP_DEVICES_CMD)\
 	echo ""$(TARGET_GEN)" TARGET created at "$(CY_TARGET_GEN_DIR)""; echo;
 
 update_bsp:
@@ -370,8 +370,8 @@ update_bsp:
 	sed -i -e /^DEVICE/s%=.*%="$(DEVICE_GEN)"\% $(CY_TARGET_GEN_DIR)/$(TARGET_GEN).mk;\
 	$(CY_BACK_OLD_BSP_TEMPLATES_CMD)\
 	$(CY_BSP_TEMPLATES_CMD)\
-	$(CY_BSP_DEVICES_CMD)\
 	$(CY_BSP_DEPENDENCIES_CMD)\
+	$(CY_BSP_DEVICES_CMD)\
 	echo ""$(TARGET_GEN) TARGET was updated ""$(CY_TARGET_GEN_DIR)""; echo;
 
 # Default conversion type set to local

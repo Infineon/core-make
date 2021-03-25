@@ -17,6 +17,9 @@ The this release of the core GNU make Build System includes a framework to suppo
 This also includes the getlibs.bash script that can be used directly, or via the make target to download additional git repo based libraries for the application.
 
 ### What Changed?
+#### v1.7.1
+* Added error detection for when the selected device in makefile does not match selected device in design.modus file
+* make bsp will now generated .mtbx files even if device-configurator fails.
 #### v1.7.0
 * Added make update_bsp commmand to change the target device a custom bsp
 * Added support for the secure-tools configurator, ml-configurator, ez-pd configurator and lin configurator

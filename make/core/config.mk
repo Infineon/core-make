@@ -111,9 +111,13 @@ CY_CONFIG_MODUS_FILE?=$(CY_SEARCH_AVAILABLE_MODUS_SOURCES)
 ifeq ($(CY_CONFIG_MODUS_FILE),)
 CY_CONFIG_MODUS_OUTPUT=
 CY_OPENOCD_QSPI_CFG_PATH_WITH_FLAG=
+CY_OPENOCD_SMIF_LOADER=
+CY_OPENOCD_SMIF_LOADER_WITH_FLAG=
 else
 CY_CONFIG_MODUS_OUTPUT=$(call CY_MACRO_DIR,$(CY_CONFIG_MODUS_FILE))/GeneratedSource
 CY_OPENOCD_QSPI_CFG_PATH_WITH_FLAG="-s \\\&quot\\\;$(CY_CONFIG_MODUS_OUTPUT)\\\&quot\\\;\\\&\\\#13\\\;\\\&\\\#10\\\;"
+CY_OPENOCD_SMIF_LOADER=set SMIF_LOADER $(CY_INTERNAL_APPLOC)/$(CY_CONFIG_MODUS_OUTPUT)/CYW208xx_SMIF.FLM
+CY_OPENOCD_SMIF_LOADER_WITH_FLAG="-c \\\&quot\\\;$(CY_OPENOCD_SMIF_LOADER)\\\&quot\\\;\\\&\\\#13\\\;\\\&\\\#10\\\;"
 endif
 
 CY_OPENOCD_QSPI_CFG_PATH=$(CY_CONFIG_MODUS_OUTPUT)
@@ -139,8 +143,18 @@ CY_CONFIG_MODUS_EXEC_FLAGS=\
 endif
 
 CY_CONFIG_MODUS_GUI=$(CY_INTERNAL_TOOL_device-configurator_EXE)
+
+ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.0)
 CY_CONFIG_MODUS_GUI_FLAGS=\
-	--design
+	--design $(CY_CONFIG_MODUS_FILE)\
+	--check-mcu=$(DEVICE)\
+	--check-coprocessors=$(subst $(CY_SPACE),$(CY_COMMA),$(ADDITIONAL_DEVICES))
+else
+CY_CONFIG_MODUS_GUI_FLAGS=\
+	--design $(CY_CONFIG_MODUS_FILE)
+endif
+
+CY_CONFIG_MODUS_RUN_CHECK_DEVICE=
 
 ##########################
 # .cybt (SW)
@@ -216,15 +230,29 @@ CY_CONFIG_CYUSBDEV_TIMESTAMP=$(CY_CONFIG_CYUSBDEV_OUTPUT)/cycfg_usbdev.timestamp
 CY_CONFIG_MTBEZPD_TIMESTAMP=$(CY_CONFIG_MTBEZPD_OUTPUT)/mtbcfg_ezpd.timestamp
 CY_CONFIG_MTBLIN_TIMESTAMP=$(CY_CONFIG_MTBLIN_OUTPUT)/mtbcfg_lin.timestamp
 
-gen_config: $(CY_CONFIG_MODUS_TIMESTAMP) $(CY_CONFIG_CYBT_TIMESTAMP) $(CY_CONFIG_CYUSBDEV_TIMESTAMP)\
-	$(CY_CONFIG_MTBEZPD_TIMESTAMP) $(CY_CONFIG_MTBLIN_TIMESTAMP)
+# If design.modus's timestamp is up-to-date run device-configurator with --skip-build to check that
+# the device in the design.modus file match the device in makefile
+check_device: | $(CY_CONFIG_MODUS_TIMESTAMP)
+ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.0)
+ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.1)
+ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.2)
+ifneq ($(CY_CONFIG_MODUS_FILE),)
+	$(CY_NOISE)$(CY_CONFIG_MODUS_RUN_CHECK_DEVICE) $(CY_CONFIG_MODUS_EXEC) $(CY_CONFIG_MODUS_EXEC_FLAGS) --skip-build
+endif
+endif
+endif
+endif
 
-$(CY_CONFIG_MODUS_TIMESTAMP): $(CY_CONFIG_MODUS_FILE)
+gen_config: $(CY_CONFIG_MODUS_TIMESTAMP) $(CY_CONFIG_CYBT_TIMESTAMP) $(CY_CONFIG_CYUSBDEV_TIMESTAMP)\
+	$(CY_CONFIG_MTBEZPD_TIMESTAMP) $(CY_CONFIG_MTBLIN_TIMESTAMP) check_device
+
+$(CY_CONFIG_MODUS_TIMESTAMP): $(CY_CONFIG_MODUS_FILE) $(CY_TARGET_MAKEFILE)
 ifneq ($(CY_CONFIG_MODUS_FILE),)
 	$(info )
 	$(info Running device-configurator to update stale files...)
 	$(CY_NOISE)$(CY_CONFIG_MODUS_EXEC) $(CY_CONFIG_MODUS_EXEC_FLAGS)
 	$(CY_NOISE)echo "-> Generated device configuration file(s) in $(CY_CONFIG_MODUS_OUTPUT)"
+	$(eval CY_CONFIG_MODUS_RUN_CHECK_DEVICE=true)
 endif
 
 $(CY_CONFIG_CYBT_TIMESTAMP): $(CY_CONFIG_CYBT_FILE)
@@ -278,7 +306,7 @@ ifeq ($(CY_CONFIG_MODUS_FILE),)
 	$(CY_NOISE) $(CY_CONFIG_MODUS_GUI) $(CY_CONFIG_LIBFILE) $(CY_CONFIG_JOB_CONTROL)
 else
 	$(info $(CY_NEWLINE)Launching device-configurator on $(CY_CONFIG_MODUS_FILE))
-	$(CY_NOISE) $(CY_CONFIG_MODUS_GUI) $(CY_CONFIG_LIBFILE) $(CY_CONFIG_MODUS_GUI_FLAGS) $(CY_CONFIG_MODUS_FILE) $(CY_CONFIG_JOB_CONTROL)
+	$(CY_NOISE) $(CY_CONFIG_MODUS_GUI) $(CY_CONFIG_LIBFILE) $(CY_CONFIG_MODUS_GUI_FLAGS) $(CY_CONFIG_JOB_CONTROL)
 endif
 
 config_bt:
@@ -326,5 +354,5 @@ else
 	$(CY_NOISE) $(CY_CONFIG_MTBLIN_GUI) $(CY_CONFIG_MTBLIN_GUI_FLAGS) $(CY_CONFIG_MTBLIN_FILE) $(CY_CONFIG_JOB_CONTROL)
 endif
 
-.PHONY: gen_config
+.PHONY: gen_config check_device
 .PHONY: config config_bt config_usbdev config_secure config_ezpd config_lin
