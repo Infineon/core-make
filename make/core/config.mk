@@ -338,7 +338,7 @@ config_ezpd:
 ifeq ($(CY_CONFIG_MTBEZPD_FILE),)
 	$(info $(CY_NEWLINE)Could not find any ez-pd-configuration files)
 	$(info Launching ez-pd-configurator for a new configuration)
-	$(CY_NOISE) $(CY_CONFIG_MTBEZPD_GUI_FLAGS) $(CY_CONFIG_JOB_CONTROL)
+	$(CY_NOISE) $(CY_CONFIG_MTBEZPD_GUI) $(CY_CONFIG_JOB_CONTROL)
 else
 	$(info $(CY_NEWLINE)Launching ez-pd-configurator on $(CY_CONFIG_MTBEZPD_FILE))
 	$(CY_NOISE) $(CY_CONFIG_MTBEZPD_GUI) $(CY_CONFIG_MTBEZPD_GUI_FLAGS) $(CY_CONFIG_MTBEZPD_FILE) $(CY_CONFIG_JOB_CONTROL)
@@ -347,8 +347,8 @@ endif
 config_lin:
 ifeq ($(CY_CONFIG_MTBLIN_FILE),)
 	$(info $(CY_NEWLINE)Could not find any lin-configuration files)
-	$(info Launching ez-pd-configurator for a new configuration)
-	$(CY_NOISE) $(CY_CONFIG_MTBLIN_GUI_FLAGS) $(CY_CONFIG_JOB_CONTROL)
+	$(info Launching lin-configurator for a new configuration)
+	$(CY_NOISE) $(CY_CONFIG_MTBLIN_GUI) $(CY_CONFIG_JOB_CONTROL)
 else
 	$(info $(CY_NEWLINE)Launching lin-configurator on $(CY_CONFIG_MTBLIN_FILE))
 	$(CY_NOISE) $(CY_CONFIG_MTBLIN_GUI) $(CY_CONFIG_MTBLIN_GUI_FLAGS) $(CY_CONFIG_MTBLIN_FILE) $(CY_CONFIG_JOB_CONTROL)
