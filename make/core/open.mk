@@ -55,6 +55,25 @@ CY_OPEN_project_creator_TOOL=$(CY_INTERNAL_TOOL_project-creator_EXE)
 CY_OPEN_project_creator_TOOL_FLAGS=
 CY_OPEN_project_creator_TOOL_NEWCFG_FLAGS=
 
+##########################
+# online-simulator
+##########################
+
+# CY_ALL_TOOLS_DIRS wildcard/filter-out tools that don't exist on disk. Provide an absolute path to these tools so that they won't be filtered out
+ifeq ($(OS),Windows_NT)
+CY_OPEN_online_simulator_TOOL=$(subst \,/,${COMSPEC})
+CY_OPEN_online_simulator_TOOL_FLAGS=/c start
+else
+ifneq ($(findstring Darwin,$(shell uname)),)
+CY_OPEN_online_simulator_TOOL=/usr/bin/open
+CY_OPEN_online_simulator_TOOL_FLAGS=
+else
+CY_OPEN_online_simulator_TOOL=/usr/bin/xdg-open
+CY_OPEN_online_simulator_TOOL_FLAGS=
+endif
+endif
+CY_OPEN_online_simulator_EXT=
+CY_OPEN_online_simulator_TOOL_NEWCFG_FLAGS=
 
 ################################################################################
 # New configurations
@@ -150,8 +169,8 @@ ifeq ($(CY_OPEN_TYPE),)
 endif
 endif
 ifneq ($(CY_OPEN_TYPE),)
-ifeq ($(filter $(CY_OPEN_TYPE),$(CY_OPEN_TYPE_LIST)),)
-	$(call CY_MACRO_ERROR,Unsupported tool type - $(CY_OPEN_TYPE). $(CY_NEWLINE)Supported types are: $(sort $(CY_OPEN_TYPE_LIST)))
+ifeq ($(filter $(CY_OPEN_TYPE),$(CY_SUPPORTED_TOOL_TYPES)),)
+	$(call CY_MACRO_ERROR,Unsupported tool type - $(CY_OPEN_TYPE). $(CY_NEWLINE)Supported types are: $(sort $(CY_SUPPORTED_TOOL_TYPES)))
 endif
 endif
 ifeq ($(CY_OPEN_TOOL_LAUNCH),)

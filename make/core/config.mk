@@ -237,7 +237,7 @@ ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.0)
 ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.1)
 ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.2)
 ifneq ($(CY_CONFIG_MODUS_FILE),)
-	$(CY_NOISE)$(CY_CONFIG_MODUS_RUN_CHECK_DEVICE) $(CY_CONFIG_MODUS_EXEC) $(CY_CONFIG_MODUS_EXEC_FLAGS) --skip-build
+	$(CY_NOISE)$(CY_CONFIG_MODUS_RUN_CHECK_DEVICE) $(CY_CONFIG_MODUS_EXEC) $(CY_CONFIG_MODUS_EXEC_FLAGS)
 endif
 endif
 endif
@@ -353,6 +353,16 @@ else
 	$(info $(CY_NEWLINE)Launching lin-configurator on $(CY_CONFIG_MTBLIN_FILE))
 	$(CY_NOISE) $(CY_CONFIG_MTBLIN_GUI) $(CY_CONFIG_MTBLIN_GUI_FLAGS) $(CY_CONFIG_MTBLIN_FILE) $(CY_CONFIG_JOB_CONTROL)
 endif
+
+online_simulator:
+ifeq ($(CY_OPEN_online_simulator_FILE),)
+	$(error $(CY_NEWLINE)Infineon simulator not supported for the current device)
+else
+	$(if $(wildcard $(CY_OPEN_$@_TOOL)),,$(error $(CY_OPEN_online_simulator_TOOL) not found. The online simulator be accessed through the following URL: $(CY_OPEN_online_simulator_FILE_RAW)))
+	$(info $(CY_NEWLINE)Opening the infineon online simulator $(CY_OPEN_$@_FILE))
+	$(CY_NOISE) $(CY_OPEN_$@_TOOL) $(CY_OPEN_$@_TOOL_FLAGS) $(CY_OPEN_$@_FILE) $(CY_CONFIG_JOB_CONTROL)
+endif
+
 
 .PHONY: gen_config check_device
 .PHONY: config config_bt config_usbdev config_secure config_ezpd config_lin

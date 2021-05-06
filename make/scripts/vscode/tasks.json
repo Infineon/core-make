@@ -8,11 +8,11 @@
             "type": "shell",
 
             "windows" : {
-                "command": "${config:modustoolbox.toolsPath}/modus-shell/bin/bash.exe" ,
+                "command": "${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/bash.exe" ,
                 "args": [
                     "--norc",
                     "-c",
-                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/modus-shell/bin/make.exe -j CONFIG=Debug build"
+                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/make.exe -j CONFIG=Debug build"
                 ]
             },
             "linux" : {
@@ -42,11 +42,11 @@
             "type": "shell",
 
             "windows" : {
-                "command": "${config:modustoolbox.toolsPath}/modus-shell/bin/bash.exe" ,
+                "command": "${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/bash.exe" ,
                 "args": [
                     "--norc",
                     "-c",
-                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/modus-shell/bin/make.exe -j CONFIG=Debug clean ; ${config:modustoolbox.toolsPath}/modus-shell/bin/make.exe -j CONFIG=Debug build"
+                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/make.exe -j CONFIG=Debug clean ; ${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/make.exe -j CONFIG=Debug build"
                 ]
             },
             "linux" : {
@@ -76,11 +76,11 @@
             "type": "shell",
 
             "windows" : {
-                "command": "${config:modustoolbox.toolsPath}/modus-shell/bin/bash.exe" ,
+                "command": "${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/bash.exe" ,
                 "args": [
                     "--norc",
                     "-c",
-                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/modus-shell/bin/make.exe -j CONFIG=Debug clean"
+                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/make.exe -j CONFIG=Debug clean"
                 ]
             },
             "linux" : {
@@ -109,11 +109,11 @@
             "label": "Build: Build [Release]",
             "type": "shell",
             "windows" : {
-                "command": "${config:modustoolbox.toolsPath}/modus-shell/bin/bash.exe" ,
+                "command": "${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/bash.exe" ,
                 "args": [
                     "--norc",
                     "-c",
-                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/modus-shell/bin/make.exe -j CONFIG=Release build"
+                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/make.exe -j CONFIG=Release build"
                 ]
             },
             "linux" : {
@@ -142,11 +142,11 @@
             "label": "Build: Clean and Rebuild [Release]",
             "type": "shell",
             "windows" : {
-                "command": "${config:modustoolbox.toolsPath}/modus-shell/bin/bash.exe" ,
+                "command": "${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/bash.exe" ,
                 "args": [
                     "--norc",
                     "-c",
-                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/modus-shell/bin/make.exe -j CONFIG=Release clean ; ${config:modustoolbox.toolsPath}/modus-shell/bin/make.exe -j CONFIG=Release build"
+                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/make.exe -j CONFIG=Release clean ; ${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/make.exe -j CONFIG=Release build"
                 ]
             },
             "linux" : {
@@ -175,11 +175,11 @@
             "label": "Build: Clean [Release]",
             "type": "shell",
             "windows" : {
-                "command": "${config:modustoolbox.toolsPath}/modus-shell/bin/bash.exe" ,
+                "command": "${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/bash.exe" ,
                 "args": [
                     "--norc",
                     "-c",
-                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/modus-shell/bin/make.exe -j CONFIG=Release clean"
+                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/make.exe -j CONFIG=Release clean"
                 ]
             },
             "linux" : {
@@ -208,11 +208,11 @@
             "label": "Tool: Library Manager",
             "type": "shell",
             "windows" : {
-                "command": "${config:modustoolbox.toolsPath}/modus-shell/bin/bash.exe" ,
+                "command": "${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/bash.exe" ,
                 "args": [
                     "--norc",
                     "-c",
-                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/modus-shell/bin/make.exe modlibs CY_CONFIG_JOB_CONTROL="
+                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/&&CY_MODUS_SHELL_BASE&&/bin/make.exe modlibs CY_CONFIG_JOB_CONTROL="
                 ]
             },
             "linux" : {

@@ -17,6 +17,9 @@ The this release of the core GNU make Build System includes a framework to suppo
 This also includes the getlibs.bash script that can be used directly, or via the make target to download additional git repo based libraries for the application.
 
 ### What Changed?
+#### v1.8.0
+* Added support for generating tgz file for Infineon online simulator (recipe-make-cat3-1.1.0 or newer)
+* Added support for opening Infineon online simulator through quick panel (recipe-make-cat3-1.1.0 or newer)
 #### v1.7.2
 * Fix make config_ezpd and config_lin not working when there are no existing design file
 #### v1.7.1

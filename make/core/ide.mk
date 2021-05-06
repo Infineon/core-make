@@ -317,7 +317,7 @@ endif
 	$(CY_IDE_PREBUILD_MSG)\
 	$(CY_IDE_POSTBUILD_MSG)
 ifeq ($(filter FREERTOS,$(COMPONENTS)),FREERTOS)
-	# Note: If the FreeRTOS-specific flags set in IAR.mk are modified, this section should be updated to reflect the changes.
+# Note: If the FreeRTOS-specific flags set in IAR.mk are modified, this section should be updated to reflect the changes.
 	$(CY_NOISE)echo;\
 	echo "WARNING: Since FreeRTOS is enabled for this project, the compiler and linker settings must be manually updated in IAR EW.";\
 	echo "Option 1: Set the project options";\

@@ -26,6 +26,8 @@ ifeq ($(WHICHFILE),true)
 $(info Processing $(lastword $(MAKEFILE_LIST)))
 endif
 
+CY_MAKE_TOOLS_MAJOR=$(shell echo $(word 1, $(subst ., ,$(CY_TOOLS_DIR))) | sed 's/[^0-9]*//g')
+CY_MAKE_TOOLS_MINOR=$(shell echo $(word 2, $(subst ., ,$(CY_TOOLS_DIR))) | sed 's/[^0-9]*//g')
 
 ##########################
 # Tool paths
@@ -73,10 +75,13 @@ else
 CY_INTERNAL_TOOL_bt-configurator_EXE:=$(CY_BT_CONFIGURATOR_DIR)/bt-configurator
 endif
 
+# Support cype-tool for BWC reason (core-tools < 2.3)
+ifeq ($(shell expr $(CY_MAKE_TOOLS_MAJOR)$(CY_MAKE_TOOLS_MINOR) \< 23), 1)
 ifneq ($(CY_TOOL_cype-tool_EXE),)
 CY_INTERNAL_TOOL_cype-tool_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_cype-tool_EXE)
 else
 CY_INTERNAL_TOOL_cype-tool_EXE:=$(CY_PE_TOOL_DIR)/cype-tool
+endif
 endif
 
 ifneq ($(CY_TOOL_dfuh-tool_EXE),)

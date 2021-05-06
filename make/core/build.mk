@@ -565,6 +565,36 @@ CY_BUILD_postprint: CY_BUILD_app_postbuild
 	$(info )
 
 #
+# Simulator tar file generation
+#
+CY_SIMULATOR_TEMPFILE=$(CY_CONFIG_DIR)/simulator.temp
+CY_SIMULATOR_SOURCES=$(CY_RECIPE_SOURCE) $(CY_RECIPE_GENERATED) $(SOURCES)
+CY_SIMULATOR_SOURCES_C=$(filter %.$(CY_TOOLCHAIN_SUFFIX_C),$(CY_SIMULATOR_SOURCES))
+CY_SIMULATOR_SOURCES_CPP=$(filter %.$(CY_TOOLCHAIN_SUFFIX_CPP),$(CY_SIMULATOR_SOURCES))
+CY_SIMULATOR_SOURCES_s=$(filter %.$(CY_TOOLCHAIN_SUFFIX_s),$(CY_SIMULATOR_SOURCES))
+CY_SIMULATOR_SOURCES_S=$(filter %.$(CY_TOOLCHAIN_SUFFIX_S),$(CY_SIMULATOR_SOURCES))
+
+# All files source to include.
+CY_SIMULATOR_ALL_FILES=$(CY_SIMULATOR_SOURCES_C) $(CY_SIMULATOR_SOURCES_CPP) $(CY_SIMULATOR_SOURCES_s) $(CY_SIMULATOR_SOURCES_S) $(CY_CONFIG_DIR)/$(APPNAME).$(CY_TOOLCHAIN_SUFFIX_TARGET) $(CY_CONFIG_DIR)/$(APPNAME).$(CY_TOOLCHAIN_SUFFIX_PROGRAM)
+
+# All include path to look for header files.
+CY_SIMULATOR_ALL_INCLUDE_PATH=$(INCLUDES) $(CY_SEARCH_APP_INCLUDES) $(CY_TOOLCHAIN_INCLUDES)
+
+# Add support for generating simulator tar file
+CY_SIMULATOR_GEN_SUPPORTED?=
+ifneq (,$(CY_SIMULATOR_GEN_SUPPORTED))
+app: $(CY_CONFIG_DIR)/$(APPNAME).tar.tgz
+$(CY_CONFIG_DIR)/$(APPNAME).tar.tgz: CY_BUILD_postbuild
+	$(info )
+	$(info ==============================================================================)
+	$(info = Generating simulator zip file =)
+	$(info ==============================================================================)
+	$(CY_NOISE)echo $(CY_SIMULATOR_ALL_FILES) > $(CY_SIMULATOR_TEMPFILE)
+	$(CY_NOISE)echo $(CY_SIMULATOR_ALL_INCLUDE_PATH) >> $(CY_SIMULATOR_TEMPFILE)
+	$(CY_NOISE) $(CY_BASH) $(CY_BASELIB_CORE_PATH)/make/scripts/simulator_gen/simulator_gen.bash $(CY_CONFIG_DIR) $(APPNAME) $(patsubst %/,%,$(CY_INTERNAL_APPLOC)) $(patsubst %/,%,$(CY_GETLIBS_SHARED_PATH)) $(CY_SIMULATOR_TEMPFILE)
+	$(CY_NOISE)rm -f $(CY_SIMULATOR_TEMPFILE)
+endif
+#
 # Include generated dependency files (if rebuilding)
 #
 -include $(CY_DEPENDENCY_FILES)

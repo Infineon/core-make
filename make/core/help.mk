@@ -64,10 +64,9 @@ CY_HELP_help_VERBOSE=Use the CY_HELP=<NAME of target of variable> to see the ver
 # IDE targets
 #
 CY_HELP_eclipse=Generates eclipse IDE launch configs and project files.
-CY_HELP_eclipse_VERBOSE=This target expects the CY_IDE_PRJNAME variable to be set to the name of the project\
-					as defined in the eclipse IDE. For example, "make eclipse CY_IDE_PRJNAME=AppV1". If this variable\
-					is not defined, it will use the APPNAME for the launch configs. This target also generates\
-					a .cproject and a .project if they do not exist in the application root directory.\
+CY_HELP_eclipse_VERBOSE=This target generates a .cproject and a .project if they do not exist in the application root directory.\
+					If CY_IDE_PRJNAME variable is set, it will be used as the names for project's launch configs.\
+					If CY_IDE_PRJNAME is not set, APPNAME will be used instead.\
 					$(CY_NEWLINE)Note: Project generation requires python3 to be installed and present in the PATH variable.\
 					$(CY_NEWLINE)Note: To skip project creation and only create the launch configs, set CY_MAKE_IDE=eclipse.
 CY_HELP_vscode=Generates VSCode IDE json files.
@@ -106,6 +105,10 @@ CY_HELP_config_usbdev=Runs the usbdev-configurator on the target .cyusbdev file.
 CY_HELP_config_usbdev_VERBOSE=If no existing usbdev-configuration files are found, the configurator is launched to create one.
 CY_HELP_config_secure=Runs the secure-policy-configurator.
 CY_HELP_config_secure_VERBOSE=The secure-policy-configurator is intended only for devices that support secure provisioning.
+CY_HELP_config_ezpd=Runs the ez-pd-configurator.
+CY_HELP_config_ezpd_VERBOSE=If no existing ez-pd-configuration files are found, the configurator is launched to create one.
+CY_HELP_config_lin=Runs the lin-configurator.
+CY_HELP_config_lin_VERBOSE=If no existing lin-configuration files are found, the configurator is launched to create one.
 
 #
 # Utility targets
@@ -545,6 +548,8 @@ else
 	$(info $(CY_SPACE)config_bt           $(CY_HELP_config_bt))
 	$(info $(CY_SPACE)config_usbdev       $(CY_HELP_config_usbdev))
 	$(info $(CY_SPACE)config_secure       $(CY_HELP_config_secure))
+	$(info $(CY_SPACE)config_ezpd         $(CY_HELP_config_ezpd))
+	$(info $(CY_SPACE)config_lin          $(CY_HELP_config_lin))
 	$(info                                                               )
 	$(info =======================================                       )
 	$(info $(CY_SPACE)Utility make targets                               )
