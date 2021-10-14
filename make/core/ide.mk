@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2020 Cypress Semiconductor Corporation
+# Copyright 2018-2021 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -250,6 +250,7 @@ CY_IAR_TEMPFILE=$(CY_CONFIG_DIR)/iardata.temp
 CY_IAR_OUTFILE=$(CY_IDE_PRJNAME).ipcf
 CY_IAR_CYIGNORE_PATH=$(CY_INTERNAL_APPLOC)/.cyignore
 CY_IAR_TEMPLATE_PATH=$(CY_BASELIB_CORE_PATH)/make/scripts/iar
+CY_IAR_LINKER_SCRIPT_PATH=$(call CY_MACRO_GET_RAW_PATH,$(LINKER_SCRIPT))
 
 # Note: All paths are expected to be relative of the Makefile(Project Directory)
 CY_IAR_DEFINES=$(foreach onedef,$(CY_IDE_DEFINES),\"$(onedef)\",)
@@ -270,7 +271,7 @@ endif
 	echo $(CY_IDE_PRJNAME) > $(CY_IAR_TEMPFILE);\
 	echo $(CY_IAR_DEVICE_NAME) >> $(CY_IAR_TEMPFILE);\
 	echo $(CORE) >> $(CY_IAR_TEMPFILE);\
-	echo $(LINKER_SCRIPT) >> $(CY_IAR_TEMPFILE);\
+	echo '$(CY_IAR_LINKER_SCRIPT_PATH)' >> $(CY_IAR_TEMPFILE);\
 	echo $(CY_IAR_DEFINES) >> $(CY_IAR_TEMPFILE);\
 	echo $(CY_IAR_INCLUDES) >> $(CY_IAR_TEMPFILE);\
 	echo $(CY_IAR_SOURCES_C_CPP) >> $(CY_IAR_TEMPFILE);\
@@ -371,6 +372,11 @@ CY_CMSIS_SOURCES_s_S=$(foreach onedef,$(CY_IDE_SOURCES_s) $(CY_IDE_SOURCES_S),\"
 CY_CMSIS_HEADERS=$(foreach onedef,$(CY_IDE_HEADERS),\"$(onedef)\",)
 CY_CMSIS_LIBS=$(foreach onedef,$(CY_IDE_LIBS),\"$(onedef)\",)
 
+# For BWC for Cypress recipe that don't define these values
+CY_CMSIS_VENDOR_NAME?=Cypress
+CY_CMSIS_VENDOR_ID?=19
+CY_CMSIS_SPECIFY_CORE?=1
+
 ifeq ($(TOOLCHAIN), GCC_ARM)
 CY_MESSAGE_uvision_gcc=WARNING: GCC support in Keil uVision is experimental. To use ARM Compiler 6, run: make uvision5 TOOLCHAIN=ARM.
 $(eval $(call CY_MACRO_WARNING,CY_MESSAGE_uvision_gcc,$(CY_MESSAGE_uvision_gcc)))
@@ -396,6 +402,9 @@ endif
 	echo $(CY_IDE_ALL_SEARCHES_QUOTED) >> $(CY_CMSIS_TEMPFILE);\
 	echo $(CY_IDE_SHARED) >> $(CY_CMSIS_TEMPFILE);\
 	echo $(CY_CMSIS_ARCH_NAME) >> $(CY_CMSIS_TEMPFILE);\
+	echo $(CY_CMSIS_VENDOR_NAME) >> $(CY_CMSIS_TEMPFILE);\
+	echo $(CY_CMSIS_VENDOR_ID) >> $(CY_CMSIS_TEMPFILE);\
+	echo $(CY_CMSIS_SPECIFY_CORE) >> $(CY_CMSIS_TEMPFILE);\
 	echo
 	$(CY_NOISE)$(CY_PYTHON_PATH) $(CY_CMSIS_TEMPLATE_PATH)/cmsis_export.py -i $(CY_CMSIS_TEMPFILE) -cpdsc $(CY_CMSIS_CPDSC) -gpdsc $(CY_CMSIS_GPDSC) -cprj $(CY_CMSIS_CPRJ);
 	$(CY_NOISE)rm -rf $(CY_CMSIS_TEMPFILE);\

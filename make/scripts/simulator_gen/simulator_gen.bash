@@ -4,7 +4,7 @@ set -$-e${DEBUG+xv}
 set -o errtrace
 
 #######################################################################################################################
-# This script creates a archive file for the infineon online simulator
+# This script creates a archive file for the Infineon online simulator
 #
 # usage:
 #     simulator_gen.bash <OUTPUT_DIR> <APP_NAME> <APP_PATH> <GETLIBS_PATH> <INPUT_FILE>

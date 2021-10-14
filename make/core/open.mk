@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2020 Cypress Semiconductor Corporation
+# Copyright 2018-2021 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +34,11 @@ endif
 CY_OPEN_TYPE_LIST+=\
 	library-manager\
 	project-creator
+
+# Tools that can be launched using make open CY_OPEN_TYPE=<tool name> command,
+# but are not shown in the Eclipse for ModusToolbox.
+CY_SUPPORTED_HIDDEN_TOOL_TYPES+=project-creator library-manager
+
 
 ##########################
 # library-manager
@@ -147,6 +152,7 @@ CY_OPEN_TOOL_LAUNCH=$(CY_OPEN_$(subst -,_,$(CY_OPEN_TYPE))_TOOL)
 CY_OPEN_TOOL_FLAGS=$(CY_OPEN_$(subst -,_,$(CY_OPEN_TYPE))_TOOL_FLAGS)
 CY_OPEN_TOOL_ARGS=$(CY_OPEN_$(subst -,_,$(CY_OPEN_TYPE))_TOOL_ARGS)
 CY_OPEN_TOOL_NEWCFG_FLAGS=$(CY_OPEN_$(subst -,_,$(CY_OPEN_TYPE))_TOOL_NEWCFG_FLAGS)
+CY_OPEN_TOOL_ADDITIONAL_ARGS=$(CY_OPEN_$(subst -,_,$(CY_OPEN_TYPE))_ADDITIONAL_ARGS)
 
 # Use the file if provided
 ifneq ($(CY_OPEN_FILE),)
@@ -169,19 +175,24 @@ ifeq ($(CY_OPEN_TYPE),)
 endif
 endif
 ifneq ($(CY_OPEN_TYPE),)
-ifeq ($(filter $(CY_OPEN_TYPE),$(CY_SUPPORTED_TOOL_TYPES)),)
-	$(call CY_MACRO_ERROR,Unsupported tool type - $(CY_OPEN_TYPE). $(CY_NEWLINE)Supported types are: $(sort $(CY_SUPPORTED_TOOL_TYPES)))
+ifeq ($(filter $(CY_OPEN_TYPE),$(CY_SUPPORTED_TOOL_TYPES) $(CY_SUPPORTED_HIDDEN_TOOL_TYPES)),)
+	$(call CY_MACRO_ERROR,Unsupported tool type - $(CY_OPEN_TYPE). $(CY_NEWLINE)Supported types are: $(sort $(CY_SUPPORTED_TOOL_TYPES) $(CY_SUPPORTED_HIDDEN_TOOL_TYPES)))
 endif
 endif
 ifeq ($(CY_OPEN_TOOL_LAUNCH),)
 	$(call CY_MACRO_ERROR,Unable to find a default tool to launch .$(CY_OPEN_EXT) file extension)
 endif
+ifneq ($(filter $(CY_OPEN_TYPE),$(CY_SUPPORTED_HIDDEN_TOOL_TYPES)),)
+	$(info $(CY_NEWLINE)Launching $(notdir $(CY_OPEN_TOOL_LAUNCH)) tool)
+	$(CY_NOISE) $(CY_OPEN_TOOL_LAUNCH)
+else
 ifeq ($(CY_OPEN_TOOL_FILE),)
 	$(info Launching $(notdir $(CY_OPEN_TOOL_LAUNCH)) tool for a new configuration)
-	$(CY_NOISE) $(CY_OPEN_TOOL_LAUNCH) $(CY_OPEN_TOOL_ARGS) $(CY_OPEN_TOOL_NEWCFG_FLAGS) $(CY_OPEN_STDOUT) $(CY_CONFIG_JOB_CONTROL)
-else
+	$(CY_NOISE) $(CY_OPEN_TOOL_LAUNCH) $(CY_OPEN_TOOL_ARGS) $(CY_OPEN_TOOL_NEWCFG_FLAGS) $(CY_OPEN_TOOL_ADDITIONAL_ARGS) $(CY_OPEN_STDOUT) $(CY_CONFIG_JOB_CONTROL)
+else 
 	$(info $(CY_NEWLINE)Launching $(notdir $(CY_OPEN_TOOL_LAUNCH)) tool on $(CY_OPEN_TOOL_FILE))
-	$(CY_NOISE) $(CY_OPEN_TOOL_LAUNCH) $(CY_OPEN_TOOL_ARGS) $(CY_OPEN_TOOL_FLAGS) $(CY_OPEN_TOOL_FILE) $(CY_OPEN_STDOUT) $(CY_CONFIG_JOB_CONTROL)
+	$(CY_NOISE) $(CY_OPEN_TOOL_LAUNCH) $(CY_OPEN_TOOL_ARGS) $(CY_OPEN_TOOL_FLAGS) $(CY_OPEN_TOOL_FILE) $(CY_OPEN_TOOL_ADDITIONAL_ARGS) $(CY_OPEN_STDOUT) $(CY_CONFIG_JOB_CONTROL)
+endif
 endif
 
 modlibs:

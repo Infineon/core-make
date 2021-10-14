@@ -165,12 +165,25 @@ ifeq ($(filter clean,$(MAKECMDGOALS)),clean)
 CY_DEPAPP_CLEAN=1
 endif
 
-# Skip the programming steps for dependent apps
+# Skip the programming steps only for dependent apps when a project name is not set
+ifeq ($(CY_IDE_PRJNAME),) 
 CY_DEPAPP_MAKECMDGOALS=$(strip $(subst program,build,\
 						$(subst qprogram,,\
 						$(subst debug,build,\
 						$(subst qdebug,,\
 						$(MAKECMDGOALS))))))
+else
+# Skip the programming steps and export configurations generation for dependent apps when a project name is set
+CY_DEPAPP_MAKECMDGOALS=$(strip $(subst program,build,\
+						$(subst qprogram,,\
+						$(subst debug,build,\
+						$(subst qdebug,,\
+						$(subst eclipse,,\
+						$(subst ewarm8,,\
+						$(subst uvision5,,\
+						$(subst vscode,,\
+						$(MAKECMDGOALS))))))))))
+endif
 
 # Construct the make command (arguments are necessary for locating the build output directory)
 ifeq ($(CY_DEPAPP_MAKECMDGOALS),)
@@ -205,13 +218,9 @@ endif
 ################################################################################
 
 # Add the dependency to configurator code generation ("override CY_PREBUILD_GEN_CONFIG=" to manually skip)
-CY_PREBUILD_GEN_CONFIG_LIST=all build qbuild program debug
-ifneq ($(filter $(CY_PREBUILD_GEN_CONFIG_LIST),$(MAKECMDGOALS)),)
 CY_PREBUILD_GEN_CONFIG=gen_config
 # Note: configurators cannot be run in parallel. Therefore linearize using dependencies
 $(CY_CONFIG_MODUS_FILE) $(CY_CONFIG_CYBT_FILE) $(CY_CONFIG_CYUSBDEV_FILE) $(CY_CONFIG_MTBEZPD_FILE) $(CY_CONFIG_MTBLIN_FILE) : shared_libs $(CY_SHAREDLIB_LIST) dependent_apps
-endif
-
 
 ################################################################################
 # Targets

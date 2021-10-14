@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2020 Cypress Semiconductor Corporation
+# Copyright 2018-2021 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -111,13 +111,13 @@ CY_CONFIG_MODUS_FILE?=$(CY_SEARCH_AVAILABLE_MODUS_SOURCES)
 ifeq ($(CY_CONFIG_MODUS_FILE),)
 CY_CONFIG_MODUS_OUTPUT=
 CY_OPENOCD_QSPI_CFG_PATH_WITH_FLAG=
-CY_OPENOCD_SMIF_LOADER=
-CY_OPENOCD_SMIF_LOADER_WITH_FLAG=
+CY_OPENOCD_QSPI_FLASHLOADER=
+CY_OPENOCD_QSPI_FLASHLOADER_WITH_FLAG=
 else
 CY_CONFIG_MODUS_OUTPUT=$(call CY_MACRO_DIR,$(CY_CONFIG_MODUS_FILE))/GeneratedSource
 CY_OPENOCD_QSPI_CFG_PATH_WITH_FLAG="-s \\\&quot\\\;$(CY_CONFIG_MODUS_OUTPUT)\\\&quot\\\;\\\&\\\#13\\\;\\\&\\\#10\\\;"
-CY_OPENOCD_SMIF_LOADER=set SMIF_LOADER $(CY_INTERNAL_APPLOC)/$(CY_CONFIG_MODUS_OUTPUT)/CYW208xx_SMIF.FLM
-CY_OPENOCD_SMIF_LOADER_WITH_FLAG="-c \\\&quot\\\;$(CY_OPENOCD_SMIF_LOADER)\\\&quot\\\;\\\&\\\#13\\\;\\\&\\\#10\\\;"
+CY_OPENOCD_QSPI_FLASHLOADER=set QSPI_FLASHLOADER $(CY_INTERNAL_APPLOC)/$(CY_CONFIG_MODUS_OUTPUT)/CYW208xx_SMIF.FLM
+CY_OPENOCD_QSPI_FLASHLOADER_WITH_FLAG="-c \\\&quot\\\;$(CY_OPENOCD_QSPI_FLASHLOADER)\\\&quot\\\;\\\&\\\#13\\\;\\\&\\\#10\\\;"
 endif
 
 CY_OPENOCD_QSPI_CFG_PATH=$(CY_CONFIG_MODUS_OUTPUT)
@@ -129,17 +129,23 @@ CY_CONFIG_LIBFILE=--library $(CY_INTERNAL_DEVICESUPPORT_PATH)/devicesupport.xml
 endif
 
 CY_CONFIG_MODUS_EXEC=$(CY_INTERNAL_TOOL_cfg-backend-cli_EXE)
-ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.0)
-CY_CONFIG_MODUS_EXEC_FLAGS=\
-	$(CY_CONFIG_LIBFILE)\
-	--build $(CY_CONFIG_MODUS_FILE)\
-	--check-mcu=$(DEVICE)\
-	--check-coprocessors=$(subst $(CY_SPACE),$(CY_COMMA),$(ADDITIONAL_DEVICES))
+# base configurator args
+CY_CONFIG_MODUS_EXEC_FLAGS=$(CY_CONFIG_LIBFILE) --build $(CY_CONFIG_MODUS_FILE)
+
+# configurator device args
+ifeq ($(notdir $(CY_TOOLS_DIR)),tools_2.0)
+CY_CONFIG_MODUS_EXEC_FLAGS+= --set-device=$(subst $(CY_SPACE),$(CY_COMMA),$(DEVICE) $(ADDITIONAL_DEVICES))
 else
-CY_CONFIG_MODUS_EXEC_FLAGS=\
-	$(CY_CONFIG_LIBFILE)\
-	--build $(CY_CONFIG_MODUS_FILE)\
-	--set-device=$(subst $(CY_SPACE),$(CY_COMMA),$(DEVICE) $(ADDITIONAL_DEVICES))
+CY_CONFIG_MODUS_EXEC_FLAGS+= --check-mcu=$(DEVICE) --check-coprocessors=$(subst $(CY_SPACE),$(CY_COMMA),$(ADDITIONAL_DEVICES))
+endif
+
+# configurator readonly arg
+ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.0)
+ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.1)
+ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.2)
+CY_CONFIG_MODUS_EXEC_FLAGS+= --readonly
+endif
+endif
 endif
 
 CY_CONFIG_MODUS_GUI=$(CY_INTERNAL_TOOL_device-configurator_EXE)
@@ -237,7 +243,7 @@ ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.0)
 ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.1)
 ifneq ($(notdir $(CY_TOOLS_DIR)),tools_2.2)
 ifneq ($(CY_CONFIG_MODUS_FILE),)
-	$(CY_NOISE)$(CY_CONFIG_MODUS_RUN_CHECK_DEVICE) $(CY_CONFIG_MODUS_EXEC) $(CY_CONFIG_MODUS_EXEC_FLAGS)
+	$(CY_NOISE)$(CY_CONFIG_MODUS_RUN_CHECK_DEVICE) $(CY_CONFIG_MODUS_EXEC) $(CY_CONFIG_MODUS_EXEC_FLAGS) --skip-build
 endif
 endif
 endif
@@ -329,7 +335,7 @@ else
 	$(CY_NOISE) $(CY_CONFIG_CYUSBDEV_GUI) $(CY_CONFIG_CYUSBDEV_GUI_FLAGS) $(CY_CONFIG_CYUSBDEV_FILE) $(CY_CONFIG_JOB_CONTROL)
 endif
 
-CY_CYSECURETOOLS_TARGET=$(shell echo $(TARGET) | tr A-Z a-z)
+CY_CYSECURETOOLS_TARGET?=$(shell echo $(TARGET) | tr A-Z a-z)
 config_secure:
 	$(info $(CY_NEWLINE)Launching secure-policy-configurator on $(CY_INTERNAL_APP_PATH))
 	$(CY_NOISE) $(CY_INTERNAL_TOOLS)/$(CY_TOOL_secure-policy-configurator_EXE) --target=$(CY_CYSECURETOOLS_TARGET) $(CY_CONFIG_JOB_CONTROL)
@@ -359,7 +365,7 @@ ifeq ($(CY_OPEN_online_simulator_FILE),)
 	$(error $(CY_NEWLINE)Infineon simulator not supported for the current device)
 else
 	$(if $(wildcard $(CY_OPEN_$@_TOOL)),,$(error $(CY_OPEN_online_simulator_TOOL) not found. The online simulator be accessed through the following URL: $(CY_OPEN_online_simulator_FILE_RAW)))
-	$(info $(CY_NEWLINE)Opening the infineon online simulator $(CY_OPEN_$@_FILE))
+	$(info $(CY_NEWLINE)Opening the Infineon online simulator $(CY_OPEN_$@_FILE_RAW))
 	$(CY_NOISE) $(CY_OPEN_$@_TOOL) $(CY_OPEN_$@_TOOL_FLAGS) $(CY_OPEN_$@_FILE) $(CY_CONFIG_JOB_CONTROL)
 endif
 

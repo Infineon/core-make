@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2020 Cypress Semiconductor Corporation
+# Copyright 2018-2021 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -210,7 +210,9 @@ CY_MACRO_MATCH_CONFIGURATION=$(strip $(foreach item,$(1),$(if $(findstring $(2),
 CY_MACRO_REMOVE_CONFIGURATION=$(strip $(foreach item,$(1),$(if $(findstring $(2),/$(item)),,$(item))))
 CY_MACRO_FILTER_CONFIGURATION=$(call CY_MACRO_REMOVE_CONFIGURATION,$(1),/$(strip $(2))_)\
 							$(call CY_MACRO_MATCH_CONFIGURATION,$(1),/$(strip $(2))_$($(strip $(2)))/)\
-							$(call CY_MACRO_MATCH_CONFIGURATION,$(1),/$(strip $(2))_$(subst -,_,$($(strip $(2))))/)
+							$(strip $(if $(findstring -,$($(strip $(2)))),\
+							$(call CY_MACRO_MATCH_CONFIGURATION,$(1),/$(strip $(2))_$(subst -,_,$($(strip $(2))))/),\
+							))
 
 #
 # Filter for defined components and configurations 
@@ -349,6 +351,7 @@ endif
 
 bsp:
 	$(if $(TARGET_GEN),,$(info )$(call CY_MACRO_ERROR, TARGET_GEN variable must be specified to generate a BSP))
+	$(if $(ADDITIONAL_DEVICE_GEN),$(error ADDITIONAL_DEVICE_GEN variable is no longer supported))
 	$(if $(wildcard $(CY_TARGET_GEN_DIR)),$(info )$(call CY_MACRO_ERROR,"$(TARGET_GEN)" TARGET already exists at "$(CY_TARGET_GEN_DIR)"))
 	$(info $(CY_NEWLINE)Creating $(TARGET_GEN) TARGET from $(TARGET)...)
 	$(CY_NOISE)cp -rf $(CY_TARGET_DIR) $(CY_TARGET_GEN_DIR);\
@@ -360,10 +363,13 @@ bsp:
 	$(CY_BSP_TEMPLATES_CMD)\
 	$(CY_BSP_DEPENDENCIES_CMD)\
 	$(CY_BSP_DEVICES_CMD)\
+	$(CY_BSP_UPDATE_FLASH_LOADER_CMD)\
+	rm -f $(CY_TARGET_GEN_DIR)/$(TARGET_GEN).mk-e;\
 	echo ""$(TARGET_GEN)" TARGET created at "$(CY_TARGET_GEN_DIR)""; echo;
 
 update_bsp:
 	$(if $(TARGET_GEN),,$(info )$(call CY_MACRO_ERROR, TARGET_GEN variable must be specified to update a BSP))
+	$(if $(ADDITIONAL_DEVICE_GEN),$(error ADDITIONAL_DEVICE_GEN variable is no longer supported))
 	$(if $(wildcard $(CY_TARGET_GEN_DIR)),,$(info )$(call CY_MACRO_ERROR,"$(TARGET_GEN)" TARGET does not exists at "$(CY_TARGET_GEN_DIR)"))
 	$(info $(CY_NEWLINE)Updating $(TARGET_GEN) TARGET...)
 	$(CY_NOISE)sed -i -e s/$(TARGET)/"$(TARGET_GEN)"/g $(CY_TARGET_GEN_DIR)/$(TARGET_GEN).mk;\
@@ -372,6 +378,7 @@ update_bsp:
 	$(CY_BSP_TEMPLATES_CMD)\
 	$(CY_BSP_DEPENDENCIES_CMD)\
 	$(CY_BSP_DEVICES_CMD)\
+	$(CY_BSP_UPDATE_FLASH_LOADER_CMD)\
 	echo ""$(TARGET_GEN) TARGET was updated ""$(CY_TARGET_GEN_DIR)""; echo;
 
 # Default conversion type set to local

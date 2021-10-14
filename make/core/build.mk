@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2020 Cypress Semiconductor Corporation
+# Copyright 2018-2021 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -93,7 +93,8 @@ else
 CY_CDB_INFO+=$(CY_NEWLINE_MARKER) {$(CY_NEWLINE_MARKER)
 CY_CDB_INFO+=$$(CY_SPACE)"directory": "$$(CY_INTERNAL_APPLOC)",$(CY_NEWLINE_MARKER)
 CY_CDB_INFO+=$$(CY_SPACE)"file": "$(1)",$(CY_NEWLINE_MARKER)
-CY_CDB_INFO+=$$(CY_SPACE)"command": "$$(subst ",\",$$($(2)_CDB_EXPLICIT_COMPILE_ARGS) $(CY_CONFIG_DIR)/$(2) $(1))"$(CY_NEWLINE_MARKER)
+# Remove quotes from path and escape spaces
+CY_CDB_INFO+=$$(CY_SPACE)"command": "$$(subst ",,$$(subst $(CY_SPACE),\ ,$,$$($(2)_CDB_EXPLICIT_COMPILE_ARGS) $(CY_CONFIG_DIR)/$(2) $(1)))"$(CY_NEWLINE_MARKER)
 CY_CDB_INFO+=},
 
 endif
@@ -580,19 +581,27 @@ CY_SIMULATOR_ALL_FILES=$(CY_SIMULATOR_SOURCES_C) $(CY_SIMULATOR_SOURCES_CPP) $(C
 # All include path to look for header files.
 CY_SIMULATOR_ALL_INCLUDE_PATH=$(INCLUDES) $(CY_SEARCH_APP_INCLUDES) $(CY_TOOLCHAIN_INCLUDES)
 
+# If set, simulator archive file will be automatically created at the end of the build
+CY_SIMULATOR_GEN_AUTO?=
 # Add support for generating simulator tar file
 CY_SIMULATOR_GEN_SUPPORTED?=
 ifneq (,$(CY_SIMULATOR_GEN_SUPPORTED))
+ifneq (,$(CY_SIMULATOR_GEN_AUTO))
 app: $(CY_CONFIG_DIR)/$(APPNAME).tar.tgz
+endif
 $(CY_CONFIG_DIR)/$(APPNAME).tar.tgz: CY_BUILD_postbuild
 	$(info )
 	$(info ==============================================================================)
-	$(info = Generating simulator zip file =)
+	$(info = Generating simulator archive file =)
 	$(info ==============================================================================)
 	$(CY_NOISE)echo $(CY_SIMULATOR_ALL_FILES) > $(CY_SIMULATOR_TEMPFILE)
 	$(CY_NOISE)echo $(CY_SIMULATOR_ALL_INCLUDE_PATH) >> $(CY_SIMULATOR_TEMPFILE)
 	$(CY_NOISE) $(CY_BASH) $(CY_BASELIB_CORE_PATH)/make/scripts/simulator_gen/simulator_gen.bash $(CY_CONFIG_DIR) $(APPNAME) $(patsubst %/,%,$(CY_INTERNAL_APPLOC)) $(patsubst %/,%,$(CY_GETLIBS_SHARED_PATH)) $(CY_SIMULATOR_TEMPFILE)
 	$(CY_NOISE)rm -f $(CY_SIMULATOR_TEMPFILE)
+ifneq (,$(CY_OPEN_online_simulator_FILE_RAW))
+	$(info The Infineon online simulator link:)
+	$(info $(patsubst "%",%,$(CY_OPEN_online_simulator_FILE_RAW)))
+endif
 endif
 #
 # Include generated dependency files (if rebuilding)
@@ -610,6 +619,7 @@ CY_CDB_INFO:=[$(CY_CDB_INFO)]
 CY_CDB_INFO:=$(subst }$(CY_COMMA) $(CY_NEWLINE_MARKER),}$(CY_COMMA)$(CY_NEWLINE_MARKER),$(CY_CDB_INFO))
 CY_CDB_INFO:=$(subst }$(CY_COMMA)],}$(CY_NEWLINE_MARKER)],$(CY_CDB_INFO))
 CY_CDB_INFO:=$(subst $(CY_NEWLINE_MARKER),$(CY_NEWLINE),$(CY_CDB_INFO))
+CY_CDB_INFO:=$(subst \,\\,$(CY_CDB_INFO))
 
 # We are not able to use the CY_MACRO_FILE_WRITE macro here because the "shell" version of that
 # macro removes the newlines

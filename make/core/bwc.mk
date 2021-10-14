@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2020 Cypress Semiconductor Corporation
+# Copyright 2018-2021 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,9 +25,6 @@
 ifeq ($(WHICHFILE),true)
 $(info Processing $(lastword $(MAKEFILE_LIST)))
 endif
-
-CY_MAKE_TOOLS_MAJOR=$(shell echo $(word 1, $(subst ., ,$(CY_TOOLS_DIR))) | sed 's/[^0-9]*//g')
-CY_MAKE_TOOLS_MINOR=$(shell echo $(word 2, $(subst ., ,$(CY_TOOLS_DIR))) | sed 's/[^0-9]*//g')
 
 ##########################
 # Tool paths
@@ -76,7 +73,7 @@ CY_INTERNAL_TOOL_bt-configurator_EXE:=$(CY_BT_CONFIGURATOR_DIR)/bt-configurator
 endif
 
 # Support cype-tool for BWC reason (core-tools < 2.3)
-ifeq ($(shell expr $(CY_MAKE_TOOLS_MAJOR)$(CY_MAKE_TOOLS_MINOR) \< 23), 1)
+ifneq ($(filter $(notdir $(CY_TOOLS_DIR)),tools_2.0 tools_2.1 tools_2.2),)
 ifneq ($(CY_TOOL_cype-tool_EXE),)
 CY_INTERNAL_TOOL_cype-tool_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_cype-tool_EXE)
 else

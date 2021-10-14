@@ -7,7 +7,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2020 Cypress Semiconductor Corporation
+# Copyright 2018-2021 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +40,7 @@ endif
 #
 ifneq ($(CY_INSTRUMENT_BUILD),)
 # Note: Use perl as "date" in macOS is based on ancient BSD
-CY_LOG_TIME=$1 $2 $3:$(CY_TAB)$(CY_TAB)$(shell perl -MTime::HiRes -e 'printf("%.0f\n",Time::HiRes::time()*1000)')
+CY_LOG_TIME=$(shell perl -MTime::HiRes -e 'printf("%-40s%.0f\n","$1 $2 $3:",Time::HiRes::time()*1000)')
 endif
 
 
@@ -51,6 +51,8 @@ endif
 all: build
 
 getlibs:
+
+prebuild:
 
 build:
 
@@ -188,10 +190,10 @@ CY_PREBUILD_BUILD_LOC:=$(call CY_MACRO_DIR,$(CY_INTERNAL_BUILD_LOC))
 #
 CY_COMPILER_GCC_ARM_DEFAULT_DIR:=$(CY_INTERNAL_TOOL_gcc_BASE)
 ifeq ($(OS),Windows_NT)
-CY_COMPILER_IAR_DEFAULT_DIR:="C:/Program Files (x86)/IAR Systems/Embedded Workbench 8.2/arm"
+CY_COMPILER_IAR_DEFAULT_DIR:=C:/Program\ Files\ \(x86\)/IAR\ Systems/Embedded\ Workbench\ 8.2/arm
 else
 # Use 8.42.1 IAR version because it has support for Ubuntu
-CY_COMPILER_IAR_DEFAULT_DIR:=~/IAR-BuildLx-Arm-8.42.1
+CY_COMPILER_IAR_DEFAULT_DIR:=$(HOME)/IAR-BuildLx-Arm-8.42.1
 endif
 
 CY_COMPILER_ARM_DEFAULT_DIR:="C:/Program Files/ARMCompiler6.11"
@@ -200,10 +202,10 @@ CY_COMPILER_A_Clang_DEFAULT_DIR:=/Library/Developer/CommandLineTools/usr/lib/cla
 #
 # Toolchain locations
 #
-CY_COMPILER_GCC_ARM_DIR?=$(CY_COMPILER_GCC_ARM_DEFAULT_DIR)
-CY_COMPILER_IAR_DIR?=$(CY_COMPILER_IAR_DEFAULT_DIR)
-CY_COMPILER_ARM_DIR?=$(CY_COMPILER_ARM_DEFAULT_DIR)
-CY_COMPILER_A_Clang_DIR?=$(CY_COMPILER_A_Clang_DEFAULT_DIR)
+CY_COMPILER_GCC_ARM_DIR?=$(if $(and $(call CY_MACRO_EQUALITY,$(TOOLCHAIN),GCC_ARM),$(CY_COMPILER_PATH)),$(CY_COMPILER_PATH),$(CY_COMPILER_GCC_ARM_DEFAULT_DIR))
+CY_COMPILER_IAR_DIR?=$(if $(and $(call CY_MACRO_EQUALITY,$(TOOLCHAIN),IAR),$(CY_COMPILER_PATH)),$(CY_COMPILER_PATH),$(CY_COMPILER_IAR_DEFAULT_DIR))
+CY_COMPILER_ARM_DIR?=$(if $(and $(call CY_MACRO_EQUALITY,$(TOOLCHAIN),ARM),$(CY_COMPILER_PATH)),$(CY_COMPILER_PATH),$(CY_COMPILER_ARM_DEFAULT_DIR))
+CY_COMPILER_A_Clang_DIR?=$(if $(and $(call CY_MACRO_EQUALITY,$(TOOLCHAIN),A_Clang),$(CY_COMPILER_PATH)),$(CY_COMPILER_PATH),$(CY_COMPILER_A_Clang_DEFAULT_DIR))
 
 ##########################
 # Include make files
@@ -267,7 +269,6 @@ CY_TIMESTAMP_CONFIG_MK_BEGIN=$(call CY_LOG_TIME,bothstages,config.mk,BEGIN)
 include $(CY_BASELIB_CORE_PATH)/make/core/config.mk
 CY_TIMESTAMP_CONFIG_MK_END=$(call CY_LOG_TIME,bothstages,config.mk,END)
 
-
 ################################################################################
 # Include make files continued only for first build stage
 ################################################################################
@@ -307,6 +308,13 @@ CY_TIMESTAMP_PREBUILD_MK_END=$(call CY_LOG_TIME,firststage,prebuild.mk,END)
 CY_TIMESTAMP_RECIPE_MK_BEGIN=$(call CY_LOG_TIME,firststage,recipe.mk,BEGIN)
 include $(CY_INTERNAL_BASELIB_PATH)/make/recipe/recipe.mk
 CY_TIMESTAMP_RECIPE_MK_END=$(call CY_LOG_TIME,firststage,recipe.mk,END)
+
+#
+# Device transtion related targets
+#
+CY_TIMESTAMP_TRANSITION_MK_BEGIN=$(call CY_LOG_TIME,firststage,transition.mk,BEGIN)
+include $(CY_BASELIB_CORE_PATH)/make/core/transition.mk
+CY_TIMESTAMP_TRANSITION_MK_END=$(call CY_LOG_TIME,firststage,transition.mk,END)
 
 ##########################
 # Environment check
@@ -461,33 +469,33 @@ ifneq ($(LIBNAME),)
 $(call CY_MACRO_ERROR,An application cannot define both APPNAME and LIBNAME. Define one or the other)
 endif
 endif
-ifneq ($(findstring -I,$(INCLUDES)),)
+ifneq ($(filter -I%,$(INCLUDES)),)
 $(call CY_MACRO_ERROR,INCLUDES must be directories without -I prepended)
 endif
-ifneq ($(findstring -D,$(DEFINES)),)
+ifneq ($(filter -D%,$(DEFINES)),)
 $(call CY_MACRO_ERROR,DEFINES must be specified without -D prepended)
 endif
-ifneq ($(findstring -I,$(CFLAGS)),)
+ifneq ($(filter -I%,$(CFLAGS)),)
 $(call CY_MACRO_ERROR,Include paths must be specified in the INCLUDES variable instead\
 of directly in CFLAGS. These must be directories without -I prepended)
 endif
-ifneq ($(findstring -D,$(CFLAGS)),)
+ifneq ($(filter -D%,$(CFLAGS)),)
 $(call CY_MACRO_ERROR,Defines must be specified in the DEFINES variable instead\
 of directly in CFLAGS. These must be specified without -D prepended)
 endif
-ifneq ($(findstring -I,$(CXXFLAGS)),)
+ifneq ($(filter -I%,$(CXXFLAGS)),)
 $(call CY_MACRO_ERROR,Include paths must be specified in the INCLUDES variable instead\
 of directly in CXXFLAGS. These must be directories without -I prepended)
 endif
-ifneq ($(findstring -D,$(CXXFLAGS)),)
+ifneq ($(filter -D%,$(CXXFLAGS)),)
 $(call CY_MACRO_ERROR,Defines must be specified in the DEFINES variable instead\
 of directly in CXXFLAGS. These must be specified without -D prepended)
 endif
-ifneq ($(findstring -I,$(ASFLAGS)),)
+ifneq ($(filter -I%,$(ASFLAGS)),)
 $(call CY_MACRO_ERROR,Include paths must be specified in the INCLUDES variable instead\
 of directly in ASFLAGS. These must be directories without -I prepended)
 endif
-ifneq ($(findstring -D,$(ASFLAGS)),)
+ifneq ($(filter -D%,$(ASFLAGS)),)
 $(call CY_MACRO_ERROR,Defines must be specified in the DEFINES variable instead\
 of directly in ASFLAGS. These must be specified without -D prepended)
 endif
@@ -581,7 +589,7 @@ CY_TIMESTAMP_MAIN_MK_END=$(call CY_LOG_TIME,bothstages,main.mk,END)
 #
 ifneq ($(CY_INSTRUMENT_BUILD),)
 CY_TIMESTAMP_LIST=UTILS_MK EXTRA_INC TARGET_MK FEATURES_MK DEFINES_MK TOOLCHAIN_MK CONFIG_MK TOOLS_MK OPEN_MK HELP_MK\
-					PREBUILD_MK RECIPE_MK PYTHON \
+					PREBUILD_MK RECIPE_MK TRANSITION_MK PYTHON \
 					SEARCH_MK CYQBUILD_MK RECIPE_MK BUILD_MK PROGRAM_MK IDE_MK
 
 $(info )

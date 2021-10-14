@@ -1,8 +1,8 @@
 # Core GNU make Build System Release Notes
-This repo provides the core make build files and scripts for building and programming ModusToolbox applications. Builds can be run either through a command-line interface (CLI) or through the ModusToolbox Integrated Development Environment (IDE).
+This repo provides the core make build files and scripts for building and programming ModusToolbox applications. Builds can be run either through a command-line interface (CLI) or through the Eclipse IDE for ModusToolbox.
 
 ### What's Included?
-The this release of the core GNU make Build System includes a framework to support building, programming, and debugging application projects. It must be used in conjunction with a recipe specific make package (eg: mxs40recipe-make). It is expected that a code example contains a top level make file for itself and references a Board Support Package (BSP) that defines specifics items, like the PSoC part, for the target board. Supported functionality includes the following:
+The this release of the core GNU make Build System includes a framework to support building, programming, and debugging application projects. It must be used in conjunction with a recipe specific make package (eg: recipe-make-cat1a). It is expected that a code example contains a top level make file for itself and references a Board Support Package (BSP) that defines specifics items, like the PSoC part, for the target board. Supported functionality includes the following:
 * Supported operations:
     * Build
     * Program
@@ -17,6 +17,11 @@ The this release of the core GNU make Build System includes a framework to suppo
 This also includes the getlibs.bash script that can be used directly, or via the make target to download additional git repo based libraries for the application.
 
 ### What Changed?
+#### v1.9.0
+* Update various make help documentation
+* Updated uvsion5 export to support XMC devices
+* Changed Infineon online simulator tgz file generation to be off by default, so it will not add to build time. Archive file generation can be enabled during build by setting to CY_SIMULATOR_GEN_AUTO=1 inthe Makefile.
+* Changed IDE export to run prebuild code-generation so that project can work out-of-the-box with 3rd party IDEs
 #### v1.8.0
 * Added support for generating tgz file for Infineon online simulator (recipe-make-cat3-1.1.0 or newer)
 * Added support for opening Infineon online simulator through quick panel (recipe-make-cat3-1.1.0 or newer)
@@ -59,4 +64,4 @@ Use the following links for more information, as needed:
 * [ModusToolbox](https://www.cypress.com/products/modustoolbox-software-environment)
 
 ---
-© Cypress Semiconductor Corporation, 2019-2020.
+© Cypress Semiconductor Corporation, 2019-2021.

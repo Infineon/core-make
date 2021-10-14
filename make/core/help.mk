@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2020 Cypress Semiconductor Corporation
+# Copyright 2018-2021 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -59,6 +59,8 @@ CY_HELP_clean_VERBOSE=The directory and all its contents are deleted from disk.
 CY_HELP_help=Prints the help documentation.
 CY_HELP_help_VERBOSE=Use the CY_HELP=<NAME of target of variable> to see the verbose documentation for a\
 					particular target or a variable.
+CY_HELP_prebuild=Generates code for the application.
+CY_HELP_prebuild_VERBOSE=Runs configurators and custom prebuild commands to generate source code. 
 
 #
 # IDE targets
@@ -87,8 +89,12 @@ CY_HELP_uvision5_VERBOSE=This target generates a CMSIS compatible .cpdsc and .gp
 #
 # Tool targets
 #
-CY_HELP_modlibs=Launches the library-manager for updating libraries.
-CY_HELP_modlibs_VERBOSE=The library manager can be used to add/remove libraries and to upgrade/downgrade existing libraries.
+CY_HELP_modlibs=Launches the Library Manager GUI to update libraries for the current application.
+CY_HELP_modlibs_VERBOSE=Running the make modlibs target opens the Library Manager GUI for the current application to add/remove\
+					libraries and to upgrade/downgrade existing libraries. For information about how to use the GUI, refer to\
+					the Library Manager User Guide available from the Help menu. To run the library-manager-cli tool from the\
+					command line, use the library-manager-cli executable located in the installation directory.\
+					Use library-manager-cli -h to see the various options available.
 CY_HELP_open=Opens/launches a specified tool.
 CY_HELP_open_VERBOSE=This target accepts two variables – CY_OPEN_TYPE and CY_OPEN_FILE. At least one of\
 					these must be provided. The tool can be specified by setting the CY_OPEN_TYPE variable.\
@@ -97,18 +103,47 @@ CY_HELP_open_VERBOSE=This target accepts two variables – CY_OPEN_TYPE and CY_O
 					$(CY_NEWLINE)Supported types are: $(sort $(CY_OPEN_TYPE_LIST)).\
 					$(CY_NEWLINE)Note: This command is intended for the Eclipse IDE to open/launch a specific tool.\
 					For configurators, the preferred method is to use config, config_bt and config_usbdev targets.
-CY_HELP_config=Runs the device-configurator on the target .modus file.
-CY_HELP_config_VERBOSE=If no existing device-configuration files are found, the configurator is launched to create one.
-CY_HELP_config_bt=Runs the bt-configurator on the target .cybt file.
-CY_HELP_config_bt_VERBOSE=If no existing bt-configuration files are found, the configurator is launched to create one.
-CY_HELP_config_usbdev=Runs the usbdev-configurator on the target .cyusbdev file.
-CY_HELP_config_usbdev_VERBOSE=If no existing usbdev-configuration files are found, the configurator is launched to create one.
-CY_HELP_config_secure=Runs the secure-policy-configurator.
-CY_HELP_config_secure_VERBOSE=The secure-policy-configurator is intended only for devices that support secure provisioning.
-CY_HELP_config_ezpd=Runs the ez-pd-configurator.
-CY_HELP_config_ezpd_VERBOSE=If no existing ez-pd-configuration files are found, the configurator is launched to create one.
-CY_HELP_config_lin=Runs the lin-configurator.
-CY_HELP_config_lin_VERBOSE=If no existing lin-configuration files are found, the configurator is launched to create one.
+CY_HELP_config=Launches the Device Configurator GUI on the target's .modus file.
+CY_HELP_config_VERBOSE=Running the make config target opens the Device Configurator GUI for the current application to enable\
+					and configure device peripherals, such as clocks and pins, as well as standard MCU peripherals that do not\
+					require their own tool. If no existing device-configuration files are found, the configurator is launched\
+					to create one. For information about how to use the GUI, refer to the Device Configurator User Guide\
+					available from the Help menu. To run the device-configurator-cli tool from the command line, use the\
+					device-configurator-cli executable located in the installation directory. Use device-configurator-cli -h\
+					to see the various options available.
+CY_HELP_config_bt=Launches the Bluetooth Configurator GUI on the target's .cybt file.
+CY_HELP_config_bt_VERBOSE=Running the make config_bt target opens the Bluetooth Configurator GUI for the current application\
+					to help generate code for bluetooth applications. If no existing bt-configuration files are found, the\
+					configurator is launched to create one. For information about how to use the GUI, refer to the Bluetooth\
+					Configurator User Guide available from the Help menu. To run the bt-configurator-cli tool from the command\
+					line, use the bt-configurator-cli executable located in the installation directory.\
+					Use bt-configurator-cli -h to see the various options available.
+CY_HELP_config_usbdev=Launches the USB Configurator GUI on the target's .cyusbdev file.
+CY_HELP_config_usbdev_VERBOSE=Running the make config_usbdev target opens the USB Configurator GUI for the current application\
+					to configure USB device descriptors. If no existing usbdev-configuration files are found, the configurator\
+					is launched to create one. For information about how to use the GUI, refer to the USB Configurator User Guide\
+					available from the Help menu. To run the usbdev-configurator-cli tool from the command line, use the\
+					usbdev-configurator-cli executable located in the installation directory. Use usbdev-configurator-cli -h\
+					to see the various options available.
+CY_HELP_config_secure=Launches the Secure Policy Configurator GUI.
+CY_HELP_config_secure_VERBOSE=Running the make config_secure target opens the Secure Policy Configurator GUI for the current\
+					application to open, create or change policy configuration files for secure MCU devices. The\
+					secure-policy-configurator is intended only for devices that support secure provisioning. For information\
+					about how to use the GUI, refer to the Secure Policy Configurator User Guide available from the Help menu.
+CY_HELP_config_ezpd=Launches the EZ-PD Configurator GUI on the target's .mtbezpd file.
+CY_HELP_config_ezpd_VERBOSE=Running the make config_ezpd target opens the Easy Power Delivery (EZ-PD) Configurator GUI for the\
+					current application to select features or configure parameters for the PDStack middleware. If no existing\
+					ez-pd-configuration files are found, the configurator is launched to create one. For information about how\
+					to use the GUI, refer to the EZ-PD Configurator User Guide available from the Help menu. To run the\
+					ez-pd-configurator-cli tool from the command line, use the ez-pd-configurator-cli executable located in\
+					the installation directory. Use ez-pd-configurator-cli -h to see the various options available.
+CY_HELP_config_lin=Launches the LIN Configurator GUI on the target's .mtblin file.
+CY_HELP_config_lin_VERBOSE=Running the make config_lin target opens the LIN Configurator GUI for the current application\
+					to generate build-time configuration for the LIN middleware. If no existing lin-configuration files are\
+					found, the configurator is launched to create one. For information about how to use the GUI, refer to the\
+					LIN Configurator User Guide available from the Help menu. To run the lin-configurator-cli tool from the\
+					command line, use the lin-configurator-cli executable located in the installation directory. Use\
+					lin-configurator-cli -h to see the various options available.
 
 #
 # Utility targets
@@ -131,7 +166,7 @@ CY_HELP_import_deps=Import dependent .mtbx files of a given path into the applic
 CY_HELP_import_deps_VERBOSE=This will recursively look for .mtbx files in IMPORT_PATH, copy them to the application's deps \
 					directory and rename them to .mtb files. Note that the import process is not applicable\
 					for applications using .lib files. These libraries must instead be situated in the application directory.
-CY_HELP_progtool=Performs specified operations on the programmer/firmware-loader
+CY_HELP_progtool=Performs specified operations on the programmer/firmware-loader. Only available for devices that use KitProg3.
 CY_HELP_progtool_VERBOSE=This target expects user-interaction on the shell while running it. When prompted, the user must specify the\
 					command(s) to run for the tool.
 CY_HELP_check=Checks for the necessary tools.
@@ -488,7 +523,7 @@ else
 	$(info ==============================================================================     )
 	$(info $(CY_SPACE)Cypress Build System                                                    )
 	$(info ==============================================================================     )
-	$(info $(CY_SPACE)Copyright 2018-2020 Cypress Semiconductor Corporation                   )
+	$(info $(CY_SPACE)Copyright 2018-2021 Cypress Semiconductor Corporation                   )
 	$(info $(CY_SPACE)SPDX-License-Identifier: Apache-2.0                                     )
 	$(info                                                                                    )
 	$(info $(CY_SPACE)Licensed under the Apache License, Version 2.0 (the "License");         )
