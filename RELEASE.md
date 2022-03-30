@@ -17,6 +17,8 @@ The this release of the core GNU make Build System includes a framework to suppo
 This also includes the getlibs.bash script that can be used directly, or via the make target to download additional git repo based libraries for the application.
 
 ### What Changed?
+#### v1.9.1
+* Added support for uvision5 export devices with Cortex-M33 core
 #### v1.9.0
 * Update various make help documentation
 * Updated uvsion5 export to support XMC devices

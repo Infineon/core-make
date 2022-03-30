@@ -174,6 +174,7 @@ def createTargetElem(parentElem, projectData):
     CORE_NAME_CM0 = 'CM0'
     CORE_NAME_CM0P = 'CM0P'
     CORE_NAME_CM4 = 'CM4'
+    CORE_NAME_CM33 = 'CM33'
     processorName = ""
     if projectData.core == CORE_NAME_CM0:
         processorName = 'Cortex-M0'
@@ -181,6 +182,8 @@ def createTargetElem(parentElem, projectData):
         processorName = 'Cortex-M0p'
     elif projectData.core == CORE_NAME_CM4:
         processorName = 'Cortex-M4'
+    elif projectData.core == CORE_NAME_CM33:
+        processorName = 'Cortex-M33'
     else:
         raise Exception("Core %s not supported by this export mechanism.\n Support core names are %s %s %s\n" % (projectData.core, CORE_NAME_CM0, CORE_NAME_CM0P, CORE_NAME_CM4))
     targetAttributes =  { 'Dname': projectData.deviceName, 'Dvendor': projectData.vendorName + ':' + projectData.vendorId}
