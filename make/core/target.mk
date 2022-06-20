@@ -74,7 +74,6 @@ ifneq ($(CY_TARGET_EXTRA_FILTERED),)
 $(call CY_MACRO_ERROR,Found multiple identical targets: $(CY_TARGET_EXTRA_INCLUDES) $(CY_TARGET_EXTRA_FILTERED))
 else
 CY_TARGET_DIR=$(call CY_MACRO_DIR,$(CY_TARGET_EXTRA_INCLUDES))
-$(info $(TARGET).mk: $(CY_TARGET_EXTRA_INCLUDES))
 endif
 
 else
@@ -85,7 +84,6 @@ $(call CY_MACRO_ERROR,Target "$(TARGET)" not found)
 else ifeq ($(words $(CY_TARGET_MAKEFILE)),1)
 CY_TARGET_DIR=$(call CY_MACRO_DIR,$(CY_TARGET_MAKEFILE))
 include $(CY_TARGET_MAKEFILE)
-$(info $(TARGET).mk: $(CY_TARGET_MAKEFILE))
 else
 $(call CY_MACRO_ERROR,Found multiple identical targets:$(CY_TARGET_MAKEFILE))
 endif

@@ -173,9 +173,7 @@ CY_HELP_check=Checks for the necessary tools.
 CY_HELP_check_VERBOSE=Not all tools are necessary for every build recipe. This target allows the user\
 					to get an idea of which tools are missing if a build fails in an unexpected way.
 CY_HELP_get_app_info=Prints the application info for the Eclipse IDE for ModusToolbox.
-CY_HELP_get_app_info_VERBOSE=The file types can be specified by setting the\
-					CY_CONFIG_FILE_EXT variable. For example,\
-					$(CY_NEWLINE)$(CY_NEWLINE)make get_app_info CY_CONFIG_FILE_EXT="modus cybt cyusbdev".
+CY_HELP_get_app_info_VERBOSE=Prints the application info for the Eclipse IDE for ModusToolbox.
 CY_HELP_get_env_info=Prints the make, git, and application repo info.
 CY_HELP_get_env_info_VERBOSE=This allows a quick printout of the current application repo and the "make" and "git"\
 					tool locations and versions.
@@ -189,6 +187,14 @@ CY_HELP_printlibs_VERBOSE=This target parses through the library repos and print
 CY_HELP_TARGET=Specifies the target board/kit. (e.g. CY8CPROTO-062-4343W)
 CY_HELP_TARGET_VERBOSE=Current target in this application is, [ $(CY_TARGET_MAKEFILE) ].\
 						$(CY_NEWLINE)$(CY_NEWLINE)Example Usage: make build TARGET=CY8CPROTO-062-4343W
+CY_HELP_CORE=Specifies the name of the Arm core for which a project is building (e.g. CM4).
+CY_HELP_CORE_VERBOSE=Use this variable to select compiler and linker options to build a project for a specified Arm core.\
+				$(CY_NEWLINE)$(CY_NEWLINE)Example Usage: make build CORE=CM4
+CY_HELP_CORE_NAME=Specifies the name of the on-chip core for which a project is building (e.g. CM7_0).
+CY_HELP_CORE_NAME_VERBOSE=Use this variable to select compiler and linker options to build a project for a specified on-chip core.\
+				$(CY_NEWLINE)$(CY_NEWLINE)Example Usage: make build CORE_NAME=CM7_0\
+				$(CY_NEWLINE)$(CY_NEWLINE)Note: This variable is applicable for some devices only (e.g. XMC7xxx).\
+				$(CY_NEWLINE)Check the ModusToolbox user guide for the list of devices that support the CORE_NAME variable.
 CY_HELP_APPNAME=Specifies the name of the app. (e.g. "AppV1" -> AppV1.elf)
 CY_HELP_APPNAME_VERBOSE=This variable is used to set the name of the application artifact (programmable image).\
 				It also signifies that the application will build for a programmable image artifact that is\
@@ -234,6 +240,10 @@ CY_HELP_DEFINES_VERBOSE=Note: These MUST NOT have -D prepended.\
 CY_HELP_VFP_SELECT=Selects hard/soft ABI or full software for floating-point operations [softfp hardfp softfloat].
 CY_HELP_VFP_SELECT_VERBOSE=If not defined, this value defaults to softfp.\
 							$(CY_NEWLINE)$(CY_NEWLINE)Example Usage (within makefile): VFP_SELECT=hardfp
+CY_HELP_VFP_SELECT_PRECISION=Selects single-precision or double-precision operating mode for floating-point operations.
+CY_HELP_VFP_SELECT_PRECISION_VERBOSE=If not defined, this value defaults to double-precision.\
+							Enable single-precision mode by using the "singlefp" option.\
+							$(CY_NEWLINE)$(CY_NEWLINE)Example Usage (within makefile): VFP_SELECT_PRECISION=singlefp
 CY_HELP_CFLAGS=Prepends additional C compiler flags.
 CY_HELP_CFLAGS_VERBOSE=Note: If the entire C compiler flags list needs to be replaced, define the\
 						CY_RECIPE_CFLAGS make variable with the desired C flags. The values\
@@ -308,7 +318,7 @@ CY_HELP_DEPENDENT_APP_PATHS_VERBOSE=The main application can have a dependency o
 CY_HELP_SEARCH=List of paths to include in auto-discovery. (e.g. ../mtb_shared/lib1)
 CY_HELP_SEARCH_VERBOSE=When "getlibs" is run for applications that use .mtb files, a file is generated in ./libs/mtb.mk.\
 					This file automatically populates the SEARCH variable with the locations of the libraries in\
-					the shared repo location (set by the CY_GETLIBS_SEARCH_PATH and CY_GETLIBS_SHARED_NAME variables).\
+					the shared repo location (set by the CY_GETLIBS_SHARED_NAME variables).\
 					The SEARCH variable can also be used by the application to include other directories to auto-discovery.
 CY_HELP_IMPORT_PATH=Path to .mtbx dependency files to import into the application
 CY_HELP_IMPORT_PATH_VERBOSE=This variable must be defined when calling "import_deps". Any .mtbx dependency file found in this\
@@ -374,10 +384,8 @@ CY_HELP_CY_GETLIBS_OFFLINE_PATH_VERBOSE=The offline content is used to create/up
 					to the internet (Default: <HOME>/.modustoolbox/offline). Setting this variable allows to relocate the\
 					offline content to elsewhere on disk. Usage is similar to CY_GETLIBS_PATH.\
 					$(CY_NEWLINE)Note: This variable requires ModusToolbox tools_2.1 or higher.
-CY_HELP_CY_GETLIBS_SEARCH_PATH=Relative path to the top directory for "getlibs" operation.
-CY_HELP_CY_GETLIBS_SEARCH_PATH_VERBOSE=The getlibs operation by default executes at the location of the CY_APP_PATH. This can\
-					be overridden by specifying this variable to point to a specific location.\
-					Usage is similar to CY_GETLIBS_PATH.
+CY_HELP_CY_GETLIBS_SEARCH_PATH=DEPRECATED
+CY_HELP_CY_GETLIBS_SEARCH_PATH_VERBOSE=DEPRECATED
 CY_HELP_CY_GETLIBS_SHARED_PATH=Relative path to the shared repo location.
 CY_HELP_CY_GETLIBS_SHARED_PATH_VERBOSE=All .mtb files have the format, <URI><COMMIT><LOCATION>.\
 					If the <LOCATION> field begins with $$$$ASSET_REPO$$$$, then the repo is deposited in the path\
@@ -462,10 +470,6 @@ CY_HELP_CY_IDE_PRJNAME_VERBOSE=When used in make eclipse, this variable defines 
 					It is also used to exclude existing CMSIS output file from the following directories from being included\
 					as additional input files: <CY_IDE_PRJNAME>_Listings, <CY_IDE_PRJNAME>_Object, and <CY_IDE_PRJNAME>_build.\
 					$(CY_NEWLINE)$(CY_NEWLINE)Example Usage: make eclipse CY_IDE_PRJNAME="AppV1"
-CY_HELP_CY_CONFIG_FILE_EXT=Specifies the configurator file extension. (e.g. modus)
-CY_HELP_CY_CONFIG_FILE_EXT_VERBOSE=This variable accepts a space-separated list of configurator file extensions\
-					that should be searched for when running the "get_app_info" target.\
-					$(CY_NEWLINE)$(CY_NEWLINE)Example Usage: make get_app_info CY_CONFIG_FILE_EXT="modus cybt cyusbdev"
 CY_HELP_CY_SKIP_RECIPE=Skip including the recipe make files.
 CY_HELP_CY_SKIP_RECIPE_VERBOSE=Setting this to [true/1] allows the application to not include any recipe makefiles and only\
 					include the start.mk file from the tools install.
@@ -500,10 +504,10 @@ CY_HELP_ADVANCED_CFG_ALL=SOURCES INCLUDES DEFINES VFP_SELECT CFLAGS CXXFLAGS ASF
 					DEPENDENT_LIB_PATHS DEPENDENT_APP_PATHS SEARCH
 CY_HELP_BSP_ALL=DEVICE TARGET_GEN DEVICE_GEN
 CY_HELP_GETLIBS_ALL=CY_GETLIBS_NO_CACHE CY_GETLIBS_OFFLINE CY_GETLIBS_PATH CY_GETLIBS_DEPS_PATH CY_GETLIBS_CACHE_PATH \
-					CY_GETLIBS_OFFLINE_PATH CY_GETLIBS_SEARCH_PATH CY_GETLIBS_SHARED_PATH CY_GETLIBS_SHARED_NAME
+					CY_GETLIBS_OFFLINE_PATH CY_GETLIBS_SHARED_PATH CY_GETLIBS_SHARED_NAME
 CY_HELP_PATHS_ALL=CY_APP_PATH CY_BASELIB_PATH CY_BASELIB_CORE_PATH CY_EXTAPP_PATH CY_DEVICESUPPORT_PATH \
 					CY_SHARED_PATH CY_COMPILER_PATH CY_TOOLS_DIR CY_BUILD_LOCATION TOOLCHAIN_MK_PATH CY_PYTHON_PATH
-CY_HELP_MISC_ALL=CY_IGNORE CY_IDE_PRJNAME CY_CONFIG_FILE_EXT CY_SKIP_RECIPE CY_SUPPORTED_TOOL_TYPES CY_LIBS_SEARCH_DEPTH \
+CY_HELP_MISC_ALL=CY_IGNORE CY_IDE_PRJNAME CY_SKIP_RECIPE CY_SUPPORTED_TOOL_TYPES CY_LIBS_SEARCH_DEPTH \
 					CY_UTILS_SEARCH_DEPTH CY_EXTRA_INCLUDES
 CY_HELP_PRINT_ALL=$(CY_HELP_TARGETS_ALL) $(CY_HELP_BASIC_CFG_ALL) $(CY_HELP_ADVANCED_CFG_ALL) $(CY_HELP_BSP_ALL) \
 					$(CY_HELP_GETLIBS_ALL) $(CY_HELP_PATHS_ALL) $(CY_HELP_MISC_ALL)
@@ -603,6 +607,8 @@ else
 	$(info $(CY_SPACE)Basic configuration make variables                 )
 	$(info =======================================                       )
 	$(info $(CY_SPACE)TARGET              $(CY_HELP_TARGET))
+	$(info $(CY_SPACE)CORE                $(CY_HELP_CORE))
+	$(info $(CY_SPACE)CORE_NAME           $(CY_HELP_CORE_NAME))
 	$(info $(CY_SPACE)APPNAME             $(CY_HELP_APPNAME))
 	$(info $(CY_SPACE)LIBNAME             $(CY_HELP_LIBNAME))
 	$(info $(CY_SPACE)TOOLCHAIN           $(CY_HELP_TOOLCHAIN))
@@ -616,6 +622,7 @@ else
 	$(info $(CY_SPACE)INCLUDES            $(CY_HELP_INCLUDES))
 	$(info $(CY_SPACE)DEFINES             $(CY_HELP_DEFINES))
 	$(info $(CY_SPACE)VFP_SELECT          $(CY_HELP_VFP_SELECT))
+	$(info $(CY_SPACE)VFP_SELECT_PRECISION $(CY_HELP_VFP_SELECT_PRECISION))
 	$(info $(CY_SPACE)CFLAGS              $(CY_HELP_CFLAGS))
 	$(info $(CY_SPACE)CXXFLAGS            $(CY_HELP_CXXFLAGS))
 	$(info $(CY_SPACE)ASFLAGS             $(CY_HELP_ASFLAGS))
@@ -650,7 +657,6 @@ else
 	$(info $(CY_SPACE)CY_GETLIBS_DEPS_PATH  $(CY_HELP_CY_GETLIBS_DEPS_PATH))
 	$(info $(CY_SPACE)CY_GETLIBS_CACHE_PATH  $(CY_HELP_CY_GETLIBS_CACHE_PATH))
 	$(info $(CY_SPACE)CY_GETLIBS_OFFLINE_PATH  $(CY_HELP_CY_GETLIBS_OFFLINE_PATH))
-	$(info $(CY_SPACE)CY_GETLIBS_SEARCH_PATH  $(CY_HELP_CY_GETLIBS_SEARCH_PATH))
 	$(info $(CY_SPACE)CY_GETLIBS_SHARED_PATH $(CY_HELP_CY_GETLIBS_SHARED_PATH))
 	$(info $(CY_SPACE)CY_GETLIBS_SHARED_NAME $(CY_HELP_CY_GETLIBS_SHARED_NAME))
 	$(info                                                               )
@@ -678,7 +684,6 @@ else
 	$(info $(CY_SPACE)CY_LIBS_SEARCH_DEPTH  $(CY_HELP_CY_LIBS_SEARCH_DEPTH))
 	$(info $(CY_SPACE)CY_UTILS_SEARCH_DEPTH  $(CY_HELP_CY_UTILS_SEARCH_DEPTH))
 	$(info $(CY_SPACE)CY_IDE_PRJNAME      $(CY_HELP_CY_IDE_PRJNAME))
-	$(info $(CY_SPACE)CY_CONFIG_FILE_EXT  $(CY_HELP_CY_CONFIG_FILE_EXT))
 	$(info $(CY_SPACE)CY_SUPPORTED_TOOL_TYPES  $(CY_HELP_CY_SUPPORTED_TOOL_TYPES))
 	$(info )
 endif

@@ -250,6 +250,10 @@ CY_TIMESTAMP_DEFINES_MK_BEGIN=$(call CY_LOG_TIME,bothstages,defines.mk,BEGIN)
 include $(CY_INTERNAL_BASELIB_PATH)/make/recipe/defines.mk
 CY_TIMESTAMP_DEFINES_MK_END=$(call CY_LOG_TIME,bothstages,defines.mk,END)
 
+CY_TIMESTAMP_SEARCH_MK_BEGIN=$(call CY_LOG_TIME,bothstages,search.mk,BEGIN)
+include $(CY_BASELIB_CORE_PATH)/make/core/search.mk
+CY_TIMESTAMP_SEARCH_MK_END=$(call CY_LOG_TIME,bothstages,search.mk,END)
+
 #
 # Choose local or default toolchain makefile
 #
@@ -289,7 +293,7 @@ endif
 # Launch tools
 #
 CY_TIMESTAMP_TOOLS_MK_BEGIN=$(call CY_LOG_TIME,firststage,tools.mk,BEGIN)
--include $(CY_INTERNAL_TOOL_make_BASE)/tools.mk
+-include $(CY_TOOL_make_BASE)/tools.mk
 CY_TIMESTAMP_TOOLS_MK_END=$(call CY_LOG_TIME,firststage,tools.mk,END)
 CY_TIMESTAMP_OPEN_MK_BEGIN=$(call CY_LOG_TIME,firststage,open.mk,BEGIN)
 include $(CY_BASELIB_CORE_PATH)/make/core/open.mk
@@ -365,10 +369,10 @@ CY_PYTHON_FROM_CMD=
 endif
 
 # Look for python install in the cypress tools directory
-ifeq ($(wildcard $(CY_INTERNAL_TOOL_python_EXE)),)
+ifeq ($(wildcard $(CY_TOOL_python_EXE)),)
 CY_PYTHON_SEARCH_PATH=NotFoundError
 else
-CY_PYTHON_SEARCH_PATH=$(CY_INTERNAL_TOOL_python_EXE)
+CY_PYTHON_SEARCH_PATH=$(CY_TOOL_python_EXE)
 endif
 
 #
@@ -509,21 +513,19 @@ endif
 #
 ifeq ($(CY_COMMENCE_BUILD),true)
 
-ifneq ($(findstring qbuild,$(MAKECMDGOALS)),qbuild)
-CY_TIMESTAMP_SEARCH_MK_BEGIN=$(call CY_LOG_TIME,secondstage,search.mk,BEGIN)
-include $(CY_BASELIB_CORE_PATH)/make/core/search.mk
-CY_TIMESTAMP_SEARCH_MK_END=$(call CY_LOG_TIME,secondstage,search.mk,END)
-else
 CY_TIMESTAMP_CYQBUILD_MK_BEGIN=$(call CY_LOG_TIME,secondstage,cyqbuild.mk,BEGIN)
+
 # Skip the auto-discovery and re-use the last build's source list
--include $(CY_CONFIG_DIR)/cyqbuild.mk
-CY_QBUILD:=$(if $(wildcard $(CY_CONFIG_DIR)/cyqbuild.mk),true)
+-include $(_CY_QBUILD_MK_FILE)
+CY_QBUILD:=$(if $(wildcard $(_CY_QBUILD_MK_FILE)),true)
 ifneq ($(CY_QBUILD),true)
-CY_MESSAGE_qbuild=INFO: "$(CY_CONFIG_DIR)/cyqbuild.mk" was not found during a "qbuild". Run "build" if you need to generate it.
 $(eval $(call CY_MACRO_INFO,CY_MESSAGE_qbuild,$(CY_MESSAGE_qbuild)))
 endif
 CY_TIMESTAMP_CYQBUILD_MK_END=$(call CY_LOG_TIME,secondstage,cyqbuild.mk,END)
-endif
+
+CY_TIMESTAMP_SEARCH_FILTER_MK_BEGIN=$(call CY_LOG_TIME,secondstage,search_filter.mk,BEGIN)
+include $(CY_BASELIB_CORE_PATH)/make/core/search_filter.mk
+CY_TIMESTAMP_SEARCH_FILTER_MK_END=$(call CY_LOG_TIME,secondstage,search_filter.mk,END)
 
 CY_TIMESTAMP_RECIPE_MK_BEGIN=$(call CY_LOG_TIME,secondstage,recipe.mk,BEGIN)
 include $(CY_INTERNAL_BASELIB_PATH)/make/recipe/recipe.mk
@@ -590,7 +592,7 @@ CY_TIMESTAMP_MAIN_MK_END=$(call CY_LOG_TIME,bothstages,main.mk,END)
 ifneq ($(CY_INSTRUMENT_BUILD),)
 CY_TIMESTAMP_LIST=UTILS_MK EXTRA_INC TARGET_MK FEATURES_MK DEFINES_MK TOOLCHAIN_MK CONFIG_MK TOOLS_MK OPEN_MK HELP_MK\
 					PREBUILD_MK RECIPE_MK TRANSITION_MK PYTHON \
-					SEARCH_MK CYQBUILD_MK RECIPE_MK BUILD_MK PROGRAM_MK IDE_MK
+					SEARCH_MK CYQBUILD_MK SEARCH_FILTER_MK RECIPE_MK BUILD_MK PROGRAM_MK IDE_MK
 
 $(info )
 $(info ==============================================================================)

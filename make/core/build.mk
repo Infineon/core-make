@@ -480,7 +480,7 @@ $(CY_CONFIG_DIR)/.cylinker: CY_BUILD_mkdirs
 #
 # Print before compilation
 #
-CY_BUILD_precompile: CY_BUILD_gensrc $(CY_CONFIG_DIR)/.cycompiler $(CY_CONFIG_DIR)/.cylinker
+CY_BUILD_precompile: CY_BUILD_gensrc $(CY_CONFIG_DIR)/.cycompiler $(CY_CONFIG_DIR)/.cylinker $(_CY_QBUILD_MK_FILE)
 	$(info Building $(words $(CY_BUILD_ALL_OBJ_FILES)) file(s))
 	$(CY_NOISE)$(CY_SEARCH_GENERATE_QBUILD)
 	$(CY_NOISE)echo $(CY_RECIPE_INCLUDES) | tr " " "\n" > $(CY_CONFIG_DIR)/inclist.rsp; \

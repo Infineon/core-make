@@ -30,129 +30,6 @@ endif
 # Tool paths
 ##########################
 
-ifneq ($(CY_TOOL_make_BASE),)
-CY_INTERNAL_TOOL_make_BASE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_make_BASE)
-else
-CY_INTERNAL_TOOL_make_BASE:=$(CY_MAKEFILES_DIR)
-endif
-
-ifneq ($(CY_TOOL_cfg-backend-cli_EXE),)
-CY_INTERNAL_TOOL_cfg-backend-cli_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_cfg-backend-cli_EXE)
-else
-CY_INTERNAL_TOOL_cfg-backend-cli_EXE:=$(CY_CFG_BACKEND_CLI_DIR)/cfg-backend-cli
-endif
-
-ifneq ($(CY_TOOL_device-configurator_EXE),)
-CY_INTERNAL_TOOL_device-configurator_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_device-configurator_EXE)
-else
-CY_INTERNAL_TOOL_device-configurator_EXE:=$(CY_DEVICE_CONFIGURATOR_DIR)/device-configurator
-endif
-
-ifneq ($(CY_TOOL_capsense-configurator_EXE),)
-CY_INTERNAL_TOOL_capsense-configurator_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_capsense-configurator_EXE)
-else
-CY_INTERNAL_TOOL_capsense-configurator_EXE:=$(CY_CAPSENSE_CONFIGURATOR_DIR)/capsense-configurator
-endif
-
-ifneq ($(CY_TOOL_capsense-tuner_EXE),)
-CY_INTERNAL_TOOL_capsense-tuner_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_capsense-tuner_EXE)
-else
-CY_INTERNAL_TOOL_capsense-tuner_EXE:=$(CY_CAPSENSE_CONFIGURATOR_DIR)/capsense-tuner
-endif
-
-ifneq ($(CY_TOOL_bt-configurator-cli_EXE),)
-CY_INTERNAL_TOOL_bt-configurator-cli_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_bt-configurator-cli_EXE)
-else
-CY_INTERNAL_TOOL_bt-configurator-cli_EXE:=$(CY_BT_CONFIGURATOR_DIR)/bt-configurator-cli
-endif
-
-ifneq ($(CY_TOOL_bt-configurator_EXE),)
-CY_INTERNAL_TOOL_bt-configurator_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_bt-configurator_EXE)
-else
-CY_INTERNAL_TOOL_bt-configurator_EXE:=$(CY_BT_CONFIGURATOR_DIR)/bt-configurator
-endif
-
-# Support cype-tool for BWC reason (core-tools < 2.3)
-ifneq ($(filter $(notdir $(CY_TOOLS_DIR)),tools_2.0 tools_2.1 tools_2.2),)
-ifneq ($(CY_TOOL_cype-tool_EXE),)
-CY_INTERNAL_TOOL_cype-tool_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_cype-tool_EXE)
-else
-CY_INTERNAL_TOOL_cype-tool_EXE:=$(CY_PE_TOOL_DIR)/cype-tool
-endif
-endif
-
-ifneq ($(CY_TOOL_dfuh-tool_EXE),)
-CY_INTERNAL_TOOL_dfuh-tool_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_dfuh-tool_EXE)
-else
-CY_INTERNAL_TOOL_dfuh-tool_EXE:=$(CY_DFUH_TOOL_DIR)/dfuh-tool
-endif
-
-ifneq ($(CY_TOOL_qspi-configurator_EXE),)
-CY_INTERNAL_TOOL_qspi-configurator_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_qspi-configurator_EXE)
-else
-CY_INTERNAL_TOOL_qspi-configurator_EXE:=$(CY_QSPI_CONFIGURATOR_DIR)/qspi-configurator
-endif
-
-ifneq ($(CY_TOOL_seglcd-configurator_EXE),)
-CY_INTERNAL_TOOL_seglcd-configurator_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_seglcd-configurator_EXE)
-else
-CY_INTERNAL_TOOL_seglcd-configurator_EXE:=$(CY_SEGLCD_CONFIGURATOR_DIR)/seglcd-configurator
-endif
-
-ifneq ($(CY_TOOL_smartio-configurator_EXE),)
-CY_INTERNAL_TOOL_smartio-configurator_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_smartio-configurator_EXE)
-else
-CY_INTERNAL_TOOL_smartio-configurator_EXE:=$(CY_SMARTIO_CONFIGURATOR_DIR)/smartio-configurator
-endif
-
-ifneq ($(CY_TOOL_usbdev-configurator-cli_EXE),)
-CY_INTERNAL_TOOL_usbdev-configurator-cli_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_usbdev-configurator-cli_EXE)
-else
-CY_INTERNAL_TOOL_usbdev-configurator-cli_EXE:=$(CY_USBDEV_CONFIGURATOR_DIR)/usbdev-configurator-cli
-endif
-
-ifneq ($(CY_TOOL_usbdev-configurator_EXE),)
-CY_INTERNAL_TOOL_usbdev-configurator_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_usbdev-configurator_EXE)
-else
-CY_INTERNAL_TOOL_usbdev-configurator_EXE:=$(CY_USBDEV_CONFIGURATOR_DIR)/usbdev-configurator
-endif
-
-ifneq ($(CY_TOOL_library-manager_EXE),)
-CY_INTERNAL_TOOL_library-manager_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_library-manager_EXE)
-else
-CY_INTERNAL_TOOL_library-manager_EXE:=$(CY_LIBRARY_MANAGER_DIR)/library-manager
-endif
-
-ifneq ($(CY_TOOL_project-creator_EXE),)
-CY_INTERNAL_TOOL_project-creator_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_project-creator_EXE)
-else
-CY_INTERNAL_TOOL_project-creator_EXE:=$(CY_PROJECT_CREATOR_DIR)/project-creator
-endif
-
-ifneq ($(CY_TOOL_openocd_EXE),)
-CY_INTERNAL_TOOL_openocd_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_openocd_EXE)
-else
-CY_INTERNAL_TOOL_openocd_EXE:=$(CY_OPENOCD_DIR)/bin/openocd
-endif
-
-ifneq ($(CY_TOOL_openocd_scripts_SCRIPT),)
-CY_INTERNAL_TOOL_openocd_scripts_SCRIPT:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_openocd_scripts_SCRIPT)
-else
-CY_INTERNAL_TOOL_openocd_scripts_SCRIPT:=$(CY_OPENOCD_DIR)/scripts
-endif
-
-ifneq ($(CY_TOOL_fw-loader_EXE),)
-CY_INTERNAL_TOOL_fw-loader_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_fw-loader_EXE)
-else
-CY_INTERNAL_TOOL_fw-loader_EXE:=$(CY_FW_LOADER_DIR)/bin/fw-loader
-endif
-
-ifneq ($(CY_TOOL_python_EXE),)
-CY_INTERNAL_TOOL_python_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_python_EXE)
-else
-CY_INTERNAL_TOOL_python_EXE=
-endif
-
 #
 # Special handling for GCC
 # 	app makefile - CY_COMPILER_PATH (if selected toolchain is GCC)
@@ -177,7 +54,7 @@ ifeq ($(CY_USE_CUSTOM_GCC),true)
 CY_INTERNAL_TOOL_gcc_BASE:=$(CY_INTERNAL_GCC_PATH)
 else
 ifneq ($(CY_TOOL_gcc_BASE),)
-CY_INTERNAL_TOOL_gcc_BASE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_gcc_BASE)
+CY_INTERNAL_TOOL_gcc_BASE:=$(CY_TOOL_gcc_BASE)
 else
 CY_INTERNAL_TOOL_gcc_BASE:=$(CY_INTERNAL_GCC_PATH)
 endif
@@ -187,7 +64,7 @@ ifeq ($(CY_USE_CUSTOM_GCC),true)
 CY_INTERNAL_TOOL_arm-none-eabi-gcc_EXE:=$(CY_INTERNAL_GCC_PATH)/bin/arm-none-eabi-gcc
 else
 ifneq ($(CY_TOOL_arm-none-eabi-gcc_EXE),)
-CY_INTERNAL_TOOL_arm-none-eabi-gcc_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_arm-none-eabi-gcc_EXE)
+CY_INTERNAL_TOOL_arm-none-eabi-gcc_EXE:=$(CY_TOOL_arm-none-eabi-gcc_EXE)
 else
 CY_INTERNAL_TOOL_arm-none-eabi-gcc_EXE:=$(CY_INTERNAL_GCC_PATH)/bin/arm-none-eabi-gcc
 endif
@@ -197,7 +74,7 @@ ifeq ($(CY_USE_CUSTOM_GCC),true)
 CY_INTERNAL_TOOL_arm-none-eabi-g++_EXE:=$(CY_INTERNAL_GCC_PATH)/bin/arm-none-eabi-g++
 else
 ifneq ($(CY_TOOL_arm-none-eabi-g++_EXE),)
-CY_INTERNAL_TOOL_arm-none-eabi-g++_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_arm-none-eabi-g++_EXE)
+CY_INTERNAL_TOOL_arm-none-eabi-g++_EXE:=$(CY_TOOL_arm-none-eabi-g++_EXE)
 else
 CY_INTERNAL_TOOL_arm-none-eabi-g++_EXE:=$(CY_INTERNAL_GCC_PATH)/bin/arm-none-eabi-g++
 endif
@@ -207,7 +84,7 @@ ifeq ($(CY_USE_CUSTOM_GCC),true)
 CY_INTERNAL_TOOL_arm-none-eabi-ar_EXE:=$(CY_INTERNAL_GCC_PATH)/bin/arm-none-eabi-ar
 else
 ifneq ($(CY_TOOL_arm-none-eabi-ar_EXE),)
-CY_INTERNAL_TOOL_arm-none-eabi-ar_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_arm-none-eabi-ar_EXE)
+CY_INTERNAL_TOOL_arm-none-eabi-ar_EXE:=$(CY_TOOL_arm-none-eabi-ar_EXE)
 else
 CY_INTERNAL_TOOL_arm-none-eabi-ar_EXE:=$(CY_INTERNAL_GCC_PATH)/bin/arm-none-eabi-ar
 endif
@@ -217,7 +94,7 @@ ifeq ($(CY_USE_CUSTOM_GCC),true)
 CY_INTERNAL_TOOL_arm-none-eabi-gdb_EXE:=$(CY_INTERNAL_GCC_PATH)/bin/arm-none-eabi-gdb
 else
 ifneq ($(CY_TOOL_arm-none-eabi-gdb_EXE),)
-CY_INTERNAL_TOOL_arm-none-eabi-gdb_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_arm-none-eabi-gdb_EXE)
+CY_INTERNAL_TOOL_arm-none-eabi-gdb_EXE:=$(CY_TOOL_arm-none-eabi-gdb_EXE)
 else
 CY_INTERNAL_TOOL_arm-none-eabi-gdb_EXE:=$(CY_INTERNAL_GCC_PATH)/bin/arm-none-eabi-gdb
 endif
@@ -227,7 +104,7 @@ ifeq ($(CY_USE_CUSTOM_GCC),true)
 CY_INTERNAL_TOOL_arm-none-eabi-objcopy_EXE:=$(CY_INTERNAL_GCC_PATH)/bin/arm-none-eabi-objcopy
 else
 ifneq ($(CY_TOOL_arm-none-eabi-objcopy_EXE),)
-CY_INTERNAL_TOOL_arm-none-eabi-objcopy_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_arm-none-eabi-objcopy_EXE)
+CY_INTERNAL_TOOL_arm-none-eabi-objcopy_EXE:=$(CY_TOOL_arm-none-eabi-objcopy_EXE)
 else
 CY_INTERNAL_TOOL_arm-none-eabi-objcopy_EXE:=$(CY_INTERNAL_GCC_PATH)/bin/arm-none-eabi-objcopy
 endif
@@ -237,7 +114,7 @@ ifeq ($(CY_USE_CUSTOM_GCC),true)
 CY_INTERNAL_TOOL_arm-none-eabi-readelf_EXE:=$(CY_INTERNAL_GCC_PATH)/bin/arm-none-eabi-readelf
 else
 ifneq ($(CY_TOOL_arm-none-eabi-readelf_EXE),)
-CY_INTERNAL_TOOL_arm-none-eabi-readelf_EXE:=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_arm-none-eabi-readelf_EXE)
+CY_INTERNAL_TOOL_arm-none-eabi-readelf_EXE:=$(CY_TOOL_arm-none-eabi-readelf_EXE)
 else
 CY_INTERNAL_TOOL_arm-none-eabi-readelf_EXE:=$(CY_INTERNAL_GCC_PATH)/bin/arm-none-eabi-readelf
 endif
@@ -256,18 +133,18 @@ endif
 # Eclipse launch configs
 ##########################
 
-ifeq ($(CY_TOOL_gcc_BASE),)
-# tools_2.1 or tools_2.0
-CY_ECLIPSE_GDB=\$$\{cy_tools_path:gcc-7.2.1\}/bin/arm-none-eabi-gdb
-else
-# tools_2.2 (or later)
-CY_ECLIPSE_GDB=\$$\{cy_tools_path:CY_TOOL_arm-none-eabi-gdb_EXE\}
+CY_ECLIPSE_GDB=\$${cy_tools_path:CY_TOOL_arm-none-eabi-gdb_EXE}
 
 # Special case to account for IDE 2.1 + tools 2.2 (or later)
 ifeq ($(CY_MAKE_IDE),eclipse)
 ifeq ($(CY_MAKE_IDE_VERSION),)
-CY_ECLIPSE_GDB=\$$\{cy_tools_path:gcc\}/bin/arm-none-eabi-gdb
+CY_ECLIPSE_GDB=\$${cy_tools_path:gcc\}/bin/arm-none-eabi-gdb
 endif
 endif
 
-endif
+#
+# Remove prior to core-make-v3.0.0 release
+#
+CY_OPEN_device_configurator-cli_TOOL_FLAGS?=--build $(CY_OPEN_device_configurator_FILE) --check-device=$(DEVICE) --check-additional-devices=$(subst $(CY_SPACE),$(CY_COMMA),$(ADDITIONAL_DEVICES)) --readonly
+CY_OPEN_device_configurator-cli_TOOL_SKIP_BUILD_FLAGS?=--skip-build
+CY_OPEN_device_configurator-cli-TOOL_DEVICE_SUPPORT_FLAGS?=--app-dir $(CY_INTERNAL_APP_PATH)

@@ -2,11 +2,11 @@
 # \file search.mk
 #
 # \brief
-# Performs create cyqbuild.mk file by calling mtbsearch
+# Parses the data from cyqbuild.mk to generate useful build variables
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2021 Cypress Semiconductor Corporation
+# Copyright 2021 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,28 +26,13 @@ ifeq ($(WHICHFILE),true)
 $(info Processing $(lastword $(MAKEFILE_LIST)))
 endif
 
-_CY_QBUILD_MK_FILE=$(CY_CONFIG_DIR)/cyqbuild.mk
+_MTB_SEARCH_SOURCE_EXT=$(foreach ext,$(CY_TOOLCHAIN_SUFFIX_C) $(CY_TOOLCHAIN_SUFFIX_S) $(CY_TOOLCHAIN_SUFFIX_s) $(CY_TOOLCHAIN_SUFFIX_CPP),.$(ext))
+_MTB_SEARCH_LIB_EXT=$(foreach ext,$(CY_TOOLCHAIN_SUFFIX_O) $(CY_TOOLCHAIN_SUFFIX_A),.$(ext))
+_MTB_SEARCH_HEADER_EXT=$(foreach ext,$(CY_TOOLCHAIN_SUFFIX_H) $(CY_TOOLCHAIN_SUFFIX_HPP),.$(ext))
 
-# arguments for mtbsearch
-_MTB_SEARCH_CMD=$(CY_TOOL_mtbsearch_EXE) . -o $(_CY_QBUILD_MK_FILE) @MTB_TOOLS_DIR=$(CY_TOOLS_DIR)
+CY_SEARCH_APP_SOURCE:=$(sort $(filter $(foreach ext,$(_MTB_SEARCH_SOURCE_EXT),%$(ext)),$(CY_SEARCH_ALL_FILES)))
+CY_SEARCH_APP_LIBS:=$(sort $(filter $(foreach ext,$(_MTB_SEARCH_LIB_EXT),%$(ext)),$(CY_SEARCH_ALL_FILES)))
+CY_SEARCH_APP_INCLUDES:=$(sort $(CY_SEARCH_ALL_INCLUDES))
+CY_SEACH_APP_HEADERS:=$(sort $(filter $(foreach ext, $(_MTB_SEARCH_HEADER_EXT),%$(ext)),$(CY_SEARCH_ALL_FILES)))
 
-# if running a make then remove the cyqbuild.mk file during the first stage, the second stage will be forced to regenerate the cyqbuild.mk file.
-ifeq ($(CY_SECONDSTAGE),)
-ifeq ($(filter build,$(MAKECMDGOALS)),build)
-_MTB_CORE_RUN_MTB_SEARCH=true
-endif
-ifeq ($(filter all,$(MAKECMDGOALS)),all)
-_MTB_CORE_RUN_MTB_SEARCH=true
-endif
-endif
-
-ifeq (true,$(_MTB_CORE_RUN_MTB_SEARCH))
-$(shell rm -f $(_CY_QBUILD_MK_FILE))
-endif
-
-# generate the cyqbuild.mk file
-$(_CY_QBUILD_MK_FILE): | prebuild
-	$(info )
-	$(info Auto-discovery in progress...)
-	$(CY_NOISE)$(_MTB_SEARCH_CMD)
-	$(info Auto-discovery complete)
+CY_SEARCH_APP_SOURCE_ASSET:=$(sort $(foreach s,$(SEARCH),$(filter $(s)/%,$(CY_SEARCH_APP_SOURCE))))

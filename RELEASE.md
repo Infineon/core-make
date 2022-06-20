@@ -17,6 +17,8 @@ The this release of the core GNU make Build System includes a framework to suppo
 This also includes the getlibs.bash script that can be used directly, or via the make target to download additional git repo based libraries for the application.
 
 ### What Changed?
+#### v3.0.0
+* Dropped compactibility with recipe-make version 1.X and Modustoolbox tools version 2.X
 #### v1.9.1
 * Added support for uvision5 export devices with Cortex-M33 core
 #### v1.9.0
@@ -52,12 +54,12 @@ This version of the core make build system was validated for compatibility with 
 
 | Software and Tools                        | Version |
 | :---                                      | :----:  |
-| ModusToolbox Software Environment         | 2.3     |
-| GCC Compiler                              | 9.2     |
+| ModusToolbox Software Environment         | 3.0     |
+| GCC Compiler                              | 10.3    |
 | IAR Compiler                              | 8.4     |
 | ARM Compiler                              | 6.11    |
 
-Minimum required ModusToolbox Software Environment: v2.0
+Minimum required ModusToolbox Software Environment: v3.0
 
 ### More information
 Use the following links for more information, as needed:

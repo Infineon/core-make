@@ -154,7 +154,7 @@ def filterFiles(groupDict, searchDict, fileList):
     """
     for fl in fileList:
         cleanFile = cleanUpPath(fl)
-        dirsList = PurePath(fl).parts
+        dirsList = PurePath(fl.strip().strip("\"")).parts
         try:
             # Find the first libs directory.
             index = dirsList.index("libs")

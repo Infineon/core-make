@@ -31,34 +31,9 @@ endif
 # Additional tools
 ################################################################################
 
-CY_OPEN_TYPE_LIST+=\
-	library-manager\
-	project-creator
-
 # Tools that can be launched using make open CY_OPEN_TYPE=<tool name> command,
 # but are not shown in the Eclipse for ModusToolbox.
 CY_SUPPORTED_HIDDEN_TOOL_TYPES+=project-creator library-manager
-
-
-##########################
-# library-manager
-##########################
-
-CY_OPEN_library_manager_EXT=
-CY_OPEN_library_manager_FILE=
-CY_OPEN_library_manager_TOOL=$(CY_INTERNAL_TOOL_library-manager_EXE)
-CY_OPEN_library_manager_TOOL_FLAGS=--target-dir $(CY_INTERNAL_APPLOC)
-CY_OPEN_library_manager_TOOL_NEWCFG_FLAGS=
-
-##########################
-# project-creator
-##########################
-
-CY_OPEN_project_creator_EXT=
-CY_OPEN_project_creator_FILE=
-CY_OPEN_project_creator_TOOL=$(CY_INTERNAL_TOOL_project-creator_EXE)
-CY_OPEN_project_creator_TOOL_FLAGS=
-CY_OPEN_project_creator_TOOL_NEWCFG_FLAGS=
 
 ##########################
 # online-simulator
@@ -87,48 +62,12 @@ CY_OPEN_online_simulator_TOOL_NEWCFG_FLAGS=
 # Limit this as it can be a performance hit
 ifneq ($(filter get_app_info open,$(MAKECMDGOALS)),)
 
-# Look for tools that DISALLOW new configurations
-ifeq ($(CY_SHELL_TYPE),shell)
-CY_OPEN_NEWCFG_XML_TYPES+=$(shell \
-	xmlFileArray=($$($(CY_FIND) $(CY_INTERNAL_TOOLS) -maxdepth 2 -name "configurator.xml" \
-					-exec grep "<new_configuration_enabled>false</new_configuration_enabled>" {} +));\
-	for xmlFile in "$${xmlFileArray[@]}"; do\
-		if [[ "$$xmlFile" == *"configurator.xml"* ]]; then\
-			toolNameDir="$${xmlFile%/*}";\
-			toolName="$${toolNameDir##*/}";\
-			echo "$$toolName";\
-		fi;\
-	done;\
-)
-else
-CY_OPEN_NEWCFG_XML_TYPES+=$(shell \
-	xmlFileArray=($$($(CY_FIND) $(CY_INTERNAL_TOOLS) -maxdepth 2 -name "configurator.xml" \
-					-exec grep "<new_configuration_enabled>false</new_configuration_enabled>" {} +));\
-	for xmlFile in "$${xmlFileArray[@]}"; do\
-		if [[ "$$xmlFile" == *"configurator.xml"* ]]; then\
-			toolNameDir="$${xmlFile%/*}";\
-			toolName="$${toolNameDir\#\#*/}";\
-			echo "$$toolName";\
-		fi;\
-	done;\
-)
-endif
-
-# Tools for existing files
-CY_OPEN_NEWCFG_EXISTING_TYPES=$(foreach ext,$(subst .,,$(suffix $(CY_CONFIG_FILES))),$($(addsuffix _DEFAULT_TYPE,$(ext))))
-# filter out tools that don't exist
-CY_ALL_TOOLS_DIRS=$(foreach tool,$(filter CY_OPEN_%_TOOL,$(.VARIABLES)),\
-	$(if $(wildcard $($(tool))),$(tool)))
-CY_EXISTING_TOOL_TYPES=$(foreach tool,$(CY_SUPPORTED_TOOL_TYPES),\
-	$(if $(filter $(patsubst %,CY_OPEN_%_TOOL,$(subst -,_,$(tool))),$(CY_ALL_TOOLS_DIRS)),$(tool)))
-# Tools that do not have an existing file
-CY_OPEN_NEWCFG_POSSIBLE_TYPES=$(filter-out $(CY_OPEN_NEWCFG_EXISTING_TYPES) $(CY_OPEN_NEWCFG_XML_TYPES),$(CY_EXISTING_TOOL_TYPES))
-# Complete list of supported files
-CY_OPEN_FILTERED_SUPPORTED_TYPES=$(sort $(CY_OPEN_NEWCFG_POSSIBLE_TYPES) $(CY_OPEN_NEWCFG_EXISTING_TYPES))
+# The list of BSP configurators. (Application level configurators)
+MTB_CORE_BSP_OPEN_FILTERED_SUPPORTED_TYPES=$(filter $(MTB_BSP_CONFIGURATORS),$(CY_SUPPORTED_TOOL_TYPES))
+# The list of MW configurators. (Project level configurators)
+MTB_CORE_OPEN_MW_FILTER_SUPPORTED_TYPES=$(filter-out $(MTB_CORE_BSP_OPEN_FILTERED_SUPPORTED_TYPES),$(CY_SUPPORTED_TOOL_TYPES))
 
 endif
-
-
 
 ################################################################################
 # Prepare tool launch
@@ -148,7 +87,7 @@ endif
 
 # Set the tool and its arguments
 CY_OPEN_TOOL_FILE=$(CY_OPEN_$(subst -,_,$(CY_OPEN_TYPE))_FILE)
-CY_OPEN_TOOL_LAUNCH=$(CY_OPEN_$(subst -,_,$(CY_OPEN_TYPE))_TOOL)
+CY_OPEN_TOOL_LAUNCH="$(CY_OPEN_$(subst -,_,$(CY_OPEN_TYPE))_TOOL)"
 CY_OPEN_TOOL_FLAGS=$(CY_OPEN_$(subst -,_,$(CY_OPEN_TYPE))_TOOL_FLAGS)
 CY_OPEN_TOOL_ARGS=$(CY_OPEN_$(subst -,_,$(CY_OPEN_TYPE))_TOOL_ARGS)
 CY_OPEN_TOOL_NEWCFG_FLAGS=$(CY_OPEN_$(subst -,_,$(CY_OPEN_TYPE))_TOOL_NEWCFG_FLAGS)

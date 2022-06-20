@@ -52,7 +52,6 @@ CY_COMPONENT_LIST?=$(sort $(filter-out $(DISABLE_COMPONENTS),$(CY_COMPONENT_LIST
 ################################################################################
 # Utility variables
 ################################################################################
-
 # Create a make variable that contains a space
 CY_EMPTY:=
 CY_SPACE:=$(CY_EMPTY) $(CY_EMPTY)
@@ -173,7 +172,7 @@ $(info $(2))
 CY_INFO_$(1)=$(2)
 endef
 
-# 
+#
 # Macros to find all COMPONENTS not listed in the component list.
 # Step 1: Find all COMPONENT directories in app
 # Step 2: Process the list and get a list of all COMPONENTS
@@ -215,7 +214,7 @@ CY_MACRO_FILTER_CONFIGURATION=$(call CY_MACRO_REMOVE_CONFIGURATION,$(1),/$(strip
 							))
 
 #
-# Filter for defined components and configurations 
+# Filter for defined components and configurations
 # $(1) : List of files of a certain file type
 #
 CY_MACRO_FILTER=\
@@ -277,7 +276,7 @@ CY_MACRO_UC=$(subst a,A,$(subst b,B,$(subst c,C,$(subst d,D,$(subst e,E,$(subst 
 
 #
 # Return the location of a library
-# 	Look for library defined in mtb.mk (flow version 2). 
+# 	Look for library defined in mtb.mk (flow version 2).
 # 	If not found, search in ./libs (flow version 1).
 #	Return "NotPresent" if both fail
 # $(1) : library name
@@ -345,7 +344,7 @@ CY_BSP_TAGS=$(strip $(shell cd $(CY_TARGET_DIR); \
 ifneq ($(CY_BSP_TAGS),)
 CY_BSP_DEPENDENCIES_COMMIT=--get_bsp_deps_commit "$(CY_BSP_TAGS)"
 endif
-CY_BSP_DEPENDENCIES_CMD=$(CY_INTERNAL_TOOLS)/$(CY_TOOL_library-manager-cli_EXE) --get_bsp_deps_id $(TARGET) $(CY_BSP_DEPENDENCIES_COMMIT) --get_bsp_deps_dir $(CY_TARGET_GEN_DIR)/deps $(CY_BSP_DEPENDENCIES_OFFLINE);
+CY_BSP_DEPENDENCIES_CMD=$(CY_TOOL_library-manager-cli_EXE) --get_bsp_deps_id $(TARGET) $(CY_BSP_DEPENDENCIES_COMMIT) --get_bsp_deps_dir $(CY_TARGET_GEN_DIR)/deps $(CY_BSP_DEPENDENCIES_OFFLINE);
 endif
 endif
 
@@ -434,154 +433,63 @@ lib2mtbx:
 		exit 1;\
 	fi
 
-get_app_info:
-# Single @: to avoid the "nothing to be done" message
-	@:
-ifeq ($(CY_PROTOCOL),2)
-	$(info )
-	$(info =======================================)
-	$(info IDE variables)
-	$(info =======================================)
-	$(info CY_PROTOCOL=$(CY_PROTOCOL))
-	$(info APP_NAME=$(APPNAME))
-	$(info LIB_NAME=$(LIBNAME))
-	$(info TARGET=$(TARGET))
-	$(info TARGET_DEVICE=$(DEVICE))
-	$(info CONFIGURATOR_FILES=$(CY_CONFIG_FILES))
-	$(info SUPPORTED_TOOL_TYPES=$(CY_OPEN_FILTERED_SUPPORTED_TYPES))
-	$(info CY_TOOLS_PATH=$(CY_TOOLS_DIR))
-	$(info CY_GETLIBS_OFFLINE=$(CY_GETLIBS_OFFLINE))
-	$(info CY_GETLIBS_PATH=$(CY_INTERNAL_GETLIBS_PATH))
-	$(info CY_GETLIBS_DEPS_PATH=$(CY_INTERNAL_GETLIBS_DEPS_PATH))
-	$(info CY_GETLIBS_CACHE_PATH=$(CY_INTERNAL_GETLIBS_CACHE_PATH))
-	$(info CY_GETLIBS_OFFLINE_PATH=$(CY_INTERNAL_GETLIBS_OFFLINE_PATH))
-	$(info SHAREDLIBS_ROOT=$(CY_SHARED_PATH))
-	$(info SHAREDLIBS=$(SEARCH_LIBS_AND_INCLUDES))
-	$(info SHAREDLIBS_FILES=$(CY_SHARED_USED_LIB_FILES))
-	$(info CY_DEPENDENT_PROJECTS=$(CY_DEPENDENT_PROJECTS))
-	$(info CY_GETLIBS_SHARED_PATH=$(CY_GETLIBS_SHARED_PATH))
-	$(info CY_GETLIBS_SHARED_NAME=$(CY_GETLIBS_SHARED_NAME))
-	$(info SEARCH=$(SEARCH))
-	$(info FLOW_VERSION=$(FLOW_VERSION))
+_CY_FULL_COMPONENT_LIST=$(CORE) $(CY_COMPONENT_VFP) $(COMPONENTS) $(TOOLCHAIN) $(TARGET) $(CONFIG)
+
+ifeq ($(CY_PROTOCOL),)
+_CORE_CY_PROTOCOL_VERSION:=2
 else
-# Default scenario. Covers CY_PROTOCOL=1 and CY_PROTOCOL=""
-	$(info )
-	$(info =======================================)
-	$(info  IDE variables)
-	$(info =======================================)
-	$(info APP_NAME=$(APPNAME))
-	$(info LIB_NAME=$(LIBNAME))
-	$(info TARGET=$(TARGET))
-	$(info TARGET_DEVICE=$(DEVICE))
-	$(info CONFIGURATOR_FILES=$(CY_CONFIG_FILES))
-	$(info SUPPORTED_TOOL_TYPES=$(CY_OPEN_FILTERED_SUPPORTED_TYPES))
-	$(info CY_TOOLS_PATH=$(CY_TOOLS_DIR))
-	$(info CY_GETLIBS_PATH=$(CY_INTERNAL_GETLIBS_PATH))
-	$(info SHAREDLIBS_ROOT=$(CY_SHARED_PATH))
-	$(info SHAREDLIBS=$(SEARCH_LIBS_AND_INCLUDES))
-	$(info SHAREDLIBS_FILES=$(CY_SHARED_USED_LIB_FILES))
-	$(info CY_DEPENDENT_PROJECTS=$(CY_DEPENDENT_PROJECTS))
+_CORE_CY_PROTOCOL_VERSION:=$(CY_PROTOCOL)
 endif
-# General debug info
-	$(info )
-	$(info =======================================)
-	$(info  User: Basic configuration variables)
-	$(info =======================================)
-	$(info TARGET=$(TARGET))
-	$(info APPNAME=$(APPNAME))
-	$(info LIBNAME=$(LIBNAME))
-	$(info TOOLCHAIN=$(TOOLCHAIN))
-	$(info CONFIG=$(CONFIG))
-	$(info VERBOSE=$(VERBOSE))
-	$(info )
-	$(info =======================================)
-	$(info  User: Advanced configuration variables)
-	$(info =======================================)
-	$(info SOURCES=$(SOURCES))
-	$(info INCLUDES=$(INCLUDES))
-	$(info DEFINES=$(DEFINES))
-	$(info VFP_SELECT=$(VFP_SELECT))
-	$(info CFLAGS=$(CXXFLAGS))
-	$(info ASFLAGS=$(ASFLAGS))
-	$(info LDFLAGS=$(LDFLAGS))
-	$(info LDLIBS=$(LDLIBS))
-	$(info LINKER_SCRIPT=$(LINKER_SCRIPT))
-	$(info PREBUILD=$(PREBUILD))
-	$(info POSTBUILD=$(POSTBUILD))
-	$(info COMPONENTS=$(COMPONENTS))
-	$(info DISABLE_COMPONENTS=$(DISABLE_COMPONENTS))
-	$(info DEPENDENT_LIB_PATHS=$(DEPENDENT_LIB_PATHS))
-	$(info DEPENDENT_APP_PATHS=$(DEPENDENT_APP_PATHS))
-	$(info SEARCH=$(SEARCH))
-	$(info IMPORT_PATH=$(IMPORT_PATH))
-	$(info CONVERSION_PATH=$(CONVERSION_PATH))
-	$(info CONVERSION_TYPE=$(CONVERSION_TYPE))
-	$(info FORCE=$(FORCE))
-	$(info )
-	$(info =======================================)
-	$(info  User: BSP variables)
-	$(info =======================================)
-	$(info DEVICE=$(DEVICE))
-	$(info TARGET_GEN=$(TARGET_GEN))
-	$(info DEVICE_GEN=$(DEVICE_GEN))
-	$(info )
-	$(info =======================================)
-	$(info  User: Getlibs variables)
-	$(info =======================================)
-	$(info CY_GETLIBS_NO_CACHE=$(CY_GETLIBS_NO_CACHE))
-	$(info CY_GETLIBS_OFFLINE=$(CY_GETLIBS_OFFLINE))
-	$(info CY_GETLIBS_PATH=$(CY_INTERNAL_GETLIBS_PATH))
-	$(info CY_GETLIBS_DEPS_PATH=$(CY_INTERNAL_GETLIBS_DEPS_PATH))
-	$(info CY_GETLIBS_CACHE_PATH=$(CY_INTERNAL_GETLIBS_CACHE_PATH))
-	$(info CY_GETLIBS_OFFLINE_PATH=$(CY_INTERNAL_GETLIBS_OFFLINE_PATH))
-	$(info CY_GETLIBS_SEARCH_PATH=$(CY_INTERNAL_GETLIBS_SEARCH_PATH))
-	$(info CY_GETLIBS_SHARED_PATH=$(CY_GETLIBS_SHARED_PATH))
-	$(info CY_GETLIBS_SHARED_NAME=$(CY_GETLIBS_SHARED_NAME))
-	$(info )
-	$(info =======================================)
-	$(info  User: Path variables)
-	$(info =======================================)
-	$(info CY_APP_PATH=$(CY_APP_PATH))
-	$(info CY_BASELIB_PATH=$(CY_BASELIB_PATH))
-	$(info CY_BASELIB_CORE_PATH=$(CY_BASELIB_CORE_PATH))
-	$(info CY_EXTAPP_PATH=$(CY_EXTAPP_PATH))
-	$(info CY_DEVICESUPPORT_PATH=$(CY_DEVICESUPPORT_PATH))
-	$(info CY_COMPILER_PATH=$(CY_COMPILER_PATH))
-	$(info CY_TOOLS_DIR=$(CY_TOOLS_DIR))
-	$(info CY_BUILD_LOCATION=$(CY_BUILD_LOCATION))
-	$(info CY_PYTHON_PATH=$(CY_PYTHON_PATH))
-	$(info TOOLCHAIN_MK_PATH=$(TOOLCHAIN_MK_PATH))
-	$(info )
-	$(info =======================================)
-	$(info  User: Miscellaneous variables)
-	$(info =======================================)
-	$(info CY_IGNORE=$(CY_IGNORE_DIRS))
-	$(info CY_SKIP_RECIPE=$(CY_SKIP_RECIPE))
-	$(info CY_SKIP_CDB=$(CY_SKIP_CDB))
-	$(info CY_EXTRA_INCLUDES=$(CY_EXTRA_INCLUDES))
-	$(info CY_LIBS_SEARCH_DEPTH=$(CY_LIBS_SEARCH_DEPTH))
-	$(info CY_UTILS_SEARCH_DEPTH=$(CY_UTILS_SEARCH_DEPTH))
-	$(info CY_IDE_PRJNAME=$(CY_IDE_PRJNAME))
-	$(info CY_CONFIG_FILE_EXT=$(CY_CONFIG_FILE_EXT))
-	$(info CY_SUPPORTED_TOOL_TYPES=$(CY_SUPPORTED_TOOL_TYPES))
-	$(info )
-	$(info =======================================)
-	$(info  Internal variables)
-	$(info =======================================)
-	$(info CY_INTERNAL_BUILD_LOC=$(CY_INTERNAL_BUILD_LOC))
-	$(info CY_INTERNAL_APPLOC=$(CY_INTERNAL_APPLOC))
-	$(info CY_DEVICESUPPORT_SEARCH_PATH=$(strip $(CY_DEVICESUPPORT_SEARCH_PATH)))
-	$(info CC=$(CC))
-	$(info CXX=$(CXX))
-	$(info AS=$(AS))
-	$(info AR=$(AR))
-	$(info LD=$(LD))
-	$(info )
-	$(info =======================================)
-	$(info  Tools list)
-	$(info =======================================)
-	$(foreach tool,$(sort $(filter CY_TOOL_%,$(.VARIABLES))),$(info $(tool)=$($(tool))))
-	$(info )
+_CORE_MAKE_SUPPORTED_PROTOCAL_VERSIONS=1
+
+ifeq ($(MTB_QUERY),)
+# undefined MTB_QUERY. Use the latest
+_CORE_MTB_QUERY=$(lastword $(_CORE_MAKE_SUPPORTED_PROTOCAL_VERSIONS))
+# MTB_QUERY version is supported
+else ifeq ($(filter $(MTB_QUERY),$(_CORE_MAKE_SUPPORTED_PROTOCAL_VERSIONS)),$(MTB_QUERY))
+_CORE_MTB_QUERY=$(MTB_QUERY)
+else
+# MTB_QUERY is newer than max supported version. Use the latest
+_CORE_MTB_QUERY=$(lastword $(_CORE_MAKE_SUPPORTED_PROTOCAL_VERSIONS))
+$(warning Requested MTB_QUERY version is newer than is supported.)
+endif
+
+# CY_PROTOCOl=2, MTB_QUERY=1. Supports Modustoolbox 3.0
+get_app_info_2_1:
+	@:
+	$(info MTB_DEVICE=$(DEVICE))
+	$(info MTB_SEARCH=$(CY_TOOLS_MAKE_SEARCH_DIRS))
+	$(info MTB_TOOLCHAIN=$(TOOLCHAIN))
+	$(info MTB_TARGET=$(TARGET))
+	$(info MTB_APP_NAME=$(APPNAME)$(LIBNAME))
+	$(info MTB_COMPONENTS=$(_CY_FULL_COMPONENT_LIST))
+	$(info MTB_DISABLED_COMPONENTS=$(DISABLE_COMPONENTS))
+	$(info MTB_ADDITIONAL_DEVICES=$(ADDITIONAL_DEVICES))
+	$(info MTB_LIBS=$(CY_INTERNAL_GETLIBS_PATH))
+	$(info MTB_DEPS=$(CY_INTERNAL_GETLIBS_DEPS_PATH))
+	$(info MTB_WKS_SHARED_NAME=$(CY_GETLIBS_SHARED_NAME))
+	$(info MTB_WKS_SHARED_DIR=$(CY_GETLIBS_SHARED_PATH))
+	$(info MTB_FLOW_VERSION=$(FLOW_VERSION))
+	$(info MTB_QUERY=$(_CORE_MTB_QUERY))
+	$(info MTB_TOOLS_DIR=$(CY_TOOLS_DIR))
+	$(info MTB_BSP_TOOL_TYPES=$(MTB_CORE_BSP_OPEN_FILTERED_SUPPORTED_TYPES))
+	$(info MTB_MW_TOOL_TYPES=$(MTB_CORE_OPEN_MW_FILTER_SUPPORTED_TYPES))
+	$(info MTB_IGNORE=$(CY_IGNORE_DIRS))
+ifneq ($(MTB_TYPE),)
+	$(info MTB_TYPE=$(MTB_TYPE))
+else
+	$(info MTB_TYPE=LEGACY)
+endif
+	$(info MTB_CORE_TYPE=$(CORE))
+	$(info MTB_CORE_NAME=$(CORE_NAME))
+	$(info MTB_BUILD_SUPPORT=$(MTB_BUILD_SUPPORT))
+	$(info MTB_GIT_CACHE_DIR=$(CY_GETLIBS_CACHE_PATH))
+	$(info MTB_OFFLINE_DIR=$(CY_GETLIBS_OFFLINE_PATH))
+
+get_app_info: get_app_info_$(_CORE_CY_PROTOCOL_VERSION)_$(_CORE_MTB_QUERY)
+	@:
+
+_GET_APP_INFO_COMMAND_LINE=$(sort $(foreach var,$(.VARIABLES),$(if $(filter command line,$(origin $(var))),$(var)="$($(var))")))
 
 ################################################################################
 # Test/debug targets
