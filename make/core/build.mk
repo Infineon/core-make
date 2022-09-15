@@ -34,17 +34,14 @@ $(info Constructing build rules...)
 ################################################################################
 
 #
-# Search for relative path patterns in source list
-# $(1) : Pattern
-# $(2) : Sources
+# Prints full/shortened source name
+# This can't be set with = since it contains $<
 #
-CY_MACRO_VPATH_FIND=$(foreach level,$(1),$(if $(filter $(level)%,$(2)),$(level)))
-
-# 
-# Gather the includes in inclist_export.rsp files
-# $(1) : List of inclist_export.rsp files
-#
-CY_MACRO_ECLIPSE_PRINT=$(foreach incFile,$(1),$(call CY_MACRO_FILE_READ,$(incFile)))
+ifneq (,$(filter $(VERBOSE),true 1))
+_MTB_CORE__BUILD_COMPILE_PRINT=$<
+else
+_MTB_CORE__BUILD_COMPILE_PRINT=$(notdir $<)
+endif
 
 #
 # Construct explicit rules for select files
@@ -52,53 +49,46 @@ CY_MACRO_ECLIPSE_PRINT=$(foreach incFile,$(1),$(call CY_MACRO_FILE_READ,$(incFil
 # $(2) : object file
 # $(3) : file origin identifier
 #
-define CY_MACRO_EXPLICIT_RULE
+define mtb_explicit_build_rule
 
 # Build the correct compiler arguments
 $(2)_SUFFIX=$$(suffix $(1))
-ifeq ($$($(2)_SUFFIX),.$(CY_TOOLCHAIN_SUFFIX_s))
-$(2)_EXPLICIT_COMPILE_ARGS=$(CY_BUILD_COMPILE_AS_LC)
-$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(CY_CDB_BUILD_COMPILE_AS_LC)
-else ifeq ($$($(2)_SUFFIX),.$(CY_TOOLCHAIN_SUFFIX_S))
-$(2)_EXPLICIT_COMPILE_ARGS=$(CY_BUILD_COMPILE_AS_UC)
-$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(CY_CDB_BUILD_COMPILE_AS_UC)
-else ifeq ($$($(2)_SUFFIX),.$(CY_TOOLCHAIN_SUFFIX_C))
-$(2)_EXPLICIT_COMPILE_ARGS=$(CY_BUILD_COMPILE_EXPLICIT_C)
-$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(CY_CDB_BUILD_COMPILE_EXPLICIT_C)
-else ifeq ($$($(2)_SUFFIX),.$(CY_TOOLCHAIN_SUFFIX_CPP))
-$(2)_EXPLICIT_COMPILE_ARGS=$(CY_BUILD_COMPILE_EXPLICIT_CPP)
-$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(CY_CDB_BUILD_COMPILE_EXPLICIT_CPP)
+ifeq ($$($(2)_SUFFIX),.$(MTB_RECIPE__SUFFIX_s))
+$(2)_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__BUILD_COMPILE_AS_LC)
+$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__CDB_BUILD_COMPILE_AS_LC)
+else ifeq ($$($(2)_SUFFIX),.$(MTB_RECIPE__SUFFIX_S))
+$(2)_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__BUILD_COMPILE_AS_UC)
+$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__CDB_BUILD_COMPILE_AS_UC)
+else ifeq ($$($(2)_SUFFIX),.$(MTB_RECIPE__SUFFIX_C))
+$(2)_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__BUILD_COMPILE_EXPLICIT_C)
+$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_C)
+else ifeq ($$($(2)_SUFFIX),.$(MTB_RECIPE__SUFFIX_CPP))
+$(2)_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__BUILD_COMPILE_EXPLICIT_CPP)
+$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_CPP)
+else ifeq ($$($(2)_SUFFIX),.$(MTB_RECIPE__SUFFIX_CXX))
+$(2)_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__BUILD_COMPILE_EXPLICIT_CPP)
+$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_CPP)
+else ifeq ($$($(2)_SUFFIX),.$(MTB_RECIPE__SUFFIX_CC))
+$(2)_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__BUILD_COMPILE_EXPLICIT_CPP)
+$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_CPP)
 else
-$$(call CY_MACRO_ERROR,Incompatible source file type encountered while constructing explicit rule: $(1))
+$$(call mtb__error,Incompatible source file type encountered while constructing explicit rule: $(1))
 endif
 
-$(CY_CONFIG_DIR)/$(2): $(1)
+$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(2): $(1)
 ifneq ($(CY_MAKE_IDE),eclipse)
-	$$(info $$(CY_INDENT)Compiling $(3) file $$(CY_COMPILE_PRINT))
+	$$(info $$(MTB__INDENT)Compiling $(3) file $$(_MTB_CORE__BUILD_COMPILE_PRINT))
 else
-	$$(info Compiling $$< $$(CY_RECIPE_DEFINES) $$(sort $$(CY_RECIPE_INCLUDES) $$(call CY_MACRO_ECLIPSE_PRINT,$$(CY_SHAREDLIB_INCLUDES_EXPORT_LIST))))
+	$$(info Compiling $$< $$(MTB_RECIPE__DEFINES) $$(MTB_RECIPE__INCLUDES))
 endif
-	$(CY_NOISE)$$($(2)_EXPLICIT_COMPILE_ARGS) $$@ $$<
+	$(MTB__NOISE)$$($(2)_EXPLICIT_COMPILE_ARGS) $$@ $$<
 
-ifeq ($(CY_SKIP_CDB),)
-ifneq ($(CY_FILE_TYPE),file)
-
-$(CY_CONFIG_DIR)/$(patsubst %.o,%.cdb,$(2)): CY_BUILD_cdb_preprint
-	$(CY_NOISE)printf "\n {\n  \"directory\": \"$$(CY_INTERNAL_APPLOC)\",\n  \"file\": \"$(1)\",\n  \"command\": \"$$(subst ",\\\\\",$$($(2)_CDB_EXPLICIT_COMPILE_ARGS) $(CY_CONFIG_DIR)/$(2) $(1))\"\n }," >$$@
-
-CY_CDB_FILES+=$(CY_CONFIG_DIR)/$(patsubst %.o,%.cdb,$(2))
-
-else
-
-CY_CDB_INFO+=$(CY_NEWLINE_MARKER) {$(CY_NEWLINE_MARKER)
-CY_CDB_INFO+=$$(CY_SPACE)"directory": "$$(CY_INTERNAL_APPLOC)",$(CY_NEWLINE_MARKER)
-CY_CDB_INFO+=$$(CY_SPACE)"file": "$(1)",$(CY_NEWLINE_MARKER)
+_MTB_CORE__CDB_INFO+=$$(MTB__SPACE){
+_MTB_CORE__CDB_INFO+=$$(MTB__SPACE)"directory": "$$(MTB_TOOLS__PRJ_DIR)",
+_MTB_CORE__CDB_INFO+=$$(MTB__SPACE)"file": "$(1)",
 # Remove quotes from path and escape spaces
-CY_CDB_INFO+=$$(CY_SPACE)"command": "$$(subst ",,$$(subst $(CY_SPACE),\ ,$,$$($(2)_CDB_EXPLICIT_COMPILE_ARGS) $(CY_CONFIG_DIR)/$(2) $(1)))"$(CY_NEWLINE_MARKER)
-CY_CDB_INFO+=},
-
-endif
-endif
+_MTB_CORE__CDB_INFO+=$$(MTB__SPACE)"command": "$$(subst ",,$,$$($(2)_CDB_EXPLICIT_COMPILE_ARGS) $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(2) $(1))"
+_MTB_CORE__CDB_INFO+=},
 
 endef
 
@@ -108,47 +98,11 @@ endef
 ################################################################################
 
 ifneq ($(LIBNAME),)
-CY_BUILD_TARGET=$(CY_CONFIG_DIR)/$(LIBNAME).$(CY_TOOLCHAIN_SUFFIX_ARCHIVE)
+_MTB_CORE__BUILD_TARGET:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(LIBNAME).$(MTB_RECIPE__SUFFIX_A)
 else
-CY_BUILD_TARGET=$(CY_CONFIG_DIR)/$(APPNAME).$(CY_TOOLCHAIN_SUFFIX_TARGET)
-CY_BUILD_MAPFILE=$(CY_CONFIG_DIR)/$(APPNAME).$(CY_TOOLCHAIN_SUFFIX_MAP)
+_MTB_CORE__BUILD_TARGET:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).$(MTB_RECIPE__SUFFIX_TARGET)
+_MTB_CORE__BUILD_MAPFILE:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).$(MTB_RECIPE__SUFFIX_MAP)
 endif
-
-
-################################################################################
-# Shared libs
-################################################################################
-
-ifneq ($(SEARCH_LIBS_AND_INCLUDES),)
-
-CY_SHAREDLIB_INCLUDES_EXPORT_LIST=$(foreach lib,$(SEARCH_LIBS_AND_INCLUDES),$($(notdir $(lib))_SHAREDLIB_BUILD_LOCATION)/inclist_export.rsp)
-CY_SHAREDLIB_LIBS_EXPORT_LIST=$(foreach lib,$(SEARCH_LIBS_AND_INCLUDES),$($(notdir $(lib))_SHAREDLIB_BUILD_LOCATION)/liblist_export.rsp)
-CY_SHAREDLIB_ARTIFACT_EXPORT_LIST=$(foreach lib,$(SEARCH_LIBS_AND_INCLUDES),$($(notdir $(lib))_SHAREDLIB_BUILD_LOCATION)/artifact_export.rsp)
-CY_SHAREDLIB_ARTIFACTS=$(foreach d,$(CY_SHAREDLIB_ARTIFACT_EXPORT_LIST),$(call CY_MACRO_FILE_READ,$(d)))
-
-CY_BUILD_SHAREDLIB_INCLIST=$(foreach inc,$(CY_SHAREDLIB_INCLUDES_EXPORT_LIST),$(addprefix $(CY_TOOLCHAIN_INCRSPFILE),$(inc)))
-CY_BUILD_SHAREDLIB_LIBLIST=$(foreach lib,$(CY_SHAREDLIB_LIBS_EXPORT_LIST),$(addprefix $(CY_TOOLCHAIN_OBJRSPFILE),$(lib)))\
-							$(foreach artifact,$(CY_SHAREDLIB_ARTIFACT_EXPORT_LIST),$(addprefix $(CY_TOOLCHAIN_OBJRSPFILE),$(artifact)))
-
-endif
-
-
-################################################################################
-# Dependent apps
-################################################################################
-
-ifneq ($(DEPENDENT_APP_PATHS),)
-
-CY_DEPAPP_TARGET=$(CY_CONFIG_DIR)/$(APPNAME)_standalone.$(CY_TOOLCHAIN_SUFFIX_TARGET)
-CY_DEPAPP_MAPFILE=$(CY_CONFIG_DIR)/$(APPNAME)_standalone.$(CY_TOOLCHAIN_SUFFIX_MAP)
-
-CY_DEPAPP_ARTIFACT_EXPORT_LIST=$(foreach app,$(DEPENDENT_APP_PATHS),$($(notdir $(app))_DEPAPP_BUILD_LOCATION)/artifact_export.rsp)
-CY_DEPAPP_C_FILES=$(foreach d,$(CY_DEPAPP_ARTIFACT_EXPORT_LIST),$(if $(wildcard $(d)),$(call CY_MACRO_FILE_READ,$(d))))
-CY_DEPAPP_STRIPPED=$(notdir $(CY_DEPAPP_C_FILES))
-CY_DEPAPP_OBJ_FILES=$(addprefix $(CY_CONFIG_DIR)/dep_apps/,$(CY_DEPAPP_STRIPPED:%.$(CY_TOOLCHAIN_SUFFIX_C)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
-
-endif
-
 
 ################################################################################
 # Build arguments
@@ -157,184 +111,136 @@ endif
 #
 # Strip off the paths for conversion to build output files
 #
-CY_BUILD_EXTSRC_LIST=$(SOURCES) $(CY_SEARCH_APP_SOURCE_ASSET)
-CY_BUILD_INTSRC_LIST=$(filter-out $(CY_BUILD_EXTSRC_LIST),$(CY_RECIPE_SOURCE))
-CY_BUILD_SRC_STRIPPED=$(patsubst $(CY_INTERNAL_APP_PATH)/%,/%,$(patsubst $(CY_INTERNAL_EXTAPP_PATH)/%,/%,$(CY_BUILD_INTSRC_LIST)))
-CY_BUILD_EXTSRC_RELATIVE=$(sort $(filter $(CY_INTERNAL_APP_PATH)/%,$(CY_BUILD_EXTSRC_LIST)) $(filter ../%,$(CY_BUILD_EXTSRC_LIST)) $(filter ./%,$(CY_BUILD_EXTSRC_LIST)))
-CY_BUILD_EXTSRC_ABSOLUTE=$(filter-out $(CY_BUILD_EXTSRC_RELATIVE),$(CY_BUILD_EXTSRC_LIST))
-CY_BUILD_EXTSRC_RELATIVE_STRIPPED=$(patsubst $(CY_INTERNAL_APP_PATH)/%,/%,$(subst ../,,$(CY_BUILD_EXTSRC_RELATIVE)))
-CY_BUILD_EXTSRC_ABSOLUTE_STRIPPED=$(notdir $(CY_BUILD_EXTSRC_ABSOLUTE))
+_MTB_CORE__BUILD_EXTSRC_LIST:=$(SOURCES) $(_MTB_CORE__SEARCH_EXT_SOURCE_ASSET)
+_MTB_CORE__BUILD_INTSRC_LIST:=$(filter-out $(_MTB_CORE__BUILD_EXTSRC_LIST),$(MTB_RECIPE__SOURCE))
+_MTB_CORE__BUILD_SRC_STRIPPED:=$(patsubst $(MTB_TOOLS__REL_PRJ_PATH)/%,/%,$(_MTB_CORE__BUILD_INTSRC_LIST))
+_MTB_CORE__BUILD_EXTSRC_RELATIVE:=$(sort $(filter $(MTB_TOOLS__REL_PRJ_PATH)/%,$(_MTB_CORE__BUILD_EXTSRC_LIST)) $(filter ../%,$(_MTB_CORE__BUILD_EXTSRC_LIST)) $(filter ./%,$(_MTB_CORE__BUILD_EXTSRC_LIST)))
+_MTB_CORe__BUILD_EXTSRC_ABSOLUTE:=$(filter-out $(_MTB_CORE__BUILD_EXTSRC_RELATIVE),$(_MTB_CORE__BUILD_EXTSRC_LIST))
+_MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED:=$(patsubst $(MTB_TOOLS__REL_PRJ_PATH)/%,/%,$(subst ../,,$(_MTB_CORE__BUILD_EXTSRC_RELATIVE)))
+_MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED:=$(notdir $(_MTB_CORe__BUILD_EXTSRC_ABSOLUTE))
 
 #
 # Source files that come from the application, generated, and external input
 #
-CY_BUILD_SRC_S_FILES=$(filter %.$(CY_TOOLCHAIN_SUFFIX_S),$(CY_BUILD_SRC_STRIPPED))
-CY_BUILD_SRC_s_FILES=$(filter %.$(CY_TOOLCHAIN_SUFFIX_s),$(CY_BUILD_SRC_STRIPPED))
-CY_BUILD_SRC_C_FILES=$(filter %.$(CY_TOOLCHAIN_SUFFIX_C),$(CY_BUILD_SRC_STRIPPED))
-CY_BUILD_SRC_CPP_FILES=$(filter %.$(CY_TOOLCHAIN_SUFFIX_CPP),$(CY_BUILD_SRC_STRIPPED))
-CY_BUILD_GENSRC_S_FILES=$(filter %.$(CY_TOOLCHAIN_SUFFIX_S),$(CY_RECIPE_GENERATED))
-CY_BUILD_GENSRC_s_FILES=$(filter %.$(CY_TOOLCHAIN_SUFFIX_s),$(CY_RECIPE_GENERATED))
-CY_BUILD_GENSRC_C_FILES=$(filter %.$(CY_TOOLCHAIN_SUFFIX_C),$(CY_RECIPE_GENERATED))
-CY_BUILD_GENSRC_CPP_FILES=$(filter %.$(CY_TOOLCHAIN_SUFFIX_CPP),$(CY_RECIPE_GENERATED))
-CY_BUILD_EXTSRC_S_FILES=$(filter %.$(CY_TOOLCHAIN_SUFFIX_S),$(CY_BUILD_EXTSRC_RELATIVE_STRIPPED) $(CY_BUILD_EXTSRC_ABSOLUTE_STRIPPED))
-CY_BUILD_EXTSRC_s_FILES=$(filter %.$(CY_TOOLCHAIN_SUFFIX_s),$(CY_BUILD_EXTSRC_RELATIVE_STRIPPED) $(CY_BUILD_EXTSRC_ABSOLUTE_STRIPPED))
-CY_BUILD_EXTSRC_C_FILES=$(filter %.$(CY_TOOLCHAIN_SUFFIX_C),$(CY_BUILD_EXTSRC_RELATIVE_STRIPPED) $(CY_BUILD_EXTSRC_ABSOLUTE_STRIPPED))
-CY_BUILD_EXTSRC_CPP_FILES=$(filter %.$(CY_TOOLCHAIN_SUFFIX_CPP),$(CY_BUILD_EXTSRC_RELATIVE_STRIPPED) $(CY_BUILD_EXTSRC_ABSOLUTE_STRIPPED))
+_MTB_CORE__BUILD_SRC_S_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_S),$(_MTB_CORE__BUILD_SRC_STRIPPED))
+_MTB_CORE__BUILD_SRC_s_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_s),$(_MTB_CORE__BUILD_SRC_STRIPPED))
+_MTB_CORE__BUILD_SRC_C_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_C),$(_MTB_CORE__BUILD_SRC_STRIPPED))
+_MTB_CORE__BUILD_SRC_CPP_FILES:=$(filter %.$(MTB_RECIPE__SUFFIX_CPP),$(_MTB_CORE__BUILD_SRC_STRIPPED))
+_MTB_CORE__BUILD_SRC_CXX_FILES:=$(filter %.$(MTB_RECIPE__SUFFIX_CXX),$(_MTB_CORE__BUILD_SRC_STRIPPED))
+_MTB_CORE__BUILD_SRC_CC_FILES :=$(filter %.$(MTB_RECIPE__SUFFIX_CC),$(_MTB_CORE__BUILD_SRC_STRIPPED))
+
+_MTB_CORE__BUILD_GENSRC_S_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_S),$(CY_RECIPE_GENERATED))
+_MTB_CORE__BUILD_GENSRC_s_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_s),$(CY_RECIPE_GENERATED))
+_MTB_CORE__BUILD_GENSRC_C_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_C),$(CY_RECIPE_GENERATED))
+_MTB_CORE__BUILD_GENSRC_CPP_FILES:=$(filter %.$(MTB_RECIPE__SUFFIX_CPP),$(CY_RECIPE_GENERATED))
+_MTB_CORE__BUILD_GENSRC_CXX_FILES:=$(filter %.$(MTB_RECIPE__SUFFIX_CXX),$(CY_RECIPE_GENERATED))
+_MTB_CORE__BUILD_GENSRC_CC_FILES :=$(filter %.$(MTB_RECIPE__SUFFIX_CC),$(CY_RECIPE_GENERATED))
+
+_MTB_CORE__BUILD_EXTSRC_S_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_S),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED))
+_MTB_CORE__BUILD_EXTSRC_s_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_s),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED))
+_MTB_CORE__BUILD_EXTSRC_C_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_C),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED))
+_MTB_CORE__BUILD_EXTSRC_CPP_FILES:=$(filter %.$(MTB_RECIPE__SUFFIX_CPP),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED))
+_MTB_CORE__BUILD_EXTSRC_CXX_FILES:=$(filter %.$(MTB_RECIPE__SUFFIX_CXX),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED))
+_MTB_CORE__BUILD_EXTSRC_CC_FILES :=$(filter %.$(MTB_RECIPE__SUFFIX_CC),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED))
 
 #
 # The list of object files
 #
-CY_BUILD_SRC_S_OBJ_FILES=$(addprefix $(CY_CONFIG_DIR)/,$(CY_BUILD_SRC_S_FILES:%.$(CY_TOOLCHAIN_SUFFIX_S)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
-CY_BUILD_SRC_s_OBJ_FILES=$(addprefix $(CY_CONFIG_DIR)/,$(CY_BUILD_SRC_s_FILES:%.$(CY_TOOLCHAIN_SUFFIX_s)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
-CY_BUILD_SRC_C_OBJ_FILES=$(addprefix $(CY_CONFIG_DIR)/,$(CY_BUILD_SRC_C_FILES:%.$(CY_TOOLCHAIN_SUFFIX_C)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
-CY_BUILD_SRC_CPP_OBJ_FILES=$(addprefix $(CY_CONFIG_DIR)/,$(CY_BUILD_SRC_CPP_FILES:%.$(CY_TOOLCHAIN_SUFFIX_CPP)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
-CY_BUILD_GENSRC_S_OBJ_FILES=$(patsubst $(CY_BUILDTARGET_DIR)/%,$(CY_CONFIG_DIR)/%,$(CY_BUILD_GENSRC_S_FILES:%.$(CY_TOOLCHAIN_SUFFIX_S)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
-CY_BUILD_GENSRC_s_OBJ_FILES=$(patsubst $(CY_BUILDTARGET_DIR)/%,$(CY_CONFIG_DIR)/%,$(CY_BUILD_GENSRC_s_FILES:%.$(CY_TOOLCHAIN_SUFFIX_s)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
-CY_BUILD_GENSRC_C_OBJ_FILES=$(patsubst $(CY_BUILDTARGET_DIR)/%,$(CY_CONFIG_DIR)/%,$(CY_BUILD_GENSRC_C_FILES:%.$(CY_TOOLCHAIN_SUFFIX_C)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
-CY_BUILD_GENSRC_CPP_OBJ_FILES=$(patsubst $(CY_BUILDTARGET_DIR)/%,$(CY_CONFIG_DIR)/%,$(CY_BUILD_GENSRC_CPP_FILES:%.$(CY_TOOLCHAIN_SUFFIX_CPP)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
-CY_BUILD_EXTSRC_S_OBJ_FILES=$(addprefix $(CY_CONFIG_DIR)/ext/,$(CY_BUILD_EXTSRC_S_FILES:%.$(CY_TOOLCHAIN_SUFFIX_S)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
-CY_BUILD_EXTSRC_s_OBJ_FILES=$(addprefix $(CY_CONFIG_DIR)/ext/,$(CY_BUILD_EXTSRC_s_FILES:%.$(CY_TOOLCHAIN_SUFFIX_s)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
-CY_BUILD_EXTSRC_C_OBJ_FILES=$(addprefix $(CY_CONFIG_DIR)/ext/,$(CY_BUILD_EXTSRC_C_FILES:%.$(CY_TOOLCHAIN_SUFFIX_C)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
-CY_BUILD_EXTSRC_CPP_OBJ_FILES=$(addprefix $(CY_CONFIG_DIR)/ext/,$(CY_BUILD_EXTSRC_CPP_FILES:%.$(CY_TOOLCHAIN_SUFFIX_CPP)=%.$(CY_TOOLCHAIN_SUFFIX_O)))
+_MTB_CORE__BUILD_SRC_S_OBJ_FILES:=$(addprefix $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/,$(_MTB_CORE__BUILD_SRC_S_FILES:%.$(MTB_RECIPE__SUFFIX_S)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_SRC_s_OBJ_FILES:=$(addprefix $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/,$(_MTB_CORE__BUILD_SRC_s_FILES:%.$(MTB_RECIPE__SUFFIX_s)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_SRC_C_OBJ_FILES:=$(addprefix $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/,$(_MTB_CORE__BUILD_SRC_C_FILES:%.$(MTB_RECIPE__SUFFIX_C)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_SRC_CPP_OBJ_FILES:=$(addprefix $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/,$(_MTB_CORE__BUILD_SRC_CPP_FILES:%.$(MTB_RECIPE__SUFFIX_CPP)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_SRC_CXX_OBJ_FILES:=$(addprefix $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/,$(_MTB_CORE__BUILD_SRC_CXX_FILES:%.$(MTB_RECIPE__SUFFIX_CXX)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_SRC_CC_OBJ_FILES:=$(addprefix $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/,$(_MTB_CORE__BUILD_SRC_CC_FILES:%.$(MTB_RECIPE__SUFFIX_CC)=%.$(MTB_RECIPE__SUFFIX_O)))
+
+_MTB_CORE__BUILD_GENSRC_S_OBJ_FILES:=$(patsubst $(MTB_TOOLS__OUTPUT_TARGET_DIR)/%,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/%,$(_MTB_CORE__BUILD_GENSRC_S_FILES:%.$(MTB_RECIPE__SUFFIX_S)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_GENSRC_s_OBJ_FILES:=$(patsubst $(MTB_TOOLS__OUTPUT_TARGET_DIR)/%,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/%,$(_MTB_CORE__BUILD_GENSRC_s_FILES:%.$(MTB_RECIPE__SUFFIX_s)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_GENSRC_C_OBJ_FILES:=$(patsubst $(MTB_TOOLS__OUTPUT_TARGET_DIR)/%,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/%,$(_MTB_CORE__BUILD_GENSRC_C_FILES:%.$(MTB_RECIPE__SUFFIX_C)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_GENSRC_CPP_OBJ_FILES:=$(patsubst $(MTB_TOOLS__OUTPUT_TARGET_DIR)/%,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/%,$(_MTB_CORE__BUILD_GENSRC_CPP_FILES:%.$(MTB_RECIPE__SUFFIX_CPP)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_GENSRC_CXX_OBJ_FILES:=$(patsubst $(MTB_TOOLS__OUTPUT_TARGET_DIR)/%,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/%,$(_MTB_CORE__BUILD_GENSRC_CXX_FILES:%.$(MTB_RECIPE__SUFFIX_CXX)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_GENSRC_CC_OBJ_FILES:=$(patsubst $(MTB_TOOLS__OUTPUT_TARGET_DIR)/%,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/%,$(_MTB_CORE__BUILD_GENSRC_CC_FILES:%.$(MTB_RECIPE__SUFFIX_CC)=%.$(MTB_RECIPE__SUFFIX_O)))
+
+_MTB_CORE__BUILD_EXTSRC_S_OBJ_FILES:=$(addprefix $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/ext/,$(_MTB_CORE__BUILD_EXTSRC_S_FILES:%.$(MTB_RECIPE__SUFFIX_S)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_EXTSRC_s_OBJ_FILES:=$(addprefix $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/ext/,$(_MTB_CORE__BUILD_EXTSRC_s_FILES:%.$(MTB_RECIPE__SUFFIX_s)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_EXTSRC_C_OBJ_FILES:=$(addprefix $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/ext/,$(_MTB_CORE__BUILD_EXTSRC_C_FILES:%.$(MTB_RECIPE__SUFFIX_C)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_EXTSRC_CPP_OBJ_FILES:=$(addprefix $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/ext/,$(_MTB_CORE__BUILD_EXTSRC_CPP_FILES:%.$(MTB_RECIPE__SUFFIX_CPP)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_EXTSRC_CXX_OBJ_FILES:=$(addprefix $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/ext/,$(_MTB_CORE__BUILD_EXTSRC_CXX_FILES:%.$(MTB_RECIPE__SUFFIX_CXX)=%.$(MTB_RECIPE__SUFFIX_O)))
+_MTB_CORE__BUILD_EXTSRC_CC_OBJ_FILES:=$(addprefix $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/ext/,$(_MTB_CORE__BUILD_EXTSRC_CC_FILES:%.$(MTB_RECIPE__SUFFIX_CC)=%.$(MTB_RECIPE__SUFFIX_O)))
 
 # All object files from the application
-CY_BUILD_ALL_OBJ_FILES=\
-	$(call CY_MACRO_REMOVE_DOUBLESLASH,\
-	$(CY_BUILD_SRC_S_OBJ_FILES)\
-	$(CY_BUILD_SRC_s_OBJ_FILES)\
-	$(CY_BUILD_SRC_C_OBJ_FILES)\
-	$(CY_BUILD_SRC_CPP_OBJ_FILES)\
-	$(CY_BUILD_GENSRC_S_OBJ_FILES)\
-	$(CY_BUILD_GENSRC_s_OBJ_FILES)\
-	$(CY_BUILD_GENSRC_C_OBJ_FILES)\
-	$(CY_BUILD_GENSRC_CPP_OBJ_FILES)\
-	$(CY_BUILD_EXTSRC_S_OBJ_FILES)\
-	$(CY_BUILD_EXTSRC_s_OBJ_FILES)\
-	$(CY_BUILD_EXTSRC_C_OBJ_FILES)\
-	$(CY_BUILD_EXTSRC_CPP_OBJ_FILES))\
-	$(CY_DEPAPP_OBJ_FILES)
-
-# Obj list without dependent apps
-CY_DEPAPP_OBJ_FILES_WO=$(filter-out $(CY_DEPAPP_OBJ_FILES),$(CY_BUILD_ALL_OBJ_FILES))
+_MTB_CORE__BUILD_ALL_OBJ_FILES:=\
+	$(subst //,/,\
+	$(_MTB_CORE__BUILD_SRC_S_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_SRC_s_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_SRC_C_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_SRC_CPP_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_SRC_CXX_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_SRC_CC_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_GENSRC_S_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_GENSRC_s_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_GENSRC_C_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_GENSRC_CPP_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_GENSRC_CXX_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_GENSRC_CC_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_EXTSRC_S_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_EXTSRC_s_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_EXTSRC_C_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_EXTSRC_CPP_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_EXTSRC_CXX_OBJ_FILES)\
+	$(_MTB_CORE__BUILD_EXTSRC_CC_OBJ_FILES))
 
 #
 # Dependency files
 #
-CY_DEPENDENCY_FILES=$(CY_BUILD_ALL_OBJ_FILES:%.$(CY_TOOLCHAIN_SUFFIX_O)=%.$(CY_TOOLCHAIN_SUFFIX_D))
-
-#
-# The list of static libraries
-#
-CY_BUILD_ALL_LIB_FILES=$(CY_RECIPE_LIBS)
+_MTB_CORE__DEPENDENCY_FILES:=$(_MTB_CORE__BUILD_ALL_OBJ_FILES:%.$(MTB_RECIPE__SUFFIX_O)=%.$(MTB_RECIPE__SUFFIX_D))
 
 #
 # Output directories
 #
-CY_BUILD_DIRS=$(sort $(call CY_MACRO_DIR,$(CY_BUILD_ALL_OBJ_FILES)) $(call CY_MACRO_DIR,$(CY_BUILD_TARGET)))
-
-#
-# Check Windows path length limit for build directories
-#
-ifeq ($(OS),Windows_NT)
-
-ifeq ($(CY_SHELL_TYPE),shell)
-CY_BUILD_CHECK_STRLEN:=$(shell \
-	for directory in $(CY_BUILD_DIRS); do\
-		if [ "$${#directory}" -ge 260 ]; then\
-			echo "$$directory";\
-		fi;\
-	done)
-else 
-CY_BUILD_CHECK_STRLEN:=$(shell \
-	for directory in $(CY_BUILD_DIRS); do\
-		if [ "$${\#directory}" -ge 260 ]; then\
-			echo "$$directory";\
-		fi;\
-	done)
-endif
-
-ifneq ($(strip $(CY_BUILD_CHECK_STRLEN)),)
-$(call CY_MACRO_ERROR,Detected path(s) that exceed the Windows path length: $(CY_BUILD_CHECK_STRLEN))
-endif
-endif
-
-#
-# Prints full/shortened source name
-#
-ifneq (,$(filter $(VERBOSE),true 1))
-CY_COMPILE_PRINT=$<
-else
-CY_COMPILE_PRINT=$(notdir $<)
-endif
+_MTB_CORE__OBJ_FILE_DIRS:=$(sort $(call mtb__get_dir,$(_MTB_CORE__BUILD_ALL_OBJ_FILES)) $(call mtb__get_dir,$(_MTB_CORE__BUILD_TARGET)))
 
 #
 # Construct the full list of flags
 #
-CY_BUILD_ALL_ASFLAGS_UC=\
-	$(CY_RECIPE_ASFLAGS)\
-	$(CY_RECIPE_DEFINES)
+_MTB_CORE__BUILD_ALL_ASFLAGS_UC:=$(MTB_RECIPE__ASFLAGS) $(MTB_RECIPE__DEFINES)
 
-CY_BUILD_ALL_ASFLAGS_LC=\
-	$(CY_RECIPE_ASFLAGS)
+_MTB_CORE__BUILD_ALL_ASFLAGS_LC:=$(MTB_RECIPE__ASFLAGS)
 
-CY_BUILD_ALL_CFLAGS=\
-	$(CY_RECIPE_CFLAGS)\
-	$(CY_RECIPE_DEFINES)
+_MTB_CORE__BUILD_ALL_CFLAGS:=$(MTB_RECIPE__CFLAGS) $(MTB_RECIPE__DEFINES)
 
-CY_BUILD_ALL_CXXFLAGS=\
-	$(CY_RECIPE_CXXFLAGS)\
-	$(CY_RECIPE_DEFINES)
+_MTB_CORE__BUILD_ALL_CXXFLAGS:=$(MTB_RECIPE__CXXFLAGS) $(MTB_RECIPE__DEFINES)
 
 #
 # Compiler arguments
 #
-CY_BUILD_COMPILE_AS_UC:=$(AS) $(CY_BUILD_ALL_ASFLAGS_UC) $(CY_TOOLCHAIN_INCRSPFILE_ASM)$(CY_CONFIG_DIR)/inclist.rsp \
-						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_OUTPUT_OPTION)
-CY_BUILD_COMPILE_AS_LC:=$(AS) $(CY_BUILD_ALL_ASFLAGS_LC) $(CY_TOOLCHAIN_INCRSPFILE_ASM)$(CY_CONFIG_DIR)/inclist.rsp \
-						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_OUTPUT_OPTION)
+_MTB_CORE__BUILD_COMPILE_AS_UC:=$(AS) $(_MTB_CORE__BUILD_ALL_ASFLAGS_UC) $(MTB_RECIPE__INCRSPFILE_ASM)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp $(MTB_RECIPE__OUTPUT_OPTION)
+_MTB_CORE__BUILD_COMPILE_AS_LC:=$(AS) $(_MTB_CORE__BUILD_ALL_ASFLAGS_LC) $(MTB_RECIPE__INCRSPFILE_ASM)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp $(MTB_RECIPE__OUTPUT_OPTION)
 # Meant for custom rules. 
-# Note: Use = assignment as CY_TOOLCHAIN_DEPENDENCIES needs to expand properly in the rule
-CY_BUILD_COMPILE_C=$(CC) $(CY_BUILD_ALL_CFLAGS) $(CY_TOOLCHAIN_INCRSPFILE)$(CY_CONFIG_DIR)/inclist.rsp \
-						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_DEPENDENCIES) $(CY_TOOLCHAIN_OUTPUT_OPTION) 
-CY_BUILD_COMPILE_CPP=$(CXX) $(CY_BUILD_ALL_CXXFLAGS) $(CY_TOOLCHAIN_INCRSPFILE)$(CY_CONFIG_DIR)/inclist.rsp \
-						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_DEPENDENCIES) $(CY_TOOLCHAIN_OUTPUT_OPTION)
-# Used in CY_MACRO_EXPLICIT_RULE. 
-# Note: Use := for speed improvement. CY_TOOLCHAIN_EXPLICIT_DEPENDENCIES expands properly due to double $
-CY_BUILD_COMPILE_EXPLICIT_C:=$(CC) $(CY_BUILD_ALL_CFLAGS) $(CY_TOOLCHAIN_INCRSPFILE)$(CY_CONFIG_DIR)/inclist.rsp \
-						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_EXPLICIT_DEPENDENCIES) $(CY_TOOLCHAIN_OUTPUT_OPTION) 
-CY_BUILD_COMPILE_EXPLICIT_CPP:=$(CXX) $(CY_BUILD_ALL_CXXFLAGS) $(CY_TOOLCHAIN_INCRSPFILE)$(CY_CONFIG_DIR)/inclist.rsp \
-						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_EXPLICIT_DEPENDENCIES) $(CY_TOOLCHAIN_OUTPUT_OPTION) 
+_MTB_CORE__BUILD_COMPILE_C=$(CC) $(_MTB_CORE__BUILD_ALL_CFLAGS) $(MTB_RECIPE__INCRSPFILE)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp $(MTB_RECIPE__DEPENDENCIES) $(MTB_RECIPE__OUTPUT_OPTION)
+_MTB_CORE__BUILD_COMPILE_CPP=$(CXX) $(_MTB_CORE__BUILD_ALL_CXXFLAGS) $(MTB_RECIPE__INCRSPFILE)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp $(MTB_RECIPE__DEPENDENCIES) $(MTB_RECIPE__OUTPUT_OPTION)
+# Used in mtb_explicit_build_rule. 
+_MTB_CORE__BUILD_COMPILE_EXPLICIT_C=$(CC) $(_MTB_CORE__BUILD_ALL_CFLAGS) $(MTB_RECIPE__INCRSPFILE)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp $(MTB_RECIPE__EXPLICIT_DEPENDENCIES) $(MTB_RECIPE__OUTPUT_OPTION)
+_MTB_CORE__BUILD_COMPILE_EXPLICIT_CPP=$(CXX) $(_MTB_CORE__BUILD_ALL_CXXFLAGS) $(MTB_RECIPE__INCRSPFILE)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp $(MTB_RECIPE__EXPLICIT_DEPENDENCIES) $(MTB_RECIPE__OUTPUT_OPTION)
 
-CY_CDB_BUILD_COMPILE_AS_UC:=$(AS) $(CY_BUILD_ALL_ASFLAGS_UC) \
-						$(sort $(CY_RECIPE_INCLUDES) $(call CY_MACRO_ECLIPSE_PRINT,$(CY_SHAREDLIB_INCLUDES_EXPORT_LIST))) \
-						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_OUTPUT_OPTION)
-CY_CDB_BUILD_COMPILE_AS_LC:=$(AS) $(CY_BUILD_ALL_ASFLAGS_LC) \
-						$(sort $(CY_RECIPE_INCLUDES) $(call CY_MACRO_ECLIPSE_PRINT,$(CY_SHAREDLIB_INCLUDES_EXPORT_LIST))) \
-						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_OUTPUT_OPTION)
-CY_CDB_BUILD_COMPILE_EXPLICIT_C:=$(CC) $(CY_BUILD_ALL_CFLAGS) \
-						$(sort $(CY_RECIPE_INCLUDES) $(call CY_MACRO_ECLIPSE_PRINT,$(CY_SHAREDLIB_INCLUDES_EXPORT_LIST))) \
-						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_OUTPUT_OPTION) 
-CY_CDB_BUILD_COMPILE_EXPLICIT_CPP:=$(CXX) $(CY_BUILD_ALL_CXXFLAGS) \
-						$(sort $(CY_RECIPE_INCLUDES) $(call CY_MACRO_ECLIPSE_PRINT,$(CY_SHAREDLIB_INCLUDES_EXPORT_LIST))) \
-						$(CY_BUILD_SHAREDLIB_INCLIST) $(CY_TOOLCHAIN_OUTPUT_OPTION) 
+_MTB_CORE__CDB_BUILD_COMPILE_AS_UC=$(AS) $(_MTB_CORE__BUILD_ALL_ASFLAGS_UC) $(MTB_RECIPE__INCLUDES) $(MTB_RECIPE__OUTPUT_OPTION)
+_MTB_CORE__CDB_BUILD_COMPILE_AS_LC=$(AS) $(_MTB_CORE__BUILD_ALL_ASFLAGS_LC) $(MTB_RECIPE__INCLUDES) $(MTB_RECIPE__OUTPUT_OPTION)
+_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_C=$(CC) $(_MTB_CORE__BUILD_ALL_CFLAGS) $(MTB_RECIPE__INCLUDES) $(MTB_RECIPE__OUTPUT_OPTION)
+_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_CPP=$(CXX) $(_MTB_CORE__BUILD_ALL_CXXFLAGS) $(MTB_RECIPE__INCLUDES) $(MTB_RECIPE__OUTPUT_OPTION)
 
 #
 # Linker arguments
+# this must use = instead of := since this variable contains $@
 #
-CY_BUILD_LINK=$(LD) $(CY_RECIPE_LDFLAGS) $(CY_TOOLCHAIN_OUTPUT_OPTION) $@ $(CY_TOOLCHAIN_MAPFILE)$(CY_BUILD_MAPFILE) \
-			$(CY_TOOLCHAIN_OBJRSPFILE)$(CY_CONFIG_DIR)/objlist.rsp \
-			$(CY_TOOLCHAIN_STARTGROUP) $(CY_RECIPE_EXTRA_LIBS) $(CY_BUILD_ALL_LIB_FILES) $(CY_BUILD_SHAREDLIB_LIBLIST) $(CY_TOOLCHAIN_ENDGROUP)
-CY_BUILD_LINK_STANDALONE=$(LD) $(CY_RECIPE_LDFLAGS) $(CY_TOOLCHAIN_OUTPUT_OPTION) $@ $(CY_TOOLCHAIN_MAPFILE)$(CY_BUILD_MAPFILE) \
-			$(CY_TOOLCHAIN_OBJRSPFILE)$(CY_CONFIG_DIR)/objlist_standalone.rsp \
-			$(CY_TOOLCHAIN_STARTGROUP) $(CY_RECIPE_EXTRA_LIBS) $(CY_BUILD_ALL_LIB_FILES) $(CY_BUILD_SHAREDLIB_LIBLIST) $(CY_TOOLCHAIN_ENDGROUP)
+_MTB_CORE__BUILD_LINK=$(LD) $(MTB_RECIPE__LDFLAGS) $(MTB_RECIPE__OUTPUT_OPTION) $@ $(MTB_RECIPE__MAPFILE)$(_MTB_CORE__BUILD_MAPFILE) $(MTB_RECIPE__OBJRSPFILE)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/objlist.rsp $(MTB_RECIPE__STARTGROUP) $(CY_RECIPE_EXTRA_LIBS) $(MTB_RECIPE__LIBS) $(MTB_RECIPE__ENDGROUP)
 
 #
 # Archiver arguments
+# this must use = instead of := since this variable contains $@
 #
 ifneq ($(LIBNAME),)
-CY_BUILD_ARCHIVE=$(AR) $(CY_RECIPE_ARFLAGS) $(CY_TOOLCHAIN_ARCHIVE_LIB_OUTPUT_OPTION) $@ $(CY_TOOLCHAIN_OBJRSPFILE)$(CY_CONFIG_DIR)/objlist.rsp
+_MTB_CORE__BUILD_ARCHIVE=$(AR) $(MTB_RECIPE__ARFLAGS) $(MTB_RECIPE__ARCHIVE_LIB_OUTPUT_OPTION) $@ $(MTB_RECIPE__OBJRSPFILE)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/objlist.rsp
 else
-CY_BUILD_ARCHIVE=$(AR) $(CY_RECIPE_ARFLAGS) $(CY_TOOLCHAIN_OUTPUT_OPTION) $@ $(CY_TOOLCHAIN_OBJRSPFILE)$(CY_CONFIG_DIR)/objlist.rsp
+_MTB_CORE__BUILD_ARCHIVE=$(AR) $(MTB_RECIPE__ARFLAGS) $(MTB_RECIPE__OUTPUT_OPTION) $@ $(MTB_RECIPE__OBJRSPFILE)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/objlist.rsp
 endif
 
 
@@ -345,27 +251,25 @@ endif
 #
 # Dependency variables for compilation
 #
-CY_BUILD_COMPILER_DEPS=\
-	$(CY_BUILD_COMPILE_AS_UC)\
-	$(CY_BUILD_COMPILE_AS_LC)\
-	$(CY_BUILD_COMPILE_C)\
-	$(CY_BUILD_COMPILE_CPP)\
-	$(CY_RECIPE_INCLUDES)
+_MTB_CORE__BUILD_COMPILER_DEPS=\
+	$(_MTB_CORE__BUILD_COMPILE_AS_UC)\
+	$(_MTB_CORE__BUILD_COMPILE_AS_LC)\
+	$(_MTB_CORE__BUILD_COMPILE_C)\
+	$(_MTB_CORE__BUILD_COMPILE_CPP)\
+	$(MTB_RECIPE__INCLUDES)
 
 #
 # Dependency variables for link/archive
 #
-CY_BUILD_LINKER_DEPS=\
-	$(CY_BUILD_LINK)\
-	$(CY_BUILD_ARCHIVE)\
-	$(CY_SHAREDLIB_LIBS_EXPORT_LIST)\
-	$(CY_SHAREDLIB_ARTIFACT_EXPORT_LIST)
+_MTB_CORE__BUILD_LINKER_DEPS:=\
+	$(_MTB_CORE__BUILD_LINK)\
+	$(_MTB_CORE__BUILD_ARCHIVE)
 
 #
 # Take care of the quotes and dollar signs for the echo command
 #
-CY_BUILD_COMPILER_DEPS_FORMATTED=$(subst $,,$(subst ',,$(subst ",,$(CY_BUILD_COMPILER_DEPS))))
-CY_BUILD_LINKER_DEPS_FORMATTED=$(subst $,,$(subst ',,$(subst ",,$(CY_BUILD_LINKER_DEPS))))
+_MTB_CORE__BUILD_COMPILER_DEPS_FORMATTED=$(subst $,,$(subst ',,$(subst ",,$(_MTB_CORE__BUILD_COMPILER_DEPS))))
+_MTB_CORE__BUILD_LINKER_DEPS_FORMATTED=$(subst $,,$(subst ',,$(subst ",,$(_MTB_CORE__BUILD_LINKER_DEPS))))
 
 
 ################################################################################
@@ -373,56 +277,68 @@ CY_BUILD_LINKER_DEPS_FORMATTED=$(subst $,,$(subst ',,$(subst ",,$(CY_BUILD_LINKE
 ################################################################################
 
 # Create explicit rules for auto-discovered (relative path) files
-$(foreach explicit,$(CY_BUILD_INTSRC_LIST),$(eval $(call \
-CY_MACRO_EXPLICIT_RULE,$(explicit),$(patsubst $(CY_INTERNAL_APP_PATH)/%,%,$(patsubst $(CY_INTERNAL_EXTAPP_PATH)/%,%,$(addsuffix \
-.$(CY_TOOLCHAIN_SUFFIX_O),$(basename $(explicit))))),app)))
+$(foreach explicit,$(_MTB_CORE__BUILD_INTSRC_LIST),$(eval $(call \
+mtb_explicit_build_rule,$(explicit),$(patsubst $(MTB_TOOLS__REL_PRJ_PATH)/%,%,$(addsuffix \
+.$(MTB_RECIPE__SUFFIX_O),$(basename $(explicit)))),app)))
 
 # Create explicit rules for generated (relative/absolute path) files
 $(foreach explicit,$(CY_RECIPE_GENERATED),$(eval $(call \
-CY_MACRO_EXPLICIT_RULE,$(explicit),$(patsubst $(CY_BUILDTARGET_DIR)/%,%,$(addsuffix \
-.$(CY_TOOLCHAIN_SUFFIX_O),$(basename $(explicit)))),generated)))
+mtb_explicit_build_rule,$(explicit),$(patsubst $(MTB_TOOLS__OUTPUT_TARGET_DIR)/%,%,$(addsuffix \
+.$(MTB_RECIPE__SUFFIX_O),$(basename $(explicit)))),generated)))
 
 # Create explicit rules for ext (relative path) files
-$(foreach explicit,$(CY_BUILD_EXTSRC_RELATIVE),$(eval $(call \
-CY_MACRO_EXPLICIT_RULE,$(explicit),$(addprefix ext/,$(patsubst $(CY_INTERNAL_APP_PATH)/%,/%,$(subst ../,,$(addsuffix \
-.$(CY_TOOLCHAIN_SUFFIX_O),$(basename $(explicit)))))),ext)))
+$(foreach explicit,$(_MTB_CORE__BUILD_EXTSRC_RELATIVE),$(eval $(call \
+mtb_explicit_build_rule,$(explicit),$(addprefix ext/,$(patsubst $(MTB_TOOLS__REL_PRJ_PATH)/%,/%,$(subst ../,,$(addsuffix \
+.$(MTB_RECIPE__SUFFIX_O),$(basename $(explicit)))))),ext)))
 
 # Create explicit rules for ext (absolute path) files
-$(foreach explicit,$(CY_BUILD_EXTSRC_ABSOLUTE),$(eval $(call \
-CY_MACRO_EXPLICIT_RULE,$(explicit),$(addprefix ext/,$(notdir $(addsuffix \
-.$(CY_TOOLCHAIN_SUFFIX_O),$(basename $(explicit))))),ext)))
-
-# Create explicit rules for dependent app c-files
-$(foreach explicit,$(CY_DEPAPP_C_FILES),$(eval $(call \
-CY_MACRO_EXPLICIT_RULE,$(explicit),$(addprefix dep_apps/,$(notdir $(addsuffix \
-.$(CY_TOOLCHAIN_SUFFIX_O),$(basename $(explicit))))),dep_apps)))
-
+$(foreach explicit,$(_MTB_CORe__BUILD_EXTSRC_ABSOLUTE),$(eval $(call \
+mtb_explicit_build_rule,$(explicit),$(addprefix ext/,$(notdir $(addsuffix \
+.$(MTB_RECIPE__SUFFIX_O),$(basename $(explicit))))),ext)))
 
 ################################################################################
 # Link and Postbuild
 ################################################################################
 
 #
-# Empty target intentional 
+# Empty target intentional
 #
 prebuild:
 
 #
+# Build multi-core application
+#
+ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),true)
+# Need to force the other cores in multi-core to not skip first stage.
+build_application_bootstrap:
+	$(MTB__NOISE)$(MAKE) -C .. build CY_SECONDSTAGE=
+
+qbuild_application_bootstrap:
+	$(MTB__NOISE)$(MAKE) -C .. qbuild CY_SECONDSTAGE=
+
+build: build_application_bootstrap
+qbuild: qbuild_application_bootstrap
+else
+build: build_proj
+qbuild: qbuild_proj
+endif
+
+#
 # Dependencies
 #
-build: prebuild app memcalc
-qbuild: prebuild app memcalc
+build_proj: prebuild app memcalc
+qbuild_proj: prebuild app memcalc
 memcalc: app
 
 #
 # Top-level application dependency
 #
-app: CY_BUILD_postprint
+app: _mtb_build_postprint
 
 #
 # Print information before we start the build
 #
-CY_BUILD_preprint:
+_mtb_build_preprint:
 	$(info )
 	$(info ==============================================================================)
 	$(info = Building application =)
@@ -431,135 +347,108 @@ CY_BUILD_preprint:
 #
 # Create the directories needed to do the build
 #
-CY_BUILD_mkdirs: CY_BUILD_preprint
-	$(CY_NOISE)mkdir -p $(CY_BUILD_DIRS) $(CY_CMD_TERM)
+_mtb_build_mkdirs: _mtb_build_preprint
+	$(MTB__NOISE)mkdir -p $(_MTB_CORE__OBJ_FILE_DIRS) $(MTB__SILENT_OUTPUT)
 ifeq ($(CY_RECIPE_GENERATED_FLAG),TRUE)
-	$(CY_NOISE)mkdir -p $(CY_GENERATED_DIR) $(CY_CMD_TERM)
+	$(MTB__NOISE)mkdir -p $(MTB_TOOLS__OUTPUT_GENERATED_DIR) $(MTB__SILENT_OUTPUT)
 endif
 
 #
 # Run generate source step
 #
-CY_BUILD_gensrc: CY_BUILD_mkdirs CY_BUILD_cdb_postprint
+_mtb_build_gensrc: _mtb_build_mkdirs _mtb_build_cdb_postprint
 ifeq ($(CY_RECIPE_GENERATED_FLAG),TRUE)
-	$(CY_NOISE)mkdir -p $(CY_GENERATED_DIR) $(CY_CMD_TERM)
+	$(MTB__NOISE)mkdir -p $(MTB_TOOLS__OUTPUT_GENERATED_DIR) $(MTB__SILENT_OUTPUT)
 ifneq ($(CY_SEARCH_RESOURCE_FILES),)
-	$(CY_NOISE)echo $(CY_RECIPE_RESOURCE_FILES) > $(CY_GENERATED_DIR)/resources.cyrsc
+	$(MTB__NOISE)echo $(_MTB_RECIPE__RESOURCE_FILES) > $(MTB_TOOLS__OUTPUT_GENERATED_DIR)/resources.cyrsc
 endif
-	$(CY_NOISE)$(CY_RECIPE_GENSRC) $(CY_CMD_TERM)
+	$(MTB__NOISE)$(_MTB_RECIPE__GENSRC) $(MTB__SILENT_OUTPUT)
 	$(info Generated $(words $(CY_RECIPE_GENERATED)) source file(s))
 endif
 
 #
 # Add dependancy to support parallel builds
 #
-$(CY_BUILD_GENSRC_C_FILES): | CY_BUILD_gensrc
+$(_MTB_CORE__BUILD_GENSRC_C_FILES): | _mtb_build_gensrc
 
 #
 # Create .cycompiler file
 #
-$(CY_CONFIG_DIR)/.cycompiler: CY_BUILD_mkdirs
-	$(CY_NOISE)echo "$(CY_BUILD_COMPILER_DEPS_FORMATTED)" > $(CY_CONFIG_DIR)/.cycompiler_tmp; \
-	if ! cmp -s "$(CY_CONFIG_DIR)/.cycompiler" "$(CY_CONFIG_DIR)/.cycompiler_tmp"; then \
-	    mv -f "$(CY_CONFIG_DIR)/.cycompiler_tmp" "$(CY_CONFIG_DIR)/.cycompiler" ; \
+$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cycompiler: _mtb_build_mkdirs
+	$(call mtb__file_write,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cycompiler_tmp,$(_MTB_CORE__BUILD_COMPILER_DEPS_FORMATTED))
+	$(MTB__NOISE)if ! cmp -s "$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cycompiler" "$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cycompiler_tmp"; then \
+		mv -f "$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cycompiler_tmp" "$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cycompiler" ; \
 	else \
-	    rm -f "$(CY_CONFIG_DIR)/.cycompiler_tmp"; \
+		rm -f "$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cycompiler_tmp"; \
 	fi
 
 #
 # Create .cylinker file
 #
-$(CY_CONFIG_DIR)/.cylinker: CY_BUILD_mkdirs
-	$(CY_NOISE)echo "$(CY_BUILD_LINKER_DEPS_FORMATTED)" > $(CY_CONFIG_DIR)/.cylinker_tmp; \
-	if ! cmp -s "$(CY_CONFIG_DIR)/.cylinker" "$(CY_CONFIG_DIR)/.cylinker_tmp"; then \
-	    mv -f "$(CY_CONFIG_DIR)/.cylinker_tmp" "$(CY_CONFIG_DIR)/.cylinker" ; \
+$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cylinker: _mtb_build_mkdirs
+	$(call mtb__file_write,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cylinker_tmp,$(_MTB_CORE__BUILD_LINKER_DEPS_FORMATTED))
+	$(MTB__NOISE)if ! cmp -s "$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cylinker" "$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cylinker_tmp"; then \
+		mv -f "$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cylinker_tmp" "$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cylinker" ; \
 	else \
-	    rm -f "$(CY_CONFIG_DIR)/.cylinker_tmp"; \
+		rm -f "$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cylinker_tmp"; \
 	fi
 
 #
 # Print before compilation
 #
-CY_BUILD_precompile: CY_BUILD_gensrc $(CY_CONFIG_DIR)/.cycompiler $(CY_CONFIG_DIR)/.cylinker
-	$(info Building $(words $(CY_BUILD_ALL_OBJ_FILES)) file(s))
-	$(CY_NOISE)$(CY_SEARCH_GENERATE_QBUILD)
-	$(CY_NOISE)echo $(CY_RECIPE_INCLUDES) | tr " " "\n" > $(CY_CONFIG_DIR)/inclist.rsp; \
-	 echo $(CY_BUILD_ALL_OBJ_FILES) | tr " " "\n"  > $(CY_CONFIG_DIR)/objlist.rsp; \
-	 echo $(CY_BUILD_ALL_LIB_FILES) | tr " " "\n"  > $(CY_CONFIG_DIR)/liblist.rsp;
+_mtb_build_precompile: _mtb_build_gensrc $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cycompiler $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cylinker $(_MTB_CORE__QBUILD_MK_FILE)
+	$(info Building $(words $(_MTB_CORE__BUILD_ALL_OBJ_FILES)) file(s))
+	$(call mtb__file_write,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp,$(strip $(MTB_RECIPE__INCLUDES)))
+	$(call mtb__file_write,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/objlist.rsp,$(strip $(_MTB_CORE__BUILD_ALL_OBJ_FILES)))
+	$(call mtb__file_write,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/liblist.rsp,$(strip $(MTB_RECIPE__LIBS)))
 # Create an artifact sentinel file for shared libs and dependent apps
-ifneq ($(strip $(CY_BUILD_ALL_OBJ_FILES) $(CY_BUILD_ALL_LIB_FILES)),)
-	$(CY_NOISE)echo $(notdir $(CY_BUILD_TARGET)) > $(CY_CONFIG_DIR)/artifact.rsp
+ifneq ($(strip $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS)),)
+	$(call mtb__file_write,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/artifact.rsp,$(notdir $(_MTB_CORE__BUILD_TARGET)))
 else
-	$(CY_NOISE)rm -f $(CY_CONFIG_DIR)/artifact.rsp \
-	touch $(CY_CONFIG_DIR)/artifact.rsp
-endif
-# Create a file to store the shared directory used in dependent apps
-ifneq ($(CY_INTERNAL_EXTAPP_PATH),)
-	$(CY_NOISE)echo $(abspath $(CY_INTERNAL_EXTAPP_PATH)) | tr " " "\n"  > $(CY_CONFIG_DIR)/extapp.rsp;
-endif
-# Create a file to hold the list of object files excluding the dependent app c-arrays
-ifneq ($(DEPENDENT_APP_PATHS),)
-	$(CY_NOISE)echo $(CY_DEPAPP_OBJ_FILES_WO) | tr " " "\n"  > $(CY_CONFIG_DIR)/objlist_standalone.rsp
+	$(call mtb__file_write,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/artifact.rsp,)
 endif
 
 #
 # Dependencies for compilation
 #
-$(CY_BUILD_ALL_OBJ_FILES): | CY_BUILD_precompile 
-$(CY_BUILD_ALL_OBJ_FILES): $(CY_CONFIG_DIR)/.cycompiler $(CY_SHAREDLIB_INCLUDES_EXPORT_LIST)
+$(_MTB_CORE__BUILD_ALL_OBJ_FILES): | _mtb_build_precompile 
+$(_MTB_CORE__BUILD_ALL_OBJ_FILES): $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cycompiler
 
 #
 # Dependencies for link
 #
-$(CY_BUILD_TARGET): | CY_BUILD_precompile
-$(CY_BUILD_TARGET): $(CY_CONFIG_DIR)/.cylinker $(CY_SHAREDLIB_LIBS_EXPORT_LIST) $(CY_SHAREDLIB_ARTIFACT_EXPORT_LIST) $(CY_SHAREDLIB_ARTIFACTS)
+$(_MTB_CORE__BUILD_TARGET): | _mtb_build_precompile
+$(_MTB_CORE__BUILD_TARGET): $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cylinker
 
 #
 # Link/archive the application
 #
 ifneq ($(LIBNAME),)
-$(CY_BUILD_TARGET): $(CY_BUILD_ALL_OBJ_FILES) $(CY_BUILD_ALL_LIB_FILES)
-ifneq ($(strip $(CY_BUILD_ALL_OBJ_FILES) $(CY_BUILD_ALL_LIB_FILES)),)
-	$(info $(CY_INDENT)Archiving output file $(notdir $@))
-	$(CY_NOISE)$(CY_BUILD_ARCHIVE) $(CY_CMD_TERM)
+$(_MTB_CORE__BUILD_TARGET): $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS)
+ifneq ($(strip $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS)),)
+	$(info $(MTB__INDENT)Archiving output file $(notdir $@))
+	$(MTB__NOISE)$(_MTB_CORE__BUILD_ARCHIVE) $(MTB__SILENT_OUTPUT)
 endif
 else
-$(CY_BUILD_TARGET): $(CY_BUILD_ALL_OBJ_FILES) $(CY_BUILD_ALL_LIB_FILES) $(LINKER_SCRIPT)
-	$(info $(CY_INDENT)Linking output file $(notdir $@))
-	$(CY_NOISE)$(CY_BUILD_LINK)
+$(_MTB_CORE__BUILD_TARGET): $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS) $(LINKER_SCRIPT)
+	$(info $(MTB__INDENT)Linking output file $(notdir $@))
+	$(MTB__NOISE)$(_MTB_CORE__BUILD_LINK)
 endif
 
 #
-# Link the standalone application (excludes the dependent apps)
+# post-build step
 #
-ifneq ($(DEPENDENT_APP_PATHS),)
-$(CY_DEPAPP_TARGET): $(CY_DEPAPP_OBJ_FILES_WO) $(CY_BUILD_ALL_LIB_FILES) $(LINKER_SCRIPT) $(CY_BUILD_TARGET)
-	$(info $(CY_INDENT)Linking standalone file $(notdir $@))
-	$(CY_NOISE)$(CY_BUILD_LINK_STANDALONE)
-endif
 
-#
-# Perform post-build step
-#
-CY_BUILD_postbuild: $(CY_BUILD_TARGET) $(CY_DEPAPP_TARGET)
-	$(CY_NOISE)$(CY_RECIPE_POSTBUILD) $(CY_CMD_TERM)
+recipe_postbuild: $(_MTB_CORE__BUILD_TARGET)
 
-#
-# Run BSP post-build step
-#
-CY_BUILD_bsp_postbuild: CY_BUILD_postbuild
-	$(CY_BSP_POSTBUILD)
+bsp_postbuild: recipe_postbuild
 
-#
-# Perform application post-build step
-#
-CY_BUILD_app_postbuild: CY_BUILD_bsp_postbuild
-	$(POSTBUILD)
+project_postbuild: bsp_postbuild
 
 #
 # Perform the post build print step, basically stating we are done
 #
-CY_BUILD_postprint: CY_BUILD_app_postbuild
+_mtb_build_postprint: project_postbuild
 	$(info ==============================================================================)
 	$(info = Build complete =)
 	$(info ==============================================================================)
@@ -568,36 +457,36 @@ CY_BUILD_postprint: CY_BUILD_app_postbuild
 #
 # Simulator tar file generation
 #
-CY_SIMULATOR_TEMPFILE=$(CY_CONFIG_DIR)/simulator.temp
-CY_SIMULATOR_SOURCES=$(CY_RECIPE_SOURCE) $(CY_RECIPE_GENERATED) $(SOURCES)
-CY_SIMULATOR_SOURCES_C=$(filter %.$(CY_TOOLCHAIN_SUFFIX_C),$(CY_SIMULATOR_SOURCES))
-CY_SIMULATOR_SOURCES_CPP=$(filter %.$(CY_TOOLCHAIN_SUFFIX_CPP),$(CY_SIMULATOR_SOURCES))
-CY_SIMULATOR_SOURCES_s=$(filter %.$(CY_TOOLCHAIN_SUFFIX_s),$(CY_SIMULATOR_SOURCES))
-CY_SIMULATOR_SOURCES_S=$(filter %.$(CY_TOOLCHAIN_SUFFIX_S),$(CY_SIMULATOR_SOURCES))
+_MTB_CORE__SIMULATOR_TEMPFILE:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/simulator.temp
+_MTB_CORE__SIMULATOR_SOURCES:=$(MTB_RECIPE__SOURCE) $(CY_RECIPE_GENERATED) $(SOURCES)
+_MTB_CORE__SIMULATOR_SOURCES_C:=$(filter %.$(MTB_RECIPE__SUFFIX_C),$(_MTB_CORE__SIMULATOR_SOURCES))
+_MTB_CORE__SIMULATOR_SOURCES_CPP:=$(filter %.$(MTB_RECIPE__SUFFIX_CPP),$(_MTB_CORE__SIMULATOR_SOURCES))
+_MTB_CORE__SIMULATOR_SOURCES_CXX:=$(filter %.$(MTB_RECIPE__SUFFIX_CXX),$(_MTB_CORE__SIMULATOR_SOURCES))
+_MTB_CORE__SIMULATOR_SOURCES_CC:=$(filter %.$(MTB_RECIPE__SUFFIX_CC),$(_MTB_CORE__SIMULATOR_SOURCES))
+_MTB_CORE__SIMULATOR_SOURCES_s:=$(filter %.$(MTB_RECIPE__SUFFIX_s),$(_MTB_CORE__SIMULATOR_SOURCES))
+_MTB_CORE__SIMULATOR_SOURCES_S:=$(filter %.$(MTB_RECIPE__SUFFIX_S),$(_MTB_CORE__SIMULATOR_SOURCES))
 
 # All files source to include.
-CY_SIMULATOR_ALL_FILES=$(CY_SIMULATOR_SOURCES_C) $(CY_SIMULATOR_SOURCES_CPP) $(CY_SIMULATOR_SOURCES_s) $(CY_SIMULATOR_SOURCES_S) $(CY_CONFIG_DIR)/$(APPNAME).$(CY_TOOLCHAIN_SUFFIX_TARGET) $(CY_CONFIG_DIR)/$(APPNAME).$(CY_TOOLCHAIN_SUFFIX_PROGRAM)
+_MTB_CORE__SIMULATOR_ALL_FILES:=$(_MTB_CORE__SIMULATOR_SOURCES_C) $(_MTB_CORE__SIMULATOR_SOURCES_CPP) $(_MTB_CORE__SIMULATOR_SOURCES_CXX) $(_MTB_CORE__SIMULATOR_SOURCES_CC) $(_MTB_CORE__SIMULATOR_SOURCES_s) $(_MTB_CORE__SIMULATOR_SOURCES_S) $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).$(MTB_RECIPE__SUFFIX_TARGET) $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).$(MTB_RECIPE__SUFFIX_PROGRAM)
 
 # All include path to look for header files.
-CY_SIMULATOR_ALL_INCLUDE_PATH=$(INCLUDES) $(CY_SEARCH_APP_INCLUDES) $(CY_TOOLCHAIN_INCLUDES)
+_MTB_CORE__SIMULATOR_ALL_INCLUDE_PATH:=$(INCLUDES) $(MTB_CORE__SEARCH_APP_INCLUDES) $(MTB_RECIPE__TOOLCHAIN_INCLUDES)
 
 # If set, simulator archive file will be automatically created at the end of the build
-CY_SIMULATOR_GEN_AUTO?=
 # Add support for generating simulator tar file
-CY_SIMULATOR_GEN_SUPPORTED?=
-ifneq (,$(CY_SIMULATOR_GEN_SUPPORTED))
+ifneq (,$(MTB_RECIPE__SIM_GEN_SUPPORTED))
 ifneq (,$(CY_SIMULATOR_GEN_AUTO))
-app: $(CY_CONFIG_DIR)/$(APPNAME).tar.tgz
+app: $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).tar.tgz
 endif
-$(CY_CONFIG_DIR)/$(APPNAME).tar.tgz: CY_BUILD_postbuild
+$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).tar.tgz: _mtb_build_postprint
 	$(info )
 	$(info ==============================================================================)
 	$(info = Generating simulator archive file =)
 	$(info ==============================================================================)
-	$(CY_NOISE)echo $(CY_SIMULATOR_ALL_FILES) > $(CY_SIMULATOR_TEMPFILE)
-	$(CY_NOISE)echo $(CY_SIMULATOR_ALL_INCLUDE_PATH) >> $(CY_SIMULATOR_TEMPFILE)
-	$(CY_NOISE) $(CY_BASH) $(CY_BASELIB_CORE_PATH)/make/scripts/simulator_gen/simulator_gen.bash $(CY_CONFIG_DIR) $(APPNAME) $(patsubst %/,%,$(CY_INTERNAL_APPLOC)) $(patsubst %/,%,$(CY_GETLIBS_SHARED_PATH)) $(CY_SIMULATOR_TEMPFILE)
-	$(CY_NOISE)rm -f $(CY_SIMULATOR_TEMPFILE)
+	$(call mtb__file_write,$(_MTB_CORE__SIMULATOR_TEMPFILE),$(_MTB_CORE__SIMULATOR_ALL_FILES))
+	$(call mtb__file_append,$(_MTB_CORE__SIMULATOR_TEMPFILE),$(_MTB_CORE__SIMULATOR_ALL_INCLUDE_PATH))
+	$(MTB__NOISE) $(MTB_TOOLS_BASH) $(MTB_TOOLS__CORE_DIR)/make/scripts/simulator_gen/simulator_gen.bash $(MTB_TOOLS__OUTPUT_CONFIG_DIR) $(APPNAME) $(patsubst %/,%,$(MTB_TOOLS__PRJ_DIR)) $(patsubst %/,%,$(CY_GETLIBS_SHARED_PATH)) $(_MTB_CORE__SIMULATOR_TEMPFILE)
+	$(MTB__NOISE)rm -f $(_MTB_CORE__SIMULATOR_TEMPFILE)
 ifneq (,$(CY_OPEN_online_simulator_FILE_RAW))
 	$(info The Infineon online simulator link:)
 	$(info $(patsubst "%",%,$(CY_OPEN_online_simulator_FILE_RAW)))
@@ -606,58 +495,43 @@ endif
 #
 # Include generated dependency files (if rebuilding)
 #
--include $(CY_DEPENDENCY_FILES)
+-include $(_MTB_CORE__DEPENDENCY_FILES)
 
 $(info Build rules construction complete)
 
 #
 # Generate the compilation database (cdb) file that is used by the .vscode/c_cpp_properties.json file
 #
-ifeq ($(CY_FILE_TYPE),file)
-
-CY_CDB_INFO:=[$(CY_CDB_INFO)]
-CY_CDB_INFO:=$(subst }$(CY_COMMA) $(CY_NEWLINE_MARKER),}$(CY_COMMA)$(CY_NEWLINE_MARKER),$(CY_CDB_INFO))
-CY_CDB_INFO:=$(subst }$(CY_COMMA)],}$(CY_NEWLINE_MARKER)],$(CY_CDB_INFO))
-CY_CDB_INFO:=$(subst $(CY_NEWLINE_MARKER),$(CY_NEWLINE),$(CY_CDB_INFO))
-CY_CDB_INFO:=$(subst \,\\,$(CY_CDB_INFO))
-
-# We are not able to use the CY_MACRO_FILE_WRITE macro here because the "shell" version of that
-# macro removes the newlines
-$(CY_CDB_FILE): CY_BUILD_cdb_preprint
-	$(file >$@,$(CY_CDB_INFO))
-
+# Note: VSCode .cdb file needs to be known in multiple make files
+ifneq ($(CY_BUILD_LOCATION),)
+_MTB_CORE__CDB_FILE:=$(MTB_TOOLS__OUTPUT_BASE_DIR)/compile_commands.json
+_MTB_CORE__VSCODE_CDB_FILE:=$(_MTB_CORE__CDB_FILE)
 else
-
-$(CY_CDB_FILE): $(CY_CDB_FILES)
-	$(CY_NOISE) \
-	printf "[" >$(CY_CDB_FILE).tmp; \
-	for cdb_file in $(CY_CDB_FILES); do \
-		cat $$cdb_file >> $(CY_CDB_FILE).tmp; \
-	done; \
-	printf "]" >>$(CY_CDB_FILE).tmp; \
-	sed -e s/'},]/'}$$'\\\n']/ $(CY_CDB_FILE).tmp >$(CY_CDB_FILE); \
-	rm $(CY_CDB_FILE).tmp
-
+_MTB_CORE__CDB_FILE:=./$(notdir $(MTB_TOOLS__OUTPUT_BASE_DIR))/compile_commands.json
+_MTB_CORE__VSCODE_CDB_FILE:=\$$\{workspaceFolder\}/$(notdir $(MTB_TOOLS__OUTPUT_BASE_DIR))/compile_commands.json
 endif
 
-CY_BUILD_cdb_preprint: CY_BUILD_mkdirs
+_MTB_CORE__CDB_INFO:=[$(_MTB_CORE__CDB_INFO)]
+_MTB_CORE__CDB_INFO:=$(subst }$(MTB__COMMA) ,}$(MTB__COMMA),$(_MTB_CORE__CDB_INFO))
+_MTB_CORE__CDB_INFO:=$(subst \,\\,$(_MTB_CORE__CDB_INFO))
+_MTB_CORE__CDB_INFO:=$(subst }$(MTB__COMMA)],}],$(_MTB_CORE__CDB_INFO))
+
+$(_MTB_CORE__CDB_FILE): _mtb_build_cdb_preprint
+	$(call mtb__file_write,$@,$(_MTB_CORE__CDB_INFO))
+
+_mtb_build_cdb_preprint: _mtb_build_mkdirs
 	$(info Generating compilation database file...)
-	$(info -> $(CY_CDB_FILE))
+	$(info -> $(_MTB_CORE__CDB_FILE))
 
-CY_BUILD_cdb_postprint: $(CY_CDB_FILE)
-ifeq ($(CY_SKIP_CDB),)
+_mtb_build_cdb_postprint: $(_MTB_CORE__CDB_FILE)
 	$(info Compilation database file generation complete)
-else
-	$(info Compilation database file generation skipped)
-endif
 
 #
 # Indicate all phony targets that should be built regardless
 #
-.PHONY: app
-.PHONY: CY_BUILD_mkdirs
-.PHONY: CY_BUILD_postbuild CY_BUILD_app_postbuild CY_BUILD_bsp_postbuild
-.PHONY: CY_BUILD_gensrc
-.PHONY: CY_BUILD_preprint
-.PHONY: CY_BUILD_postprint 
-.PHONY: $(CY_CDB_FILE)
+.PHONY: app build_application_bootstrap qbuild_application_bootstrap
+.PHONY: _mtb_build_mkdirs
+.PHONY: _mtb_build_gensrc
+.PHONY: _mtb_build_preprint _mtb_build_postprint
+.PHONY:  recipe_postbuild bsp_postbuild project_postbuild
+.PHONY: $(_MTB_CORE__CDB_FILE)

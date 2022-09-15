@@ -2,31 +2,31 @@
     "version": 4,
     "env": {
         "mtbCompilerArgs": [
-            "&&CY_C_FLAGS&&"
+            "&&_MTB_RECIPE__C_FLAGS&&"
         ],
         "mtbDefaultIncludePath": [
-            &&CY_INCLUDE_LIST&&
-            "&&CY_GCC_DIRECTORY&&/lib/gcc/arm-none-eabi/&&CY_GCC_VERSION&&/include",
-            "&&CY_GCC_DIRECTORY&&/lib/gcc/arm-none-eabi/&&CY_GCC_VERSION&&/include-fixed",
-            "&&CY_GCC_DIRECTORY&&/arm-none-eabi/include",
-            "&&CY_GCC_DIRECTORY&&/arm-none-eabi/include/c++/&&CY_GCC_VERSION&&",
-            "&&CY_GCC_DIRECTORY&&/arm-none-eabi/include/c++/&&CY_GCC_VERSION&&&&CY_VSCODE_CPU&&&&CY_VSCODE_VFP&&",
-            "&&CY_GCC_DIRECTORY&&/arm-none-eabi/include/c++/&&CY_GCC_VERSION&&/backward"
+            &&_MTB_RECIPE__INCLUDE_LIST&&
+            "&&_MTB_RECIPE__GCC_DIRECTORY&&/lib/gcc/arm-none-eabi/&&_MTB_RECIPE__GCC_VERSION&&/include",
+            "&&_MTB_RECIPE__GCC_DIRECTORY&&/lib/gcc/arm-none-eabi/&&_MTB_RECIPE__GCC_VERSION&&/include-fixed",
+            "&&_MTB_RECIPE__GCC_DIRECTORY&&/arm-none-eabi/include",
+            "&&_MTB_RECIPE__GCC_DIRECTORY&&/arm-none-eabi/include/c++/&&_MTB_RECIPE__GCC_VERSION&&",
+            "&&_MTB_RECIPE__GCC_DIRECTORY&&/arm-none-eabi/include/c++/&&_MTB_RECIPE__GCC_VERSION&&&&_MTB_CORE__VSCODE_CPU&&&&_MTB_CORE__VSCODE_VFP&&",
+            "&&_MTB_RECIPE__GCC_DIRECTORY&&/arm-none-eabi/include/c++/&&_MTB_RECIPE__GCC_VERSION&&/backward"
         ],
         "mtbDefaultDefines": [
-            &&CY_DEFINE_LIST&&
+            &&_MTB_RECIPE__DEFINE_LIST&&
             "__GNUC__"
         ]
     },
     "configurations": [
         {
             "name": "MTB",
-            "compilerPath": "&&CY_GCC_DIRECTORY&&/bin/arm-none-eabi-gcc",
+            "compilerPath": "&&_MTB_RECIPE__GCC_DIRECTORY&&/bin/arm-none-eabi-gcc",
             "compilerArgs": [
                 "${mtbCompilerArgs}"
             ],
-            "compileCommands": "&&CY_CDB_FILE&&",
-            "intelliSenseMode": "gcc-x86",
+            "compileCommands": "&&_MTB_CORE__VSCODE_CDB_FILE&&",
+            "intelliSenseMode": "gcc-arm",
             "cStandard": "c99",
             "cppStandard": "c++11",
             "includePath": [

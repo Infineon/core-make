@@ -10,22 +10,20 @@ set -$-ue${DEBUG+x}
 # Once all resources files have been converted it will generate a header file that references each of them.
 #
 # usage:
-#	genresources.bash <RECIPE_DIR> <SCRIPTS_DIR> <RESOURCE_FILE> <PROJECT_DIR> <TARGET_DIR> <FILESYSTEM|MEM> [s]
+#	genresources.bash <RECIPE_DIR> <SCRIPTS_DIR> <RESOURCE_FILE> <TARGET_DIR> <FILESYSTEM|MEM> [s]
 #
 #######################################################################################################################
 
 RECIPE_DIR=$1				#eg: ./tools
 RESOURCE_FILE=$2		    #eg: ./generated/temp.cyrsc
-PROJECT_DIR=$3				#eg: ./project_mainapp
-TARGET_DIR=$4				#eg: ./project_resources
-RESOURCE_TYPE=$5			#eg: FILESYSTEM or MEM
+TARGET_DIR=$3				#eg: ./project_resources
+RESOURCE_TYPE=$4			#eg: FILESYSTEM or MEM
 
 echo Script: genresources.bash
 echo "    1: Recipe Dir     : '"$RECIPE_DIR"'"
-echo "    3: Resource Files : '"$RESOURCE_FILE"'"
-echo "    4: Project Dir    : '"$PROJECT_DIR"'"
-echo "    5: Target Dir     : '"$TARGET_DIR"'"
-echo "    6: Resource Type  : '"$RESOURCE_TYPE"'"
+echo "    2: Resource Files : '"$RESOURCE_FILE"'"
+echo "    3: Target Dir     : '"$TARGET_DIR"'"
+echo "    4: Resource Type  : '"$RESOURCE_TYPE"'"
 
 #
 # File in the target directory

@@ -98,7 +98,7 @@ for value in $FILES
 do
     if [[ $value == $GETLIBS_PATH/* ]]; then
         SHARED_FILES+=( "${value/$GETLIBS_PATH\//}" )
-    elif [[ $value == ./* ]]; then
+    elif [[ "$value" == "./*" || -f "./$value" || -f "$APP_LOC/$value" ]]; then
         APP_FILES+=( "$APP_NAME/${value#./}" )
     elif [[ $value == $APP_LOC/* ]]; then
         APP_FILES+=( "${value/$APP_LOC/$APP_NAME}" )
