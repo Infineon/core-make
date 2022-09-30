@@ -16,11 +16,10 @@ GRP_UNFILTERED = "unf:/tered*"
 
 REMOVE_QUOTE_REGEX = re.compile(r"^\"|\"$")
 
-# cmsisdata.temp file format
+# build data file format
 # ------------------------------------#
 # AppName
 # Device
-# Core
 # Linker script
 # Defines (Comma separated list)
 # Include Paths (Comma separated list)
@@ -28,24 +27,28 @@ REMOVE_QUOTE_REGEX = re.compile(r"^\"|\"$")
 # .S Asm Files (Comma separated list)
 # .h Header files (Comma separated list)
 # .a Lib files (Comma separated list)
+# --------------------------------------
+
+# recipe data file format
+# ------------------------------------#
 # ArchName
 # VendorName
 # VendorId
-# specifyCore (Whether Pname should be specified)
+# Processor_name
+# Linker script flags
 # --------------------------------------
 
-def parseCmsisData(fileName):
+def parseCmsisData(build_file, recipe_file):
     """
     Parses a .cmsisdata file to extract the information necessary for project connection file creation
 
-    Returns a tuple of (project_name device_name core linker_script defineList includePathList cSrcList asmSrcList headersList libsList searches getlibsSharedDir archName vendor_name vendor_ID specifyCore)
+    Returns a tuple of (project_name device_name processor_name linker_script linker_script_flags defineList includePathList cSrcList asmSrcList headersList libsList searches getlibsSharedDir archName vendor_name vendor_ID)
     """
-    ProjectData = namedtuple("ProjectData", "projectName deviceName core linkerScript defineList includePathList cSrcList asmSrcList headersList libsList searches getlibsSharedDir archName vendorName vendorId specifyCore")
+    ProjectData = namedtuple("ProjectData", "projectName deviceName processor_name linkerScript linkerScriptFlags defineList includePathList cSrcList asmSrcList headersList libsList searches getlibsSharedDir archName vendorName vendorId")
 
-    with open(fileName, 'r') as fp:
+    with open(build_file, 'r') as fp:
         projectName = fp.readline().strip()
         device = fp.readline().strip()
-        core = fp.readline().strip()
         linkerScript = fp.readline().strip()
         # filter() returns an iteration which can only be used once
         # hence converting it back to a list to able to iterate multiple times.
@@ -57,12 +60,15 @@ def parseCmsisData(fileName):
         libsList = list(filter(None, fp.readline().strip().split(',')))
         searches = list(filter(None, fp.readline().strip().split(',')))
         getlibsSharedDir = fp.readline().strip()
+
+    with open(recipe_file, 'r') as fp:
         archName = fp.readline().strip()
         vendorName = fp.readline().strip()
         vendorId = fp.readline().strip()
-        specifyCore = (fp.readline().strip() == '1')
+        processor_name = fp.readline().strip()
+        linkerScriptFlags = fp.readline().strip()
 
-    return ProjectData(projectName, device, core, linkerScript, defineList, includePathList, cSrcList, asmSrcList, headersList, libsList, searches, getlibsSharedDir, archName, vendorName, vendorId, specifyCore)
+    return ProjectData(projectName, device, processor_name, linkerScript, linkerScriptFlags, defineList, includePathList, cSrcList, asmSrcList, headersList, libsList, searches, getlibsSharedDir, archName, vendorName, vendorId)
 
 def getDuplicateFiles(sourceList):
     seen = set()
@@ -171,25 +177,15 @@ def createFileElement(groupElem, fileName, category):
         {'category': category, 'name': fileName})
         
 def createTargetElem(parentElem, projectData):
-    CORE_NAME_CM0 = 'CM0'
-    CORE_NAME_CM0P = 'CM0P'
-    CORE_NAME_CM4 = 'CM4'
-    CORE_NAME_CM33 = 'CM33'
-    processorName = ""
-    if projectData.core == CORE_NAME_CM0:
-        processorName = 'Cortex-M0'
-    elif projectData.core == CORE_NAME_CM0P:
-        processorName = 'Cortex-M0p'
-    elif projectData.core == CORE_NAME_CM4:
-        processorName = 'Cortex-M4'
-    elif projectData.core == CORE_NAME_CM33:
-        processorName = 'Cortex-M33'
-    else:
-        raise Exception("Core %s not supported by this export mechanism.\n Support core names are %s %s %s\n" % (projectData.core, CORE_NAME_CM0, CORE_NAME_CM0P, CORE_NAME_CM4))
-    targetAttributes =  { 'Dname': projectData.deviceName, 'Dvendor': projectData.vendorName + ':' + projectData.vendorId}
+    targetAttributes =  { 
+        'Dname': projectData.deviceName, 
+        'Dvendor': "{}:{}".format(projectData.vendorName,  projectData.vendorId)
+    }
 
-    if projectData.specifyCore:
-        targetAttributes['Pname'] = processorName
+    if projectData.processor_name:
+        targetAttributes['Pname'] = projectData.processor_name
+
+
     return ElementTree.SubElement(parentElem, 'target', targetAttributes)
 
 def getRootElement(projectData):
@@ -214,11 +210,11 @@ def getRootElement(projectData):
 
     return root
 
-def generatePdsc(inFile, cpdscFile, gpdscFile, cprjFile):
+def generatePdsc(build_file, recipe_file, cpdscFile, gpdscFile, cprjFile):
     """
     Generates the CMSIS Description files based on data from Make Build system.
     """
-    projectData = parseCmsisData(inFile)
+    projectData = parseCmsisData(build_file, recipe_file)
     if projectData.deviceName == None:
         raise Exception("Invalid file format for input file.\n")
 
@@ -264,7 +260,7 @@ def generateCpdsc(projectData, groupDict, cpdscFile, architectureElement):
     languagesElem = ElementTree.SubElement(requirementsElem, 'languages')
     ElementTree.SubElement(languagesElem, 'language', { 'name': "C", 'version': "99" })
 
-# Determine CPU Pname
+    # Determine CPU Pname
     # Set target device
     createElem = ElementTree.SubElement(root, 'create')
     projectElem = ElementTree.SubElement(createElem, 'project')
@@ -294,35 +290,35 @@ def generateGpdsc(projectData, groupDict, gpdscFile):
     # Create root XML tree with mandatory root elements
     root = getRootElement(projectData)
 
+    # Add the library sources
+    componentsElem = ElementTree.SubElement(root, 'components')
+
+    # Add Pre_Include_Global_h element to the first TARGET component
     # Collect the list of global preincluded symbols
     includeText = ""
     # Exclude -DDEVICE from the list of defines - already added by CMSIS DFP
-    deviceDefine = projectData.deviceName.replace('-', '_')
+    deviceDefine = projectData.deviceName.replace('-', '_') + ' 1'
     for define in projectData.defineList:
-        cleanDefine = cleanUpDefine(define).replace('=', ' ')
+        cleanDefine = cleanUpDefine(define)
+        if '=' in define:
+            cleanDefine = cleanDefine.replace('=', ' ')
+        else:
+            # per c documentation, preprocesor define without value are defined to "1"
+            cleanDefine = cleanDefine + ' 1'
         if cleanDefine != deviceDefine:
             includeText += "\n#define {}".format(cleanDefine)
-    includeElemAdded = False
+    componentElem = ElementTree.SubElement(componentsElem, 'component',
+        {'Cvendor': projectData.vendorName, 'Cclass': "Other", 'Cgroup': "ModusToolbox" })
+    includeElem = ElementTree.SubElement(componentElem, 'Pre_Include_Global_h')
+    includeElem.text = includeText
 
-    # Add the library sources
-    componentsElem = ElementTree.SubElement(root, 'components')
     for grp in sorted(groupDict.keys()):
         if grp != GRP_UNFILTERED:
             componentElem = ElementTree.SubElement(componentsElem, 'component',
                 {'Cvendor': projectData.vendorName, 'Cclass': grp, 'Cgroup': "ModusToolbox" })
-            if grp.startswith("TARGET") and not includeElemAdded:
-                # Add Pre_Include_Global_h element to the first TARGET component
-                includeElem = ElementTree.SubElement(componentElem, 'Pre_Include_Global_h')
-                includeElem.text = includeText
-                includeElemAdded = True
             filesElem = ElementTree.SubElement(componentElem, 'files')
             for fileName, category in groupDict[grp]:
                 createFileElement(filesElem, fileName, category)
-
-    if not includeElemAdded:
-        print("WARNING: CMSIS exporter was not able to find the BSP library.")
-        print("Preprocessor symbol definitions were NOT added to the generated project:")
-        print(' '.join([cleanUpDefine(define) for define in projectData.defineList]))
 
     # The printPretty function takes care of encoding hence the file is
     # opened in binary mode.
@@ -367,8 +363,13 @@ def generateCprj(projectData, groupDict, cprjFile, architectureElement):
     # target element
     targetElem = createTargetElem(root, projectData)
     ElementTree.SubElement(targetElem, 'output', { 'name': projectData.projectName, 'type': 'exe'})
-    ElementTree.SubElement(targetElem, 'ldflags', { 'compiler': COMPILER_ATTR, 'file': projectData.linkerScript})
-    compile_flags = '-Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality' + includeText
+    ld_flags = { 'compiler': COMPILER_ATTR, 'file': projectData.linkerScript}
+    if projectData.linkerScriptFlags:
+        ld_flags['add'] = projectData.linkerScriptFlags
+    ElementTree.SubElement(targetElem, 'ldflags', ld_flags)
+    compile_flags = '-fshort-enums -fshort-wchar -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn ' \
+        '-Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros ' \
+        '-Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality' + includeText
     ElementTree.SubElement(targetElem, 'cflags', { 'compiler': COMPILER_ATTR, 'add': '-std=c99 ' + compile_flags})
     ElementTree.SubElement(targetElem, 'cxxflags', { 'compiler': COMPILER_ATTR, 'add': '-std=c++11 ' + compile_flags})
     ElementTree.SubElement(targetElem, 'asflags', { 'compiler': COMPILER_ATTR, 'add': '-masm=armasm'})
@@ -415,7 +416,10 @@ def is_valid_file(parser, arg):
 
 def run_export():
     argParser = argparse.ArgumentParser()
-    argParser.add_argument("-i", dest="inFile", required=True,
+    argParser.add_argument("-build_data", dest="build_file", required=True,
+                    help="Project data file generated by `make TOOLCHAIN=ARM uvision5`", metavar="FILE",
+                    type=lambda x: is_valid_file(argParser, x))
+    argParser.add_argument("-recipe_data", dest="recipe_file", required=True,
                     help="Project data file generated by `make TOOLCHAIN=ARM uvision5`", metavar="FILE",
                     type=lambda x: is_valid_file(argParser, x))
     argParser.add_argument("-cpdsc", dest="cpdscFile", required=False, 
@@ -428,7 +432,7 @@ def run_export():
 
     args = argParser.parse_args()
 
-    generatePdsc(args.inFile, args.cpdscFile, args.gpdscFile, args.cprjFile)
+    generatePdsc(args.build_file, args.recipe_file, args.cpdscFile, args.gpdscFile, args.cprjFile)
 
 if __name__ == '__main__':
     try:

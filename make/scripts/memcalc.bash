@@ -6,23 +6,20 @@ set -$-ue${DEBUG+xv}
 # This script processes the memory consumption of an application and prints it out to the console.
 #
 # usage:
-#	memcalc.bash <READELFFILE> <AVAILABLEFLASH> <AVAILABLESRAM> <STARTFLASH> <STARTSRAM>
+#	memcalc.bash <READELFFILE> <AVAILABLEFLASH_KB> <STARTFLASH>
 #
 #######################################################################################################################
 
 READELFFILE=$1              # file location of readelf output
-AVAILABLEFLASH=$2           # Max available internal flash
-AVAILABLESRAM=$3            # Max available internal SRAM
-STARTFLASH=$4               # Start of internal flash
-STARTSRAM=$5                # Start of internal SRAM
+AVAILABLEFLASH_KB=$2        # Max available internal flash in KB
+STARTFLASH=$3               # Start of internal flash
+AVAILABLEFLASH=$((AVAILABLEFLASH_KB << 10))
 
 ENDFLASH=$((STARTFLASH + AVAILABLEFLASH))
-ENDSRAM=$((STARTSRAM + AVAILABLESRAM))
 
 # Gather the numbers
 memcalc() {
     local internalFlash=0
-    local internalSram=0
 
     printf "   ---------------------------------------------------- \n"
     printf "  | %-20s |  %-10s   |  %-10s | \n" 'Section Name' 'Address' 'Size'
@@ -56,10 +53,6 @@ memcalc() {
                 # Only consider non-zero size sections
                 if [[ $((16#$sizeElement)) != "0" ]]; then
                     printf "  | %-20s |  0x%-10s |  %-10s | \n" $sectionElement $addrElement $((16#$sizeElement))
-                    # Use the section headers for SRAM tally
-                    if [[ "0x$addrElement" -ge "$STARTSRAM" ]] && [[ "0x$addrElement" -lt "$ENDSRAM" ]]; then
-                        internalSram=$((internalSram+$((16#$sizeElement))))
-                    fi
                 fi
             # Program headers
             elif [[ ${lineArray[1]} == "0x"* ]] && [[ ${lineArray[2]} == "0x"* ]] && [[ ${lineArray[3]} == "0x"* ]] && [[ ${lineArray[4]} == "0x"* ]]\
@@ -70,23 +63,9 @@ memcalc() {
         fi
     done < "$READELFFILE"
 
-    # Check if the SRAM data includes a section for the heap
-    # Note: echo | grep can potentially take a while. Do it before printing total numbers
-    if echo ${heapCheckArray[@]} | grep -iqF heap; then
-        sramIncludesHeap=1
-    else
-        sramIncludesHeap=0
-    fi
-
     printf "   ---------------------------------------------------- \n\n"
     printf "  %-41s %-10s \n" 'Total Internal Flash (Available)' $AVAILABLEFLASH
     printf "  %-41s %-10s \n\n" 'Total Internal Flash (Utilized)' $internalFlash
-    printf "  %-41s %-10s \n" 'Total Internal SRAM (Available)' $AVAILABLESRAM
-    if [[ $sramIncludesHeap -eq 1 ]]; then
-        printf "  %-41s %-10s \n" 'Total Internal SRAM (Utilized with heap)' $internalSram
-    else
-        printf "  %-41s %-10s \n" 'Total Internal SRAM (Utilized)' $internalSram
-    fi
 }
 
 memcalc

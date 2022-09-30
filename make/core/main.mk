@@ -56,23 +56,30 @@ prebuild:
 
 build:
 
+build_proj:
+
 qbuild:
+
+qbuild_proj:
 
 program:
 
+program_proj:
+
 qprogram:
+
+qprogram_proj:
 
 debug:
 
 qdebug:
 
-clean: shared_libs dependent_apps
-	rm -rf $(CY_CONFIG_DIR) $(CY_GENERATED_DIR)
+clean:
+
+clean_proj:
 
 # Note: Define the help target in BSP/recipe for custom help
 help:
-
-open:
 
 modlibs:
 
@@ -101,16 +108,16 @@ vscode:
 #
 # Targets that do not require a second build stage
 #
-all getlibs clean help:
-open modlibs config config_bt config_usbdev config_secure config_ezpd config_lin:
+all getlibs clean clean_proj help:
+modlibs config config_bt config_usbdev config_secure config_ezpd config_lin:
 bsp check get_app_info get_env_info printlibs:
-app memcalc help_default:
+app memcalc application_postbuild:
 
 #
 # Targets that require a second build stage
 #
-build qbuild app: secondstage
-program qprogram debug qdebug erase attach: secondstage
+build build_proj qbuild qbuild_proj app: secondstage
+program program_proj qprogram qprogram_proj debug qdebug erase attach: secondstage
 eclipse vscode ewarm8 uvision5: secondstage
 
 
@@ -118,100 +125,36 @@ eclipse vscode ewarm8 uvision5: secondstage
 # Applicable for both first and second build stages
 ################################################################################
 
+ifeq ($(MTB_TYPE),PROJECT)
+ifeq ($(MTB_APPLICATION_SUBPROJECTS),)
+# We are directly calling make target from the project that belongs to multi-core
+# application - pass this target to the application level
+MTB_CORE__APPLICATION_BOOTSTRAP=true
+endif
+endif
+
+ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),true)
+clean_application_bootstrap:
+	$(MTB__NOISE)$(MAKE) -C .. clean
+
+clean: clean_application_bootstrap
+else
+clean: clean_proj
+endif
+
+clean_proj:
+	rm -rf $(MTB_TOOLS__OUTPUT_CONFIG_DIR) $(MTB_TOOLS__OUTPUT_GENERATED_DIR)
+
 # Backwards-compatibility variables
-include $(CY_BASELIB_CORE_PATH)/make/core/bwc.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/bwc.mk
 
 CY_TIMESTAMP_MAIN_MK_BEGIN=$(call CY_LOG_TIME,bothstages,main.mk,BEGIN)
-
-##########################
-# Paths
-##########################
-
-#
-# Set the build location. Append app dir if CY_BUILD_LOCATION is defined
-#
-ifneq ($(CY_BUILD_LOCATION),)
-CY_BUILD_LOC:=$(CY_BUILD_LOCATION)/$(notdir $(CY_APP_LOCATION))
-else
-CY_BUILD_LOC:=$(CY_APP_LOCATION)/build
-endif
-
-#
-# Optimization - primarily for Windows cygpath
-#
-ifneq ($(CY_PATH_CONVERSION),false)
-
-#
-# Windows paths
-#
-ifeq ($(OS),Windows_NT)
-
-#
-# CygWin/MSYS
-#
-ifneq ($(CY_WHICH_CYGPATH),)
-CY_INTERNAL_BUILD_LOC:=$(shell cygpath -m --absolute $(subst \,/,$(CY_BUILD_LOC)))
-ifneq ($(CY_DEVICESUPPORT_PATH),)
-CY_INTERNAL_DEVICESUPPORT_PATH:=$(shell cygpath -m --absolute $(subst \,/,$(CY_DEVICESUPPORT_PATH)))
-endif
-
-#
-# Other Windows environments
-#
-else
-CY_INTERNAL_BUILD_LOC:=$(subst \,/,$(CY_BUILD_LOC))
-CY_INTERNAL_DEVICESUPPORT_PATH:=$(abspath $(subst \,/,$(CY_DEVICESUPPORT_PATH)))
-endif # ifneq ($(CY_WHICH_CYGPATH),)
-
-#
-# Linux and macOS paths
-#
-else
-CY_INTERNAL_BUILD_LOC:=$(CY_BUILD_LOC)
-CY_INTERNAL_DEVICESUPPORT_PATH:=$(abspath $(CY_DEVICESUPPORT_PATH))
-endif # ifeq ($(OS),Windows_NT)
-
-export CY_INTERNAL_BUILD_LOC
-export CY_INTERNAL_DEVICESUPPORT_PATH
-
-endif #ifneq ($(CY_PATH_CONVERSION),false)
-
-#
-# Build directories
-#
-CY_RECIPE_DIR:=$(CY_INTERNAL_BUILD_LOC)
-CY_BUILDTARGET_DIR:=$(CY_RECIPE_DIR)/$(TARGET)
-CY_CONFIG_DIR:=$(CY_BUILDTARGET_DIR)/$(CONFIG)
-CY_GENERATED_DIR:=$(CY_BUILDTARGET_DIR)/generated
-CY_PREBUILD_BUILD_LOC:=$(call CY_MACRO_DIR,$(CY_INTERNAL_BUILD_LOC))
-
-#
-# Default toolchain locations
-#
-CY_COMPILER_GCC_ARM_DEFAULT_DIR:=$(CY_INTERNAL_TOOL_gcc_BASE)
-ifeq ($(OS),Windows_NT)
-CY_COMPILER_IAR_DEFAULT_DIR:=C:/Program\ Files\ \(x86\)/IAR\ Systems/Embedded\ Workbench\ 8.2/arm
-else
-# Use 8.42.1 IAR version because it has support for Ubuntu
-CY_COMPILER_IAR_DEFAULT_DIR:=$(HOME)/IAR-BuildLx-Arm-8.42.1
-endif
-
-CY_COMPILER_ARM_DEFAULT_DIR:="C:/Program Files/ARMCompiler6.11"
-CY_COMPILER_A_Clang_DEFAULT_DIR:=/Library/Developer/CommandLineTools/usr/lib/clang/10.0.0
-
-#
-# Toolchain locations
-#
-CY_COMPILER_GCC_ARM_DIR?=$(if $(and $(call CY_MACRO_EQUALITY,$(TOOLCHAIN),GCC_ARM),$(CY_COMPILER_PATH)),$(CY_COMPILER_PATH),$(CY_COMPILER_GCC_ARM_DEFAULT_DIR))
-CY_COMPILER_IAR_DIR?=$(if $(and $(call CY_MACRO_EQUALITY,$(TOOLCHAIN),IAR),$(CY_COMPILER_PATH)),$(CY_COMPILER_PATH),$(CY_COMPILER_IAR_DEFAULT_DIR))
-CY_COMPILER_ARM_DIR?=$(if $(and $(call CY_MACRO_EQUALITY,$(TOOLCHAIN),ARM),$(CY_COMPILER_PATH)),$(CY_COMPILER_PATH),$(CY_COMPILER_ARM_DEFAULT_DIR))
-CY_COMPILER_A_Clang_DIR?=$(if $(and $(call CY_MACRO_EQUALITY,$(TOOLCHAIN),A_Clang),$(CY_COMPILER_PATH)),$(CY_COMPILER_PATH),$(CY_COMPILER_A_Clang_DEFAULT_DIR))
 
 ##########################
 # Include make files
 ##########################
 
-CY_MAKECMDGOAL_LIST=clean qprogram qdebug erase attach modlibs check get_env_info get_app_info help
+CY_MAKECMDGOAL_LIST=clean clean_proj qprogram qdebug erase attach modlibs check get_env_info get_app_info help application_postbuild
 
 # Make a decision on including logic pertinent to builds.
 # If it's not any of these targets, then it's an actual build (and errors are reported rather than warnings)
@@ -224,49 +167,52 @@ endif
 #
 # Include utilities used by all make files
 #
-CY_TIMESTAMP_UTILS_MK_BEGIN=$(call CY_LOG_TIME,bothstages,utils.mk,BEGIN)
-include $(CY_BASELIB_CORE_PATH)/make/core/utils.mk
-CY_TIMESTAMP_UTILS_MK_END=$(call CY_LOG_TIME,bothstages,utils.mk,END)
+CY_TIMESTAMP_UTILS_MK_BEGIN=$(call CY_LOG_TIME,bothstages,core_utils.mk,BEGIN)
+include $(MTB_TOOLS__CORE_DIR)/make/core/core_utils.mk
+CY_TIMESTAMP_UTILS_MK_END=$(call CY_LOG_TIME,bothstages,core_utils.mk,END)
 
-#
-# Include any extra makefiles defined by app
-#
-CY_TIMESTAMP_EXTRA_INC_BEGIN=$(call CY_LOG_TIME,bothstages,EXTRA_INC,BEGIN)
-include $(CY_EXTRA_INCLUDES)
-CY_TIMESTAMP_EXTRA_INC_END=$(call CY_LOG_TIME,bothstages,EXTRA_INC,END)
-
-#
-# Find the target and check that the device is valid
-#
-ifneq ($(CY_TARGET_SKIP),true)
-CY_TIMESTAMP_TARGET_MK_BEGIN=$(call CY_LOG_TIME,bothstages,target.mk,BEGIN)
-include $(CY_BASELIB_CORE_PATH)/make/core/target.mk
-CY_TIMESTAMP_TARGET_MK_END=$(call CY_LOG_TIME,bothstages,target.mk,END)
-endif
 CY_TIMESTAMP_FEATURES_MK_BEGIN=$(call CY_LOG_TIME,bothstages,features.mk,BEGIN)
--include $(CY_INTERNAL_BASELIB_PATH)/make/udd/features.mk
+-include $(MTB_TOOLS__RECIPE_DIR)/make/udd/features.mk
 CY_TIMESTAMP_FEATURES_MK_END=$(call CY_LOG_TIME,bothstages,features.mk,END)
-CY_TIMESTAMP_DEFINES_MK_BEGIN=$(call CY_LOG_TIME,bothstages,defines.mk,BEGIN)
-include $(CY_INTERNAL_BASELIB_PATH)/make/recipe/defines.mk
-CY_TIMESTAMP_DEFINES_MK_END=$(call CY_LOG_TIME,bothstages,defines.mk,END)
 
-#
-# Choose local or default toolchain makefile
-#
+CY_TIMESTAMP_TOOLCHAIN_MK_BEGIN=$(call CY_LOG_TIME,bothstages,core_selection.mk,BEGIN)
+include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/core_selection.mk
+CY_TIMESTAMP_TOOLCHAIN_MK_END=$(call CY_LOG_TIME,bothstages,core_selection.mk,END)
+
 CY_TIMESTAMP_TOOLCHAIN_MK_BEGIN=$(call CY_LOG_TIME,bothstages,toolchain.mk,BEGIN)
-ifeq ($(TOOLCHAIN_MK_PATH),)
-include $(CY_INTERNAL_BASELIB_PATH)/make/toolchains/$(TOOLCHAIN).mk
-else
-# Include the custom app-specific toolchain file
-include $(TOOLCHAIN_MK_PATH)
+# The GCC_ARM readelf is used by all toolchain build for memory calculation. So always include GCC_ARM toolchain.
+-include $(MTB_TOOLS__RECIPE_DIR)/make/toolchains/GCC_ARM.mk
+ifneq ($(TOOLCHAIN),GCC_ARM)
+include $(MTB_TOOLS__RECIPE_DIR)/make/toolchains/$(TOOLCHAIN).mk
 endif
 CY_TIMESTAMP_TOOLCHAIN_MK_END=$(call CY_LOG_TIME,bothstages,toolchain.mk,END)
+
+CY_TIMESTAMP_RECIPE_TC_TYPES_MK_BEGIN=$(call CY_LOG_TIME,bothstages,recipe_toolchain_file_types.mk,BEGIN)
+include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe_toolchain_file_types.mk
+CY_TIMESTAMP_RECIPE_TC_TYPES_MK_END=$(call CY_LOG_TIME,bothstages,recipe_toolchain_file_types.mk,END)
+
+CY_TIMESTAMP_DEFINES_MK_BEGIN=$(call CY_LOG_TIME,bothstages,defines.mk,BEGIN)
+include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/defines.mk
+CY_TIMESTAMP_DEFINES_MK_END=$(call CY_LOG_TIME,bothstages,defines.mk,END)
+
+CY_TIMESTAMP_RECIPE_SETUP_MK_BEGIN=$(call CY_LOG_TIME,bothstages,recipe_setup.mk,BEGIN)
+include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe_setup.mk
+CY_TIMESTAMP_RECIPE_SETUP_MK_END=$(call CY_LOG_TIME,bothstages,recipe_setup.mk,END)
+
+CY_TIMESTAMP_SEARCH_MK_BEGIN=$(call CY_LOG_TIME,bothstages,search.mk,BEGIN)
+include $(MTB_TOOLS__CORE_DIR)/make/core/search.mk
+CY_TIMESTAMP_SEARCH_MK_END=$(call CY_LOG_TIME,bothstages,search.mk,END)
+
+CY_TIMESTAMP_LIBRARY_MK_BEGIN=$(call CY_LOG_TIME,bothstages,library.mk,BEGIN)
+_MTB_CORE__LIB_MK=$(wildcard $(foreach dir,$(SEARCH_MTB_MK),$(dir)/library.mk))
+-include $(_MTB_CORE__LIB_MK)
+CY_TIMESTAMP_LIBRARY_MK_END=$(call CY_LOG_TIME,bothstages,library.mk,END)
 
 #
 # Configurator-related routines
 #
 CY_TIMESTAMP_CONFIG_MK_BEGIN=$(call CY_LOG_TIME,bothstages,config.mk,BEGIN)
-include $(CY_BASELIB_CORE_PATH)/make/core/config.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/config.mk
 CY_TIMESTAMP_CONFIG_MK_END=$(call CY_LOG_TIME,bothstages,config.mk,END)
 
 ################################################################################
@@ -286,34 +232,24 @@ $(eval $(call CY_MACRO_INFO,CY_MESSAGE_multi_tools,$(CY_MESSAGE_multi_tools)))
 endif
 
 #
-# Launch tools
-#
-CY_TIMESTAMP_TOOLS_MK_BEGIN=$(call CY_LOG_TIME,firststage,tools.mk,BEGIN)
--include $(CY_INTERNAL_TOOL_make_BASE)/tools.mk
-CY_TIMESTAMP_TOOLS_MK_END=$(call CY_LOG_TIME,firststage,tools.mk,END)
-CY_TIMESTAMP_OPEN_MK_BEGIN=$(call CY_LOG_TIME,firststage,open.mk,BEGIN)
-include $(CY_BASELIB_CORE_PATH)/make/core/open.mk
-CY_TIMESTAMP_OPEN_MK_END=$(call CY_LOG_TIME,firststage,open.mk,END)
-
-#
 # Help documentation
 #
 CY_TIMESTAMP_HELP_MK_BEGIN=$(call CY_LOG_TIME,firststage,help.mk,BEGIN)
-include $(CY_BASELIB_CORE_PATH)/make/core/help.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/help.mk
 CY_TIMESTAMP_HELP_MK_END=$(call CY_LOG_TIME,firststage,help.mk,END)
 
 CY_TIMESTAMP_PREBUILD_MK_BEGIN=$(call CY_LOG_TIME,firststage,prebuild.mk,BEGIN)
-include $(CY_BASELIB_CORE_PATH)/make/core/prebuild.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/prebuild.mk
 CY_TIMESTAMP_PREBUILD_MK_END=$(call CY_LOG_TIME,firststage,prebuild.mk,END)
 CY_TIMESTAMP_RECIPE_MK_BEGIN=$(call CY_LOG_TIME,firststage,recipe.mk,BEGIN)
-include $(CY_INTERNAL_BASELIB_PATH)/make/recipe/recipe.mk
+include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe.mk
 CY_TIMESTAMP_RECIPE_MK_END=$(call CY_LOG_TIME,firststage,recipe.mk,END)
 
 #
 # Device transtion related targets
 #
 CY_TIMESTAMP_TRANSITION_MK_BEGIN=$(call CY_LOG_TIME,firststage,transition.mk,BEGIN)
-include $(CY_BASELIB_CORE_PATH)/make/core/transition.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/transition.mk
 CY_TIMESTAMP_TRANSITION_MK_END=$(call CY_LOG_TIME,firststage,transition.mk,END)
 
 ##########################
@@ -365,10 +301,10 @@ CY_PYTHON_FROM_CMD=
 endif
 
 # Look for python install in the cypress tools directory
-ifeq ($(wildcard $(CY_INTERNAL_TOOL_python_EXE)),)
+ifeq ($(wildcard $(CY_TOOL_python_EXE_ABS)),)
 CY_PYTHON_SEARCH_PATH=NotFoundError
 else
-CY_PYTHON_SEARCH_PATH=$(CY_INTERNAL_TOOL_python_EXE)
+CY_PYTHON_SEARCH_PATH=$(CY_TOOL_python_EXE_ABS)
 endif
 
 #
@@ -394,13 +330,13 @@ ifeq ($(CY_PYTHON_SEARCH_PATH),NotFoundError)
 $(info )
 $(info Python 3 was not found in the user's PATH and it was not explicitly defined in the CY_PYTHON_PATH variable.\
 This target requires a python 3 installation. You can obtain python 3 from "https://www.python.org" or you may\
-obtain it using the following alternate methods.$(CY_NEWLINE)\
-$(CY_NEWLINE)\
-Windows: Windows Store$(CY_NEWLINE)\
-macOS: brew install python3 $(CY_NEWLINE)\
-Linux (Debian/Ubuntu): sudo apt-get install python3 $(CY_NEWLINE)\
+obtain it using the following alternate methods.$(MTB_NEWLINE)\
+$(MTB_NEWLINE)\
+Windows: Windows Store$(MTB_NEWLINE)\
+macOS: brew install python3 $(MTB_NEWLINE)\
+Linux (Debian/Ubuntu): sudo apt-get install python3 $(MTB_NEWLINE)\
 )
-$(call CY_MACRO_ERROR,)
+$(call mtb__error,)
 endif
 
 export CY_PYTHON_PATH=$(CY_PYTHON_SEARCH_PATH)
@@ -409,9 +345,9 @@ export CY_PYTHON_PATH=$(CY_PYTHON_SEARCH_PATH)
 else
 
 ifeq ($(shell [[ $$($(CY_PYTHON_FROM_CMD)$(CY_PYTHON_PATH) --version 2>&1) == "Python 3"* ]] && { echo true; } || { echo false; }),false)
-$(info The path "$(CY_PYTHON_PATH)" is either an invalid path or contains an incorrect version of python.$(CY_NEWLINE)\
-Please provide the path to the python 3 executable. For example, "usr/bin/python3".$(CY_NEWLINE) )
-$(call CY_MACRO_ERROR,)
+$(info The path "$(CY_PYTHON_PATH)" is either an invalid path or contains an incorrect version of python.$(MTB_NEWLINE)\
+Please provide the path to the python 3 executable. For example, "usr/bin/python3".$(MTB_NEWLINE) )
+$(call mtb__error,)
 endif
 
 endif # ifeq ($(CY_PYTHON_PATH),)
@@ -419,6 +355,11 @@ endif # ifeq ($(CY_PYTHON_REQUIREMENT),true)
 
 # Note: leave the space after PYTHON. It's intentional for cosmetics
 CY_TIMESTAMP_PYTHON_END=$(call CY_LOG_TIME,firststage,PYTHON ,END)
+
+# get_app_info data file will be generated at the end of first stage.
+CY_TIMESTAMP_GET_APP_INFO_MK_BEGIN=$(call CY_LOG_TIME,firststage,get_app_info.mk,BEGIN)
+include $(MTB_TOOLS__CORE_DIR)/make/core/get_app_info.mk
+CY_TIMESTAMP_GET_APP_INFO_END=$(call CY_LOG_TIME,firststage,get_app_info.mk,END)
 
 ##########################
 # Second build stage target
@@ -429,33 +370,29 @@ export $(filter CY_INFO_%,$(.VARIABLES))
 export $(filter CY_WARNING_%,$(.VARIABLES))
 
 # Note: always use -f as it's not passed down via MAKEFLAGS
-secondstage_build: | prebuild
-	$(CY_NOISE)echo "Commencing build operations..."; echo;
-	$(CY_NOISE)$(MAKE) -f $(abspath $(firstword $(MAKEFILE_LIST))) $(MAKECMDGOALS) \
-	$(CY_SHAREDLIB_BUILD_LOCATIONS) \
-	$(CY_DEPAPP_BUILD_LOCATIONS) \
-	CY_SECONDSTAGE=true \
-	CY_PATH_CONVERSION=false \
-	--no-print-directory
+secondstage_build: | prebuild  $(_MTB_CORE__QBUILD_MK_FILE)
+	$(MTB__NOISE)echo "Commencing build operations..."
+	$(MTB__NOISE)echo
+	$(MTB__NOISE)$(MAKE) -f $(abspath $(firstword $(MAKEFILE_LIST))) $(MAKECMDGOALS) CY_SECONDSTAGE=true --no-print-directory
 
 secondstage: | secondstage_build
-	$(info $(subst .cywarning ,$(CY_NEWLINE),$(subst .cyinfo ,$(CY_NEWLINE),$(call \
-	CY_MACRO_FILE_READ,$(CY_CONFIG_DIR)/.cyinfo)$(call \
-	CY_MACRO_FILE_READ,$(CY_CONFIG_DIR)/.cywarning))))
+	$(info $(subst .cywarning ,$(MTB_NEWLINE),$(subst .cyinfo ,$(MTB_NEWLINE),$(call \
+	mtb__file_read,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cyinfo)$(call \
+	mtb__file_read,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cywarning))))
 
 
 ################################################################################
 # Include make files continued for second build stage
 ################################################################################
 
-else
+else # ifeq ($(CY_COMMENCE_BUILD),true)
 
 ifeq ($(CY_COMMENCE_BUILD),true)
 $(info )
 $(info Initializing build: $(APPNAME)$(LIBNAME) $(CONFIG) $(TARGET) $(TOOLCHAIN))
-ifeq ($(wildcard $(CY_INTERNAL_BASELIB_PATH)),)
+ifeq ($(wildcard $(MTB_TOOLS__RECIPE_DIR)),)
 $(info )
-$(call CY_MACRO_ERROR,Cannot find the base library. Run "make getlibs" and/or check\
+$(call mtb__error,Cannot find the base library. Run "make getlibs" and/or check\
 that the library location is correct in the CY_BASELIB_PATH variable)
 endif
 endif
@@ -466,37 +403,37 @@ endif
 
 ifneq ($(APPNAME),)
 ifneq ($(LIBNAME),)
-$(call CY_MACRO_ERROR,An application cannot define both APPNAME and LIBNAME. Define one or the other)
+$(call mtb__error,An application cannot define both APPNAME and LIBNAME. Define one or the other)
 endif
 endif
 ifneq ($(filter -I%,$(INCLUDES)),)
-$(call CY_MACRO_ERROR,INCLUDES must be directories without -I prepended)
+$(call mtb__error,INCLUDES must be directories without -I prepended)
 endif
 ifneq ($(filter -D%,$(DEFINES)),)
-$(call CY_MACRO_ERROR,DEFINES must be specified without -D prepended)
+$(call mtb__error,DEFINES must be specified without -D prepended)
 endif
 ifneq ($(filter -I%,$(CFLAGS)),)
-$(call CY_MACRO_ERROR,Include paths must be specified in the INCLUDES variable instead\
+$(call mtb__error,Include paths must be specified in the INCLUDES variable instead\
 of directly in CFLAGS. These must be directories without -I prepended)
 endif
 ifneq ($(filter -D%,$(CFLAGS)),)
-$(call CY_MACRO_ERROR,Defines must be specified in the DEFINES variable instead\
+$(call mtb__error,Defines must be specified in the DEFINES variable instead\
 of directly in CFLAGS. These must be specified without -D prepended)
 endif
 ifneq ($(filter -I%,$(CXXFLAGS)),)
-$(call CY_MACRO_ERROR,Include paths must be specified in the INCLUDES variable instead\
+$(call mtb__error,Include paths must be specified in the INCLUDES variable instead\
 of directly in CXXFLAGS. These must be directories without -I prepended)
 endif
 ifneq ($(filter -D%,$(CXXFLAGS)),)
-$(call CY_MACRO_ERROR,Defines must be specified in the DEFINES variable instead\
+$(call mtb__error,Defines must be specified in the DEFINES variable instead\
 of directly in CXXFLAGS. These must be specified without -D prepended)
 endif
 ifneq ($(filter -I%,$(ASFLAGS)),)
-$(call CY_MACRO_ERROR,Include paths must be specified in the INCLUDES variable instead\
+$(call mtb__error,Include paths must be specified in the INCLUDES variable instead\
 of directly in ASFLAGS. These must be directories without -I prepended)
 endif
 ifneq ($(filter -D%,$(ASFLAGS)),)
-$(call CY_MACRO_ERROR,Defines must be specified in the DEFINES variable instead\
+$(call mtb__error,Defines must be specified in the DEFINES variable instead\
 of directly in ASFLAGS. These must be specified without -D prepended)
 endif
 
@@ -509,28 +446,26 @@ endif
 #
 ifeq ($(CY_COMMENCE_BUILD),true)
 
-ifneq ($(findstring qbuild,$(MAKECMDGOALS)),qbuild)
-CY_TIMESTAMP_SEARCH_MK_BEGIN=$(call CY_LOG_TIME,secondstage,search.mk,BEGIN)
-include $(CY_BASELIB_CORE_PATH)/make/core/search.mk
-CY_TIMESTAMP_SEARCH_MK_END=$(call CY_LOG_TIME,secondstage,search.mk,END)
-else
 CY_TIMESTAMP_CYQBUILD_MK_BEGIN=$(call CY_LOG_TIME,secondstage,cyqbuild.mk,BEGIN)
+
 # Skip the auto-discovery and re-use the last build's source list
--include $(CY_CONFIG_DIR)/cyqbuild.mk
-CY_QBUILD:=$(if $(wildcard $(CY_CONFIG_DIR)/cyqbuild.mk),true)
+include $(_MTB_CORE__QBUILD_MK_FILE)
+CY_QBUILD:=$(if $(wildcard $(_MTB_CORE__QBUILD_MK_FILE)),true)
 ifneq ($(CY_QBUILD),true)
-CY_MESSAGE_qbuild=INFO: "$(CY_CONFIG_DIR)/cyqbuild.mk" was not found during a "qbuild". Run "build" if you need to generate it.
 $(eval $(call CY_MACRO_INFO,CY_MESSAGE_qbuild,$(CY_MESSAGE_qbuild)))
 endif
 CY_TIMESTAMP_CYQBUILD_MK_END=$(call CY_LOG_TIME,secondstage,cyqbuild.mk,END)
-endif
+
+CY_TIMESTAMP_SEARCH_FILTER_MK_BEGIN=$(call CY_LOG_TIME,secondstage,search_filter.mk,BEGIN)
+include $(MTB_TOOLS__CORE_DIR)/make/core/search_filter.mk
+CY_TIMESTAMP_SEARCH_FILTER_MK_END=$(call CY_LOG_TIME,secondstage,search_filter.mk,END)
 
 CY_TIMESTAMP_RECIPE_MK_BEGIN=$(call CY_LOG_TIME,secondstage,recipe.mk,BEGIN)
-include $(CY_INTERNAL_BASELIB_PATH)/make/recipe/recipe.mk
+include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe.mk
 CY_TIMESTAMP_RECIPE_MK_END=$(call CY_LOG_TIME,secondstage,recipe.mk,END)
 
 CY_TIMESTAMP_BUILD_MK_BEGIN=$(call CY_LOG_TIME,secondstage,build.mk,BEGIN)
-include $(CY_BASELIB_CORE_PATH)/make/core/build.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/build.mk
 CY_TIMESTAMP_BUILD_MK_END=$(call CY_LOG_TIME,secondstage,build.mk,END)
 
 endif # ifeq ($(CY_COMMENCE_BUILD),true)
@@ -540,7 +475,7 @@ endif # ifeq ($(CY_COMMENCE_BUILD),true)
 #
 ifndef CY_BSP_PROGRAM
 CY_TIMESTAMP_PROGRAM_MK_BEGIN=$(call CY_LOG_TIME,secondstage,program.mk,BEGIN)
--include $(CY_INTERNAL_BASELIB_PATH)/make/recipe/program.mk
+-include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/program.mk
 CY_TIMESTAMP_PROGRAM_MK_END=$(call CY_LOG_TIME,secondstage,program.mk,END)
 endif
 
@@ -548,7 +483,7 @@ endif
 # IDE file generation
 #
 CY_TIMESTAMP_IDE_MK_BEGIN=$(call CY_LOG_TIME,secondstage,ide.mk,BEGIN)
-include $(CY_BASELIB_CORE_PATH)/make/core/ide.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/ide.mk
 CY_TIMESTAMP_IDE_MK_END=$(call CY_LOG_TIME,secondstage,ide.mk,END)
 
 #
@@ -562,7 +497,7 @@ CY_PRINT_INFO_HEADER=.cyinfo \
 	= INFO message(s) = .cyinfo \
 	============================================================================== .cyinfo 
 endif
-$(call CY_MACRO_FILE_WRITE,$(CY_CONFIG_DIR)/.cyinfo,$(CY_PRINT_INFO_HEADER) $(CY_PRINT_INFO_MESSAGES))
+$(call mtb__file_write,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cyinfo,$(CY_PRINT_INFO_HEADER) $(CY_PRINT_INFO_MESSAGES))
 
 #
 # Gather and print warning messages so that they can be shown at the end of secondstage
@@ -575,7 +510,7 @@ CY_PRINT_WARNING_HEADER=.cywarning \
 	= WARNING message(s) = .cywarning \
 	============================================================================== .cywarning 
 endif
-$(call CY_MACRO_FILE_WRITE,$(CY_CONFIG_DIR)/.cywarning,$(CY_PRINT_WARNING_HEADER) $(CY_PRINT_WARNING_MESSAGES))
+$(call mtb__file_write,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cywarning,$(CY_PRINT_WARNING_HEADER) $(CY_PRINT_WARNING_MESSAGES))
 
 # Empty on purpose
 secondstage:
@@ -588,13 +523,13 @@ CY_TIMESTAMP_MAIN_MK_END=$(call CY_LOG_TIME,bothstages,main.mk,END)
 # Print the timestamps
 #
 ifneq ($(CY_INSTRUMENT_BUILD),)
-CY_TIMESTAMP_LIST=UTILS_MK EXTRA_INC TARGET_MK FEATURES_MK DEFINES_MK TOOLCHAIN_MK CONFIG_MK TOOLS_MK OPEN_MK HELP_MK\
-					PREBUILD_MK RECIPE_MK TRANSITION_MK PYTHON \
-					SEARCH_MK CYQBUILD_MK RECIPE_MK BUILD_MK PROGRAM_MK IDE_MK
+CY_TIMESTAMP_LIST=UTILS_MK EXTRA_INC FEATURES_MK DEFINES_MK TOOLCHAIN_MK CONFIG_MK TOOLS_MK HELP_MK\
+					PREBUILD_MK RECIPE_MK TRANSITION_MK PYTHON GET_APP_INFO \
+					SEARCH_MK CYQBUILD_MK SEARCH_FILTER_MK RECIPE_MK BUILD_MK PROGRAM_MK IDE_MK
 
 $(info )
 $(info ==============================================================================)
-$(info = Begin timestamps $(CY_TAB)$(CY_TAB)$(CY_TAB)(milliseconds) = )
+$(info = Begin timestamps $(MTB_TAB)$(MTB_TAB)$(MTB_TAB)(milliseconds) = )
 $(info ==============================================================================)
 $(info $(CY_TIMESTAMP_MAIN_MK_BEGIN))
 $(foreach timestamp,$(CY_TIMESTAMP_LIST),\
@@ -613,12 +548,12 @@ endif
 #
 # Identify the phony targets
 #
-.PHONY: all getlibs clean help
-.PHONY: open modlibs config config_bt config_usbdev config_secure config_ezpd config_lin
-.PHONY: bsp check get_app_info get_env_info printlibs
+.PHONY: all getlibs clean clean_application_bootstrap clean_proj help
+.PHONY: modlibs config config_bt config_usbdev config_secure config_ezpd config_lin
+.PHONY: bsp check get_env_info printlibs
 .PHONY: app memcalc help_default
 
-.PHONY: build qbuild
-.PHONY: program qprogram debug qdebug erase attach
+.PHONY: build build_proj qbuild qbuild_proj
+.PHONY: program program_proj qprogram debug qdebug erase attach
 .PHONY: eclipse vscode ewarm8 uvision5
 
