@@ -15,6 +15,9 @@ This release of the core GNU make Build System includes a framework to support b
     * ARM Compiler 6
 
 ### What Changed?
+#### v3.0.1
+* Fixed UVision, and Embbeded Workbench export not handling escape characters correctly in defines
+
 #### v3.0.0
 * Dropped compatibility with recipe-make version 1.X and ModusToolbox tools version 2.X
 

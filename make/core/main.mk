@@ -154,7 +154,7 @@ CY_TIMESTAMP_MAIN_MK_BEGIN=$(call CY_LOG_TIME,bothstages,main.mk,BEGIN)
 # Include make files
 ##########################
 
-CY_MAKECMDGOAL_LIST=clean clean_proj qprogram qdebug erase attach modlibs check get_env_info get_app_info help application_postbuild
+CY_MAKECMDGOAL_LIST=clean clean_proj modlibs check get_env_info get_app_info help application_postbuild
 
 # Make a decision on including logic pertinent to builds.
 # If it's not any of these targets, then it's an actual build (and errors are reported rather than warnings)

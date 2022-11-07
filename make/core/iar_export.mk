@@ -33,7 +33,7 @@ _MTB_CORE__IAR_TEMPLATE_PATH:=$(MTB_TOOLS__CORE_DIR)/make/scripts/iar
 
 # Note: All paths are expected to be relative of the Makefile(Project Directory)
 # the defines need to be sorted. IAR will throw an error if there are duplicate asm defines.
-_MTB_CORE__IAR_DEFINES:=$(foreach onedef,$(sort $(_MTB_CORE__IDE_DEFINES)),"$(onedef)",)
+_MTB_CORE__IAR_DEFINES=$(foreach onedef,$(_MTB_CORE__IDE_DEFINES),\"$(onedef)\",)
 _MTB_CORE__IAR_INCLUDES:=$(foreach onedef,$(_MTB_CORE__IDE_INCLUDES),"$(onedef)",)
 _MTB_CORE__IAR_SOURCES_C_CPP:=$(foreach onedef,$(_MTB_CORE__IDE_SOURCES_C) $(_MTB_CORE__IDE_SOURCES_CPP) $(_MTB_CORE__IDE_SOURCES_CXX) $(_MTB_CORE__IDE_SOURCES_CC),"$(onedef)",)
 _MTB_CORE__IAR_SOURCES_s_S:=$(foreach onedef,$(_MTB_CORE__IDE_SOURCES_s) $(_MTB_CORE__IDE_SOURCES_S),"$(onedef)",)
@@ -45,7 +45,7 @@ ewarm8_build_data_file:
 	$(call mtb__file_write,$(_MTB_CORE__IAR_BUILD_DATA_FILE),$(CY_IDE_PRJNAME))
 	$(call mtb__file_append,$(_MTB_CORE__IAR_BUILD_DATA_FILE),$(MTB_RECIPE__CORE))
 	$(call mtb__file_append,$(_MTB_CORE__IAR_BUILD_DATA_FILE),$(MTB_RECIPE__LINKER_SCRIPT))
-	$(call mtb__file_append,$(_MTB_CORE__IAR_BUILD_DATA_FILE),$(_MTB_CORE__IAR_DEFINES))
+	$(shell echo $(_MTB_CORE__IAR_DEFINES) >> $(_MTB_CORE__IAR_BUILD_DATA_FILE))
 	$(call mtb__file_append,$(_MTB_CORE__IAR_BUILD_DATA_FILE),$(_MTB_CORE__IAR_INCLUDES))
 	$(call mtb__file_append,$(_MTB_CORE__IAR_BUILD_DATA_FILE),$(_MTB_CORE__IAR_SOURCES_C_CPP))
 	$(call mtb__file_append,$(_MTB_CORE__IAR_BUILD_DATA_FILE),$(_MTB_CORE__IAR_SOURCES_s_S))

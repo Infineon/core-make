@@ -35,7 +35,7 @@ _MTB_CORE__CMSIS_CYIGNORE_PATH=$(MTB_TOOLS__PRJ_DIR)/.cyignore
 _MTB_CORE__CMSIS_TEMPLATE_PATH=$(MTB_TOOLS__CORE_DIR)/make/scripts/cmsis
 
 # All paths are expected to be relative of the Makefile(Project Directory)
-_MTB_CORE__CMSIS_DEFINES=$(foreach onedef,$(_MTB_CORE__IDE_DEFINES),"$(onedef)",)
+_MTB_CORE__CMSIS_DEFINES=$(foreach onedef,$(_MTB_CORE__IDE_DEFINES),\"$(onedef)\",)
 _MTB_CORE__CMSIS_INCLUDES=$(foreach onedef,$(_MTB_CORE__IDE_INCLUDES),"$(onedef)",)
 _MTB_CORE__CMSIS_SOURCES_C_CPP=$(foreach onedef,$(_MTB_CORE__IDE_SOURCES_C) $(_MTB_CORE__IDE_SOURCES_CPP) $(_MTB_CORE__IDE_SOURCES_CXX) $(_MTB_CORE__IDE_SOURCES_CC),"$(onedef)",)
 _MTB_CORE__CMSIS_SOURCES_s_S=$(foreach onedef,$(_MTB_CORE__IDE_SOURCES_s) $(_MTB_CORE__IDE_SOURCES_S),"$(onedef)",)
@@ -54,7 +54,7 @@ uvision5_build_data_file:
 	$(call mtb__file_write,$(_MTB_CORE__CMSIS_BUILD_DATA_FILE),$(CY_IDE_PRJNAME))
 	$(call mtb__file_append,$(_MTB_CORE__CMSIS_BUILD_DATA_FILE),$(DEVICE))
 	$(call mtb__file_append,$(_MTB_CORE__CMSIS_BUILD_DATA_FILE),$(MTB_RECIPE__LINKER_SCRIPT))
-	$(call mtb__file_append,$(_MTB_CORE__CMSIS_BUILD_DATA_FILE),$(_MTB_CORE__CMSIS_DEFINES))
+	$(shell echo $(_MTB_CORE__CMSIS_DEFINES) >> $(_MTB_CORE__CMSIS_BUILD_DATA_FILE))
 	$(call mtb__file_append,$(_MTB_CORE__CMSIS_BUILD_DATA_FILE),$(_MTB_CORE__CMSIS_INCLUDES))
 	$(call mtb__file_append,$(_MTB_CORE__CMSIS_BUILD_DATA_FILE),$(_MTB_CORE__CMSIS_SOURCES_C_CPP))
 	$(call mtb__file_append,$(_MTB_CORE__CMSIS_BUILD_DATA_FILE),$(_MTB_CORE__CMSIS_SOURCES_s_S))
