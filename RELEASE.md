@@ -15,6 +15,10 @@ This release of the core GNU make Build System includes a framework to support b
     * ARM Compiler 6
 
 ### What Changed?
+#### v3.0.2
+* Workaround an issue where CONFIG_ directory was not being properly filtered by auto-discovery.
+* update make vscode generated c_cpp_properties.json to only use compile_commands.json
+
 #### v3.0.1
 * Fixed UVision, and Embbeded Workbench export not handling escape characters correctly in defines
 

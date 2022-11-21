@@ -325,8 +325,6 @@ $(MTB_RECIPE__IDE_RECIPE_DATA_FILE): $(MTB_TOOLS__OUTPUT_CONFIG_DIR) $(MTB_RECIP
 $(MTB_RECIPE__IDE_RECIPE_DATA_FILE_2):
 	$(MTB__NOISE)echo "s|&&_MTB_CORE__VSCODE_CPU&&|$(_MTB_CORE__VSCODE_CPU)|" > $@;\
 	echo "s|&&_MTB_CORE__VSCODE_VFP&&|$(_MTB_CORE__VSCODE_VFP)|" >> $@;\
-	echo "s|&&_MTB_RECIPE__INCLUDE_LIST&&|$(_MTB_CORE__VSCODE_INCLUDES_LIST)|" >> $@;\
-	echo "s|&&_MTB_RECIPE__DEFINE_LIST&&|$(_MTB_CORE__VSCODE_DEFINES_LIST)|"   >> $@;\
 	echo "s|&&_MTB_CORE__VSCODE_CDB_FILE&&|$(_MTB_CORE__VSCODE_CDB_FILE)|" >> $@;\
 	echo "s|&&_MTB_RECIPE__SEARCH_DIRS&&|$(_MTB_CORE__VSCODE_SEARCH)|" | sed s/'\\t'/'    '/g | sed s/'\\n'/'$(MTB__NEWLINE_MARKER)'/g >> $@;\
 	echo "s|&&_MTB_CORE___VSCODE_BUILD_NUM_PROCESSOR&&|$(_MTB_CORE___VSCODE_BUILD_NUM_PROCESSOR)|" >> $@;\
@@ -411,13 +409,13 @@ vscode_project_extensions_json: $(_MTB_VSCODE_TARGET_BASE_DEPENDENCIES) $(_MTB_C
 	echo "Generated $$jsonFile";
 
 vscode_project_toolchain_c_cpp_json: $(_MTB_VSCODE_TARGET_BASE_DEPENDENCIES) $(_MTB_CORE__QBUILD_MK_FILE)
-	$(MTB__NOISE)json="$(_MTB_CORE__VSCODE_TEMPLATE_PATH)/c_cpp_properties_$(TOOLCHAIN).json";\
+	$(MTB__NOISE)json="$(_MTB_CORE__VSCODE_TEMPLATE_PATH)/c_cpp_properties.json";\
 	jsonFile="$${json##*/}";\
 	sed -f $(MTB_RECIPE__IDE_RECIPE_DATA_FILE) $$json | sed -f $(MTB_RECIPE__IDE_RECIPE_DATA_FILE_2) | \
 		sed s/'$(MTB__NEWLINE_MARKER)'/$$'\\\n            '/g > $(CY_VSCODE_OUT_TEMPLATE_PATH)/$$jsonFile;\
-	if [[ $$jsonFile == *"c_cpp_properties_$(TOOLCHAIN).json" ]]; then\
+	if [[ $$jsonFile == *"c_cpp_properties.json" ]]; then\
 		jsonFile="c_cpp_properties.json";\
-		mv $(CY_VSCODE_OUT_TEMPLATE_PATH)/c_cpp_properties_$(TOOLCHAIN).json $(CY_VSCODE_OUT_TEMPLATE_PATH)/c_cpp_properties.json;\
+		mv $(CY_VSCODE_OUT_TEMPLATE_PATH)/c_cpp_properties.json $(CY_VSCODE_OUT_TEMPLATE_PATH)/c_cpp_properties.json;\
 	fi;\
 	$(CY_VSCODE_JSON_PROCESSING)\
 	if [ -f $(CY_VSCODE_OUT_PATH)/$$jsonFile ]; then\
