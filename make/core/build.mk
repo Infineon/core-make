@@ -87,7 +87,7 @@ _MTB_CORE__CDB_INFO+=$$(MTB__SPACE){
 _MTB_CORE__CDB_INFO+=$$(MTB__SPACE)"directory": "$$(MTB_TOOLS__PRJ_DIR)",
 _MTB_CORE__CDB_INFO+=$$(MTB__SPACE)"file": "$(1)",
 # Remove quotes from path and escape spaces
-_MTB_CORE__CDB_INFO+=$$(MTB__SPACE)"command": "$$(subst ",,$,$$($(2)_CDB_EXPLICIT_COMPILE_ARGS) $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(2) $(1))"
+_MTB_CORE__CDB_INFO+=$$(MTB__SPACE)"command": "$$(subst ",\",$$(subst \,\\,$,$$($(2)_CDB_EXPLICIT_COMPILE_ARGS) $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(2) $(1)))"
 _MTB_CORE__CDB_INFO+=},
 
 endef
@@ -430,7 +430,7 @@ ifneq ($(strip $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS)),)
 	$(MTB__NOISE)$(_MTB_CORE__BUILD_ARCHIVE) $(MTB__SILENT_OUTPUT)
 endif
 else
-$(_MTB_CORE__BUILD_TARGET): $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS) $(LINKER_SCRIPT)
+$(_MTB_CORE__BUILD_TARGET): $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS) $(call mtb_core__escaped_path,$(MTB_RECIPE__LINKER_SCRIPT))
 	$(info $(MTB__INDENT)Linking output file $(notdir $@))
 	$(MTB__NOISE)$(_MTB_CORE__BUILD_LINK)
 endif
@@ -513,11 +513,15 @@ endif
 
 _MTB_CORE__CDB_INFO:=[$(_MTB_CORE__CDB_INFO)]
 _MTB_CORE__CDB_INFO:=$(subst }$(MTB__COMMA) ,}$(MTB__COMMA),$(_MTB_CORE__CDB_INFO))
-_MTB_CORE__CDB_INFO:=$(subst \,\\,$(_MTB_CORE__CDB_INFO))
 _MTB_CORE__CDB_INFO:=$(subst }$(MTB__COMMA)],}],$(_MTB_CORE__CDB_INFO))
 
 $(_MTB_CORE__CDB_FILE): _mtb_build_cdb_preprint
-	$(call mtb__file_write,$@,$(_MTB_CORE__CDB_INFO))
+# Can use mtb__file_write since it has bug that cause it to escape slashes inconsistantly based on make major version.
+ifeq ($(MTB_FILE_TYPE),file)
+	$(file >$@,$(_MTB_CORE__CDB_INFO))
+else
+	$(shell echo '$(subst ','"'"',$(_MTB_CORE__CDB_INFO))' >$@)
+endif
 
 _mtb_build_cdb_preprint: _mtb_build_mkdirs
 	$(info Generating compilation database file...)

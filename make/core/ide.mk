@@ -88,6 +88,11 @@ _MTB_CORE__IDE_PREBUILD_MSG=Note: Building the application runs "make prebuild".
 
 _MTB_CORE__IDE_POSTBUILD_MSG=Note: Building the application runs "make postbuild". You may want to include their content as part of the project postbuild steps.
 
+ifeq ($(strip $(filter 3 2 1,$(MTB__MAKE_MAJOR_VER))),)
+# --output-sync argument is only supported on GNU make-4.0 or newer
+_MTB_CORE__IDE_OUTPUT_SYNC=--output-sync
+endif
+
 ################################################################################
 # Eclipse
 ################################################################################

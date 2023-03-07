@@ -15,6 +15,11 @@ This release of the core GNU make Build System includes a framework to support b
     * ARM Compiler 6
 
 ### What Changed?
+#### v3.0.3
+* Reverted c_cpp_properties.json change made in v3.0.2 to remove vscode intellisense warning in some cases
+* Fixed vscode parallel builds that caused error messages to be jumbled in some cases
+* Fixed issue when modifying the linker script that was not marking the build out-of-date
+
 #### v3.0.2
 * Workaround an issue where CONFIG_ directory was not being properly filtered by auto-discovery.
 * update make vscode generated c_cpp_properties.json to only use compile_commands.json
