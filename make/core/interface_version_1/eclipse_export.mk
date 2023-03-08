@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2022 Cypress Semiconductor Corporation
+# Copyright 2022-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,7 @@ This may cause launch configurations to not show up if the name Eclipse uses for
 $(eval $(call CY_MACRO_WARNING,CY_MESSAGE_prjname,$(CY_MESSAGE_prjname)))
 endif
 
-_MTB_CORE__ECLIPSE_TEMPLATE_PATH=$(MTB_TOOLS__CORE_DIR)/make/scripts/eclipse
+_MTB_CORE__ECLIPSE_TEMPLATE_PATH=$(MTB_TOOLS__CORE_DIR)/make/scripts/interface_version_1/eclipse
 
 # Source files outside of the project directory
 _MTB_CORE__ECLIPSE_SOURCES_INTERNAL:=$(filter-out $(MTB_TOOLS__PRJ_DIR)/%, $(abspath $(SOURCES)))

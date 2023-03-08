@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 #
-# Copyright 2019-2021, Cypress Semiconductor Corporation or a subsidiary of
+# Copyright 2018-2023, Cypress Semiconductor Corporation or a subsidiary of
 # Cypress Semiconductor Corporation. All Rights Reserved.
 #
 # This software, including source code, documentation and related

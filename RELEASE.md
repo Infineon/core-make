@@ -1,4 +1,7 @@
 # Core GNU make Build System Release Notes
+
+## This version of the core-make library is a Beta release to support CYW55513 devices only. Do not use it for production development or in applications targeting other devices.
+
 This repo provides the core make build files and scripts for building and programming ModusToolbox applications. Builds can be run either through a command-line interface (CLI) or through the Eclipse IDE for ModusToolbox.
 
 ### What's Included?
@@ -15,10 +18,8 @@ This release of the core GNU make Build System includes a framework to support b
     * ARM Compiler 6
 
 ### What Changed?
-#### v3.0.3
-* Reverted c_cpp_properties.json change made in v3.0.2 to remove vscode intellisense warning in some cases
-* Fixed vscode parallel builds that caused error messages to be jumbled in some cases
-* Fixed issue when modifying the linker script that was not marking the build out-of-date
+#### v3.1.0
+* This version of the core-make library is a Beta release to support CYW55513 devices only. Do not use it for production development or in applications targeting other devices.
 
 #### v3.0.2
 * Workaround an issue where CONFIG_ directory was not being properly filtered by auto-discovery.
@@ -73,7 +74,7 @@ This version of the core make build system was validated for compatibility with 
 | Software and Tools                        | Version |
 | :---                                      | :----:  |
 | ModusToolbox Software Environment         | 3.0     |
-| GCC Compiler                              | 10.3    |
+| GCC Compiler                              | 11.3    |
 | IAR Compiler                              | 9.3     |
 | ARM Compiler                              | 6.16    |
 

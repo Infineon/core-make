@@ -1,5 +1,7 @@
 # Core GNU make Build System
 
+## This version of the core-make library is a Beta release to support CYW55513 devices only. Do not use it for production development or in applications targeting other devices.
+
 ## Overview
 
 This repo provides the core make build files and scripts for building and programming ModusToolbox applications. Builds can be run either through a command-line interface (CLI) or through the Eclipse IDE for ModusToolbox.

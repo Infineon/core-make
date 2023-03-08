@@ -1,12 +1,12 @@
 ################################################################################
-# \file transition.mk
+# \file jlink.mk
 #
 # \brief
-# Perform device transition for device that support secure modes.
+# JLink Path handling
 #
 ################################################################################
 # \copyright
-# Copyright 2021-2023 Cypress Semiconductor Corporation
+# Copyright 2018-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,9 +26,20 @@ ifeq ($(WHICHFILE),true)
 $(info Processing $(lastword $(MAKEFILE_LIST)))
 endif
 
-device_transition_default:
-	$(error Device transitions are unnecessary and unsupported for $(DEVICE).)
-# Transition the device from one mode to another
-device_transition: $(if $(BSP_DEVICE_TRANSITION_TARGET),$(BSP_DEVICE_TRANSITION_TARGET),$(if $(RECIPE_DEVICE_TRANSITION_TARGET),$(RECIPE_DEVICE_TRANSITION_TARGET),device_transition_default))
 
-.PHONY: device_transition_default device_transition
+ifneq (,$(MTB_JLINK_DIR))
+# if MTB_JLINK_DIR is set, look for the JLinkGDBServerCL.exe (windows) or JLinkGDBServerCLExe (unix) there
+MTB_CORE__JLINK_EXE:=$(wildcard $(call mtb_core__escaped_path,$(MTB_JLINK_DIR))/JLinkGDBServerCL.exe)
+ifeq (,$(MTB_CORE__JLINK_EXE))
+MTB_CORE__JLINK_EXE:=$(wildcard $(call mtb_core__escaped_path,$(MTB_JLINK_DIR))/JLinkGDBServerCLExe)
+endif
+
+else #(,$(JLINK_DIR))
+# if MTB_JLINK_DIR is not set, look for it in the user PATH env var.
+MTB_CORE__JLINK_EXE:=$(call mtb__get_file_path,JLinkGDBServerCL.exe)
+ifeq (,$(MTB_CORE__JLINK_EXE))
+MTB_CORE__JLINK_EXE:=$(call mtb__get_file_path,JLinkGDBServerCLExe)
+endif
+endif #(,$(JLINK_DIR))
+
+# If JLink executable is not found, it will be set to empty.

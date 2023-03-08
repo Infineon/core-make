@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2021 Cypress Semiconductor Corporation
+# Copyright 2018-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,20 +30,17 @@ endif
 _MTB_CORE__GET_APP_INFO_DATA_FILE:=$(MTB_TOOLS__OUTPUT_BASE_DIR)/get_app_info.txt
 
 _MTB_CORE__QBUILD_MK_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/cyqbuild.mk
+_MTB_CORE__FORCEBUILD_MK_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/cyforcebuild.mk
 
 # arguments for mtbsearch
 _MTB_CORE__SEARCH_CMD=$(CY_TOOL_mtbsearch_EXE_ABS) --project $(MTB_TOOLS__PRJ_DIR) @$(_MTB_CORE__GET_APP_INFO_DATA_FILE) @MTB_TOOLS_DIR=$(MTB_TOOLS__TOOLS_DIR) --generate -o $(_MTB_CORE__QBUILD_MK_FILE)
 
-# if running a make then remove the cyqbuild.mk file during the first stage, the second stage will be forced to regenerate the cyqbuild.mk file.
-ifeq ($(CY_SECONDSTAGE),)
-ifeq (,$(filter get_app_info qbuild qbuild_proj qprogram qprogram_proj qdebug,$(MAKECMDGOALS)))
-$(info $(shell rm -f $(_MTB_CORE__QBUILD_MK_FILE)))
-endif
-endif
-
 # generate the cyqbuild.mk file
-$(_MTB_CORE__QBUILD_MK_FILE): $(_MTB_CORE__GET_APP_INFO_DATA_FILE) | prebuild
+$(_MTB_CORE__FORCEBUILD_MK_FILE) $(_MTB_CORE__QBUILD_MK_FILE): $(_MTB_CORE__GET_APP_INFO_DATA_FILE)
 	$(info )
 	$(info Auto-discovery in progress...)
+	$(MTB__NOISE)mkdir -p $(MTB_TOOLS__OUTPUT_CONFIG_DIR)
 	$(MTB__NOISE)$(_MTB_CORE__SEARCH_CMD)
 	$(MTB__NOISE)echo Auto-discovery complete
+
+.PHONY: $(_MTB_CORE__FORCEBUILD_MK_FILE)

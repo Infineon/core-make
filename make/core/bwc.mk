@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2021 Cypress Semiconductor Corporation
+# Copyright 2018-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -159,4 +159,33 @@ ifneq ($(POSTBUILD),)
 project_postbuild: _mtb_build__legacy_project_postbuild
 _mtb_build__legacy_project_postbuild: bsp_postbuild
 	$(POSTBUILD)
+endif
+
+##########################
+# Bug fix
+##########################
+# Bug fixes for issues found in MTB 3.0 that will fixed in MTB 3.1.
+# These are ordinarily defined in tools-make there are redefined here to fix a bug related to cdb file generation.
+# Remove at the next major version release.
+
+#
+# Writes to file
+# $(1) : File to write
+# $(2) : String
+#
+ifeq ($(MTB_FILE_TYPE),file)
+mtb__file_write=$(file >$1,$2)
+else
+mtb__file_write=$(shell echo '$(subst ','"'"',$2)' >$1)
+endif
+
+#
+# Appends to file
+# $(1) : File to write
+# $(2) : String
+#
+ifeq ($(MTB_FILE_TYPE),file)
+mtb__file_append=$(file >>$1,$2)
+else
+mtb__file_append=$(shell echo '$(subst ','"'"',$2)' >>$1)
 endif

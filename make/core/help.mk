@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2021 Cypress Semiconductor Corporation
+# Copyright 2018-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -288,6 +288,11 @@ CY_HELP_CY_PYTHON_PATH=Specifies the path to the Python executable.
 CY_HELP_CY_PYTHON_PATH_VERBOSE=For make targets that depend on Python, the build system looks for a Python 3 in the user's PATH\
 					and uses that to invoke python. If however CY_PYTHON_PATH is defined, it will use that python executable.\
 					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: CY_PYTHON_PATH="path/to/python/executable/python.exe"
+CY_HELP_MTB_JLINK_DIR=Specifes the path JLink directory.
+CY_HELP_MTB_JLINK_DIR_VERBOSE:=Settings this path allow make to locate JLink executable when calling make program and make debug.\
+					If not specified, make will default to look for the JLink executable in PATH variable.\
+					When generating launch config for IDE, this will override the JLink path in the generated launch configs.\
+					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: MTB_JLINK_DIR:=C:/Program Files/SEGGER/JLink
 
 #
 # Miscellaneous variables
@@ -332,7 +337,7 @@ else
 	$(info ==============================================================================     )
 	$(info $(MTB__SPACE)Cypress Build System                                                    )
 	$(info ==============================================================================     )
-	$(info $(MTB__SPACE)Copyright 2018-2021 Cypress Semiconductor Corporation                   )
+	$(info $(MTB__SPACE)Copyright 2018-2023 Cypress Semiconductor Corporation                   )
 	$(info $(MTB__SPACE)SPDX-License-Identifier: Apache-2.0                                     )
 	$(info                                                                                    )
 	$(info $(MTB__SPACE)Licensed under the Apache License, Version 2.0 (the "License");         )
@@ -456,6 +461,7 @@ else
 	$(info $(MTB__SPACE)CY_TOOLS_DIR        $(CY_HELP_CY_TOOLS_DIR))
 	$(info $(MTB__SPACE)CY_BUILD_LOCATION   $(CY_HELP_CY_BUILD_LOCATION))
 	$(info $(MTB__SPACE)CY_PYTHON_PATH      $(CY_HELP_CY_PYTHON_PATH))
+	$(info $(MTB__SPACE)MTB_JLINK_DIR       $(CY_HELP_MTB_JLINK_DIR))
 	$(info                                                               )
 	$(info =======================================                       )
 	$(info $(MTB__SPACE)Miscellaneous make variables                       )

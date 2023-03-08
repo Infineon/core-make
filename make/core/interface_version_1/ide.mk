@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2021 Cypress Semiconductor Corporation
+# Copyright 2018-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,7 +54,7 @@ $(MTB_TOOLS__OUTPUT_CONFIG_DIR):
 # to be provided. If one is not provided, we will fallback to the default APPNAME.
 ifeq ($(CY_IDE_PRJNAME),)
 CY_IDE_PRJNAME=$(APPNAME)
-_MTB_ECLIPSE_APPLICATION_NAME=$(MTB_APPLICATION_NAME)
+_MTB_ECLIPSE_APPLICATION_NAME=$(patsubst "%",%,$(MTB_APPLICATION_NAME))
 else
 # in a multi-core application, CY_IDE_PRJNAME is name selected in the project-creator and should only apply to the project
 _MTB_ECLIPSE_APPLICATION_NAME=$(CY_IDE_PRJNAME)
@@ -88,17 +88,12 @@ _MTB_CORE__IDE_PREBUILD_MSG=Note: Building the application runs "make prebuild".
 
 _MTB_CORE__IDE_POSTBUILD_MSG=Note: Building the application runs "make postbuild". You may want to include their content as part of the project postbuild steps.
 
-ifeq ($(strip $(filter 3 2 1,$(MTB__MAKE_MAJOR_VER))),)
-# --output-sync argument is only supported on GNU make-4.0 or newer
-_MTB_CORE__IDE_OUTPUT_SYNC=--output-sync
-endif
-
 ################################################################################
 # Eclipse
 ################################################################################
 
 ifeq ($(filter eclipse,$(MAKECMDGOALS)),eclipse)
-include $(MTB_TOOLS__CORE_DIR)/make/core/eclipse_export.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/interface_version_1/eclipse_export.mk
 endif # ifeq ($(filter eclipse,$(MAKECMDGOALS)),eclipse)
 
 ################################################################################
@@ -106,7 +101,7 @@ endif # ifeq ($(filter eclipse,$(MAKECMDGOALS)),eclipse)
 ################################################################################
 
 ifeq ($(filter ewarm8,$(MAKECMDGOALS)),ewarm8)
-include $(MTB_TOOLS__CORE_DIR)/make/core/iar_export.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/interface_version_1/iar_export.mk
 endif #ifeq ($(filter ewarm8,$(MAKECMDGOALS)),ewarm8)
 
 
@@ -115,7 +110,7 @@ endif #ifeq ($(filter ewarm8,$(MAKECMDGOALS)),ewarm8)
 ################################################################################
 
 ifeq ($(filter uvision5,$(MAKECMDGOALS)),uvision5)
-include $(MTB_TOOLS__CORE_DIR)/make/core/cmsis_export.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/interface_version_1/cmsis_export.mk
 endif # ifeq ($(filter uvision5,$(MAKECMDGOALS)),uvision5)
 
 
@@ -124,7 +119,7 @@ endif # ifeq ($(filter uvision5,$(MAKECMDGOALS)),uvision5)
 ################################################################################
 
 ifeq ($(filter vscode,$(MAKECMDGOALS)),vscode)
-include $(MTB_TOOLS__CORE_DIR)/make/core/vscode_export.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/interface_version_1/vscode_export.mk
 endif
 
 #

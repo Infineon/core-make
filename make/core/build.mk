@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2021 Cypress Semiconductor Corporation
+# Copyright 2018-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,22 +55,16 @@ define mtb_explicit_build_rule
 $(2)_SUFFIX=$$(suffix $(1))
 ifeq ($$($(2)_SUFFIX),.$(MTB_RECIPE__SUFFIX_s))
 $(2)_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__BUILD_COMPILE_AS_LC)
-$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__CDB_BUILD_COMPILE_AS_LC)
 else ifeq ($$($(2)_SUFFIX),.$(MTB_RECIPE__SUFFIX_S))
 $(2)_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__BUILD_COMPILE_AS_UC)
-$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__CDB_BUILD_COMPILE_AS_UC)
 else ifeq ($$($(2)_SUFFIX),.$(MTB_RECIPE__SUFFIX_C))
 $(2)_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__BUILD_COMPILE_EXPLICIT_C)
-$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_C)
 else ifeq ($$($(2)_SUFFIX),.$(MTB_RECIPE__SUFFIX_CPP))
 $(2)_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__BUILD_COMPILE_EXPLICIT_CPP)
-$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_CPP)
 else ifeq ($$($(2)_SUFFIX),.$(MTB_RECIPE__SUFFIX_CXX))
 $(2)_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__BUILD_COMPILE_EXPLICIT_CPP)
-$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_CPP)
 else ifeq ($$($(2)_SUFFIX),.$(MTB_RECIPE__SUFFIX_CC))
 $(2)_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__BUILD_COMPILE_EXPLICIT_CPP)
-$(2)_CDB_EXPLICIT_COMPILE_ARGS=$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_CPP)
 else
 $$(call mtb__error,Incompatible source file type encountered while constructing explicit rule: $(1))
 endif
@@ -82,13 +76,6 @@ else
 	$$(info Compiling $$< $$(MTB_RECIPE__DEFINES) $$(MTB_RECIPE__INCLUDES))
 endif
 	$(MTB__NOISE)$$($(2)_EXPLICIT_COMPILE_ARGS) $$@ $$<
-
-_MTB_CORE__CDB_INFO+=$$(MTB__SPACE){
-_MTB_CORE__CDB_INFO+=$$(MTB__SPACE)"directory": "$$(MTB_TOOLS__PRJ_DIR)",
-_MTB_CORE__CDB_INFO+=$$(MTB__SPACE)"file": "$(1)",
-# Remove quotes from path and escape spaces
-_MTB_CORE__CDB_INFO+=$$(MTB__SPACE)"command": "$$(subst ",\",$$(subst \,\\,$,$$($(2)_CDB_EXPLICIT_COMPILE_ARGS) $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(2) $(1)))"
-_MTB_CORE__CDB_INFO+=},
 
 endef
 
@@ -115,9 +102,9 @@ _MTB_CORE__BUILD_EXTSRC_LIST:=$(SOURCES) $(_MTB_CORE__SEARCH_EXT_SOURCE_ASSET)
 _MTB_CORE__BUILD_INTSRC_LIST:=$(filter-out $(_MTB_CORE__BUILD_EXTSRC_LIST),$(MTB_RECIPE__SOURCE))
 _MTB_CORE__BUILD_SRC_STRIPPED:=$(patsubst $(MTB_TOOLS__REL_PRJ_PATH)/%,/%,$(_MTB_CORE__BUILD_INTSRC_LIST))
 _MTB_CORE__BUILD_EXTSRC_RELATIVE:=$(sort $(filter $(MTB_TOOLS__REL_PRJ_PATH)/%,$(_MTB_CORE__BUILD_EXTSRC_LIST)) $(filter ../%,$(_MTB_CORE__BUILD_EXTSRC_LIST)) $(filter ./%,$(_MTB_CORE__BUILD_EXTSRC_LIST)))
-_MTB_CORe__BUILD_EXTSRC_ABSOLUTE:=$(filter-out $(_MTB_CORE__BUILD_EXTSRC_RELATIVE),$(_MTB_CORE__BUILD_EXTSRC_LIST))
+_MTB_CORE__BUILD_EXTSRC_ABSOLUTE:=$(filter-out $(_MTB_CORE__BUILD_EXTSRC_RELATIVE),$(_MTB_CORE__BUILD_EXTSRC_LIST))
 _MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED:=$(patsubst $(MTB_TOOLS__REL_PRJ_PATH)/%,/%,$(subst ../,,$(_MTB_CORE__BUILD_EXTSRC_RELATIVE)))
-_MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED:=$(notdir $(_MTB_CORe__BUILD_EXTSRC_ABSOLUTE))
+_MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED:=$(notdir $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE))
 
 #
 # Source files that come from the application, generated, and external input
@@ -202,19 +189,19 @@ _MTB_CORE__OBJ_FILE_DIRS:=$(sort $(call mtb__get_dir,$(_MTB_CORE__BUILD_ALL_OBJ_
 #
 # Construct the full list of flags
 #
-_MTB_CORE__BUILD_ALL_ASFLAGS_UC:=$(MTB_RECIPE__ASFLAGS) $(MTB_RECIPE__DEFINES)
+_MTB_CORE__BUILD_ALL_ASFLAGS_UC=$(MTB_RECIPE__ASFLAGS) $(MTB_RECIPE__DEFINES)
 
-_MTB_CORE__BUILD_ALL_ASFLAGS_LC:=$(MTB_RECIPE__ASFLAGS)
+_MTB_CORE__BUILD_ALL_ASFLAGS_LC=$(MTB_RECIPE__ASFLAGS)
 
-_MTB_CORE__BUILD_ALL_CFLAGS:=$(MTB_RECIPE__CFLAGS) $(MTB_RECIPE__DEFINES)
+_MTB_CORE__BUILD_ALL_CFLAGS=$(MTB_RECIPE__CFLAGS) $(MTB_RECIPE__DEFINES)
 
-_MTB_CORE__BUILD_ALL_CXXFLAGS:=$(MTB_RECIPE__CXXFLAGS) $(MTB_RECIPE__DEFINES)
+_MTB_CORE__BUILD_ALL_CXXFLAGS=$(MTB_RECIPE__CXXFLAGS) $(MTB_RECIPE__DEFINES)
 
 #
 # Compiler arguments
 #
-_MTB_CORE__BUILD_COMPILE_AS_UC:=$(AS) $(_MTB_CORE__BUILD_ALL_ASFLAGS_UC) $(MTB_RECIPE__INCRSPFILE_ASM)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp $(MTB_RECIPE__OUTPUT_OPTION)
-_MTB_CORE__BUILD_COMPILE_AS_LC:=$(AS) $(_MTB_CORE__BUILD_ALL_ASFLAGS_LC) $(MTB_RECIPE__INCRSPFILE_ASM)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp $(MTB_RECIPE__OUTPUT_OPTION)
+_MTB_CORE__BUILD_COMPILE_AS_UC=$(AS) $(_MTB_CORE__BUILD_ALL_ASFLAGS_UC) $(MTB_RECIPE__INCRSPFILE_ASM)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp $(MTB_RECIPE__OUTPUT_OPTION)
+_MTB_CORE__BUILD_COMPILE_AS_LC=$(AS) $(_MTB_CORE__BUILD_ALL_ASFLAGS_LC) $(MTB_RECIPE__INCRSPFILE_ASM)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp $(MTB_RECIPE__OUTPUT_OPTION)
 # Meant for custom rules. 
 _MTB_CORE__BUILD_COMPILE_C=$(CC) $(_MTB_CORE__BUILD_ALL_CFLAGS) $(MTB_RECIPE__INCRSPFILE)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp $(MTB_RECIPE__DEPENDENCIES) $(MTB_RECIPE__OUTPUT_OPTION)
 _MTB_CORE__BUILD_COMPILE_CPP=$(CXX) $(_MTB_CORE__BUILD_ALL_CXXFLAGS) $(MTB_RECIPE__INCRSPFILE)$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/inclist.rsp $(MTB_RECIPE__DEPENDENCIES) $(MTB_RECIPE__OUTPUT_OPTION)
@@ -292,7 +279,7 @@ mtb_explicit_build_rule,$(explicit),$(addprefix ext/,$(patsubst $(MTB_TOOLS__REL
 .$(MTB_RECIPE__SUFFIX_O),$(basename $(explicit)))))),ext)))
 
 # Create explicit rules for ext (absolute path) files
-$(foreach explicit,$(_MTB_CORe__BUILD_EXTSRC_ABSOLUTE),$(eval $(call \
+$(foreach explicit,$(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE),$(eval $(call \
 mtb_explicit_build_rule,$(explicit),$(addprefix ext/,$(notdir $(addsuffix \
 .$(MTB_RECIPE__SUFFIX_O),$(basename $(explicit))))),ext)))
 
@@ -326,8 +313,8 @@ endif
 #
 # Dependencies
 #
-build_proj: prebuild app memcalc
-qbuild_proj: prebuild app memcalc
+build_proj: app memcalc
+qbuild_proj: app memcalc
 memcalc: app
 
 #
@@ -430,7 +417,7 @@ ifneq ($(strip $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS)),)
 	$(MTB__NOISE)$(_MTB_CORE__BUILD_ARCHIVE) $(MTB__SILENT_OUTPUT)
 endif
 else
-$(_MTB_CORE__BUILD_TARGET): $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS) $(call mtb_core__escaped_path,$(MTB_RECIPE__LINKER_SCRIPT))
+$(_MTB_CORE__BUILD_TARGET): $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS) $(MTB_RECIPE__LINKER_SCRIPT)
 	$(info $(MTB__INDENT)Linking output file $(notdir $@))
 	$(MTB__NOISE)$(_MTB_CORE__BUILD_LINK)
 endif
@@ -505,27 +492,29 @@ $(info Build rules construction complete)
 # Note: VSCode .cdb file needs to be known in multiple make files
 ifneq ($(CY_BUILD_LOCATION),)
 _MTB_CORE__CDB_FILE:=$(MTB_TOOLS__OUTPUT_BASE_DIR)/compile_commands.json
-_MTB_CORE__VSCODE_CDB_FILE:=$(_MTB_CORE__CDB_FILE)
 else
 _MTB_CORE__CDB_FILE:=./$(notdir $(MTB_TOOLS__OUTPUT_BASE_DIR))/compile_commands.json
-_MTB_CORE__VSCODE_CDB_FILE:=\$$\{workspaceFolder\}/$(notdir $(MTB_TOOLS__OUTPUT_BASE_DIR))/compile_commands.json
 endif
 
-_MTB_CORE__CDB_INFO:=[$(_MTB_CORE__CDB_INFO)]
-_MTB_CORE__CDB_INFO:=$(subst }$(MTB__COMMA) ,}$(MTB__COMMA),$(_MTB_CORE__CDB_INFO))
-_MTB_CORE__CDB_INFO:=$(subst }$(MTB__COMMA)],}],$(_MTB_CORE__CDB_INFO))
-
-$(_MTB_CORE__CDB_FILE): _mtb_build_cdb_preprint
-# Can use mtb__file_write since it has bug that cause it to escape slashes inconsistantly based on make major version.
-ifeq ($(MTB_FILE_TYPE),file)
-	$(file >$@,$(_MTB_CORE__CDB_INFO))
-else
-	$(shell echo '$(subst ','"'"',$(_MTB_CORE__CDB_INFO))' >$@)
-endif
-
-_mtb_build_cdb_preprint: _mtb_build_mkdirs
+$(_MTB_CORE__CDB_FILE)_temp: _mtb_build_mkdirs
 	$(info Generating compilation database file...)
 	$(info -> $(_MTB_CORE__CDB_FILE))
+	$(call mtb__file_write,$@_s_lc,$(subst ",\",$(_MTB_CORE__CDB_BUILD_COMPILE_AS_LC)))
+	$(call mtb__file_append,$@_s_lc,$(_MTB_CORE__BUILD_SRC_s_FILES) $(_MTB_CORE__BUILD_GENSRC_s_FILES) $(_MTB_CORE__BUILD_EXTSRC_s_FILES))
+	$(call mtb__file_append,$@_s_lc,$(_MTB_CORE__BUILD_SRC_s_OBJ_FILES) $(_MTB_CORE__BUILD_GENSRC_s_OBJ_FILES) $(_MTB_CORE__BUILD_EXTSRC_s_OBJ_FILES))
+	$(call mtb__file_write,$@_S_uc,$(subst ",\",$(_MTB_CORE__CDB_BUILD_COMPILE_AS_UC)))
+	$(call mtb__file_append,$@_S_uc,$(_MTB_CORE__BUILD_SRC_S_FILES) $(_MTB_CORE__BUILD_GENSRC_S_FILES) $(_MTB_CORE__BUILD_EXTSRC_S_FILES))
+	$(call mtb__file_append,$@_S_uc,$(_MTB_CORE__BUILD_SRC_S_OBJ_FILES) $(_MTB_CORE__BUILD_GENSRC_S_OBJ_FILES) $(_MTB_CORE__BUILD_EXTSRC_S_OBJ_FILES))
+	$(call mtb__file_write,$@_c,$(subst ",\",$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_C)))
+	$(call mtb__file_append,$@_c,$(_MTB_CORE__BUILD_SRC_C_FILES) $(_MTB_CORE__BUILD_GENSRC_C_FILES) $(_MTB_CORE__BUILD_EXTSRC_C_FILES))
+	$(call mtb__file_append,$@_c,$(_MTB_CORE__BUILD_SRC_C_OBJ_FILES) $(_MTB_CORE__BUILD_GENSRC_C_OBJ_FILES) $(_MTB_CORE__BUILD_EXTSRC_C_OBJ_FILES))
+	$(call mtb__file_write,$@_cpp,$(subst ",\",$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_CPP)))
+	$(call mtb__file_append,$@_cpp,$(_MTB_CORE__BUILD_SRC_CPP_FILES) $(_MTB_CORE__BUILD_GENSRC_CPP_FILES) $(_MTB_CORE__BUILD_EXTSRC_CPP_FILES))
+	$(call mtb__file_append,$@_cpp,$(_MTB_CORE__BUILD_SRC_CPP_OBJ_FILES) $(_MTB_CORE__BUILD_GENSRC_CPP_OBJ_FILES) $(_MTB_CORE__BUILD_EXTSRC_CPP_OBJ_FILES))
+
+$(_MTB_CORE__CDB_FILE): $(_MTB_CORE__CDB_FILE)_temp
+	$(MTB__NOISE)$(MTB_TOOLS_BASH) $(MTB_TOOLS__CORE_DIR)/make/scripts/gen_compile_commands.bash $@ $(MTB_TOOLS__PRJ_DIR) $<_s_lc $<_S_uc $<_c $<_cpp
+	$(MTB__NOISE)rm -f $<_s_lc $<_S_uc $<_c $<_cpp
 
 _mtb_build_cdb_postprint: $(_MTB_CORE__CDB_FILE)
 	$(info Compilation database file generation complete)
@@ -538,4 +527,4 @@ _mtb_build_cdb_postprint: $(_MTB_CORE__CDB_FILE)
 .PHONY: _mtb_build_gensrc
 .PHONY: _mtb_build_preprint _mtb_build_postprint
 .PHONY:  recipe_postbuild bsp_postbuild project_postbuild
-.PHONY: $(_MTB_CORE__CDB_FILE)
+.PHONY: $(_MTB_CORE__CDB_FILE) $(_MTB_CORE__CDB_FILE)_temp

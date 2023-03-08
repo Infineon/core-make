@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2022 Cypress Semiconductor Corporation
+# Copyright 2022-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@ endif
 _MTB_CORE__IAR_BUILD_DATA_FILE:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/iar_build_data.temp
 _MTB_CORE__IAR_OUTFILE:=$(CY_IDE_PRJNAME).ipcf
 _MTB_CORE__IAR_CYIGNORE_PATH:=$(MTB_TOOLS__PRJ_DIR)/.cyignore
-_MTB_CORE__IAR_TEMPLATE_PATH:=$(MTB_TOOLS__CORE_DIR)/make/scripts/iar
+_MTB_CORE__IAR_TEMPLATE_PATH:=$(MTB_TOOLS__CORE_DIR)/make/scripts/interface_version_1/iar
 
 # Note: All paths are expected to be relative of the Makefile(Project Directory)
 # the defines need to be sorted. IAR will throw an error if there are duplicate asm defines.

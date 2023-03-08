@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2019 Cypress Semiconductor Corporation
+# Copyright 2018-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,8 @@ CY_PREBUILD_TARGET=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).$(MTB_RECIPE__SUFF
 ################################################################################
 # Targets
 ################################################################################
+
+$(_MTB_CORE__FORCEBUILD_MK_FILE): prebuild
 
 _mtb_build_prebuild_mkdirs:
 	$(MTB__NOISE)echo; \

@@ -7,7 +7,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2021 Cypress Semiconductor Corporation
+# Copyright 2018-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -116,10 +116,11 @@ app memcalc application_postbuild:
 #
 # Targets that require a second build stage
 #
-build build_proj qbuild qbuild_proj app: secondstage
-program program_proj qprogram qprogram_proj debug qdebug erase attach: secondstage
-eclipse vscode ewarm8 uvision5: secondstage
-
+build build_proj app program program_proj debug eclipse vscode ewarm8 uvision5 ewarm uvision: secondstage
+#
+# Targets that require don't require second build stage, but does need auto-discovery
+#
+qbuild qbuild_proj qprogram qprogram_proj qdebug erase attach: qsecondstage
 
 ################################################################################
 # Applicable for both first and second build stages
@@ -154,22 +155,16 @@ CY_TIMESTAMP_MAIN_MK_BEGIN=$(call CY_LOG_TIME,bothstages,main.mk,BEGIN)
 # Include make files
 ##########################
 
-CY_MAKECMDGOAL_LIST=clean clean_proj modlibs check get_env_info get_app_info help application_postbuild
-
-# Make a decision on including logic pertinent to builds.
-# If it's not any of these targets, then it's an actual build (and errors are reported rather than warnings)
-ifeq ($(sort $(foreach target,$(CY_MAKECMDGOAL_LIST),$(if $(findstring $(target),$(MAKECMDGOALS)),false))),false)
-CY_COMMENCE_BUILD=false
-else
-CY_COMMENCE_BUILD=true
-endif
-
 #
 # Include utilities used by all make files
 #
 CY_TIMESTAMP_UTILS_MK_BEGIN=$(call CY_LOG_TIME,bothstages,core_utils.mk,BEGIN)
 include $(MTB_TOOLS__CORE_DIR)/make/core/core_utils.mk
 CY_TIMESTAMP_UTILS_MK_END=$(call CY_LOG_TIME,bothstages,core_utils.mk,END)
+
+CY_TIMESTAMP_RECIPE_VERSION_MK_BEGIN=$(call CY_LOG_TIME,bothstages,recipe_version.mk,BEGIN)
+-include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe_version.mk
+CY_TIMESTAMP_RECIPE_VERSION_MK_END=$(call CY_LOG_TIME,bothstages,recipe_version.mk,END)
 
 CY_TIMESTAMP_FEATURES_MK_BEGIN=$(call CY_LOG_TIME,bothstages,features.mk,BEGIN)
 -include $(MTB_TOOLS__RECIPE_DIR)/make/udd/features.mk
@@ -369,33 +364,36 @@ CY_TIMESTAMP_GET_APP_INFO_END=$(call CY_LOG_TIME,firststage,get_app_info.mk,END)
 export $(filter CY_INFO_%,$(.VARIABLES))
 export $(filter CY_WARNING_%,$(.VARIABLES))
 
+qsecondstage_build: $(_MTB_CORE__QBUILD_MK_FILE)
+secondstage_build: $(_MTB_CORE__FORCEBUILD_MK_FILE)
+
 # Note: always use -f as it's not passed down via MAKEFLAGS
-secondstage_build: | prebuild  $(_MTB_CORE__QBUILD_MK_FILE)
+qsecondstage_build secondstage_build:
 	$(MTB__NOISE)echo "Commencing build operations..."
 	$(MTB__NOISE)echo
 	$(MTB__NOISE)$(MAKE) -f $(abspath $(firstword $(MAKEFILE_LIST))) $(MAKECMDGOALS) CY_SECONDSTAGE=true --no-print-directory
 
-secondstage: | secondstage_build
+qsecondstage: qsecondstage_build
+secondstage: secondstage_build_check
+
+qsecondstage second_stage:
 	$(info $(subst .cywarning ,$(MTB_NEWLINE),$(subst .cyinfo ,$(MTB_NEWLINE),$(call \
 	mtb__file_read,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cyinfo)$(call \
 	mtb__file_read,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cywarning))))
 
+secondstage_build_check: secondstage_build
+	$(info Initializing build: $(APPNAME)$(LIBNAME) $(CONFIG) $(TARGET) $(TOOLCHAIN))
+ifeq ($(wildcard $(MTB_TOOLS__RECIPE_DIR)),)
+	$(info )
+	$(call mtb__error,Cannot find the base library. Run "make getlibs" and/or check\
+	that the library location is correct in the CY_BASELIB_PATH variable)
+endif
 
 ################################################################################
 # Include make files continued for second build stage
 ################################################################################
 
-else # ifeq ($(CY_COMMENCE_BUILD),true)
-
-ifeq ($(CY_COMMENCE_BUILD),true)
-$(info )
-$(info Initializing build: $(APPNAME)$(LIBNAME) $(CONFIG) $(TARGET) $(TOOLCHAIN))
-ifeq ($(wildcard $(MTB_TOOLS__RECIPE_DIR)),)
-$(info )
-$(call mtb__error,Cannot find the base library. Run "make getlibs" and/or check\
-that the library location is correct in the CY_BASELIB_PATH variable)
-endif
-endif
+else # ifeq ($(CY_SECONDSTAGE),)
 
 ##########################
 # User input check
@@ -444,16 +442,9 @@ endif
 #
 # Build-related routines
 #
-ifeq ($(CY_COMMENCE_BUILD),true)
-
 CY_TIMESTAMP_CYQBUILD_MK_BEGIN=$(call CY_LOG_TIME,secondstage,cyqbuild.mk,BEGIN)
-
 # Skip the auto-discovery and re-use the last build's source list
 include $(_MTB_CORE__QBUILD_MK_FILE)
-CY_QBUILD:=$(if $(wildcard $(_MTB_CORE__QBUILD_MK_FILE)),true)
-ifneq ($(CY_QBUILD),true)
-$(eval $(call CY_MACRO_INFO,CY_MESSAGE_qbuild,$(CY_MESSAGE_qbuild)))
-endif
 CY_TIMESTAMP_CYQBUILD_MK_END=$(call CY_LOG_TIME,secondstage,cyqbuild.mk,END)
 
 CY_TIMESTAMP_SEARCH_FILTER_MK_BEGIN=$(call CY_LOG_TIME,secondstage,search_filter.mk,BEGIN)
@@ -468,7 +459,12 @@ CY_TIMESTAMP_BUILD_MK_BEGIN=$(call CY_LOG_TIME,secondstage,build.mk,BEGIN)
 include $(MTB_TOOLS__CORE_DIR)/make/core/build.mk
 CY_TIMESTAMP_BUILD_MK_END=$(call CY_LOG_TIME,secondstage,build.mk,END)
 
-endif # ifeq ($(CY_COMMENCE_BUILD),true)
+#
+# Setup JLink path for IDE export and make program
+#
+CY_TIMESTAMP_JLINK_MK_BEGIN=$(call CY_LOG_TIME,secondstage,jlink.mk,BEGIN)
+include $(MTB_TOOLS__CORE_DIR)/make/core/jlink.mk
+CY_TIMESTAMP_JLINK_MK_END=$(call CY_LOG_TIME,secondstage,jlink.mk,END)
 
 #
 # Optional recipe-specific program routine 
@@ -482,9 +478,32 @@ endif
 #
 # IDE file generation
 #
+MTB_CORE__EXPORT_INTERFACE_VERSION:=3.0
+ifeq ($(CY_TOOL_mtbideexport_EXPORT_INTERFACE),3.1)
+ifeq ($(MTB_RECIPE__INTERFACE_VERSION),2)
+MTB_CORE__EXPORT_INTERFACE_VERSION:=3.1
+endif
+endif
+
+ifeq ($(MTB_CORE__EXPORT_INTERFACE_VERSION),3.0)
+CY_TIMESTAMP_RECIPE_IDE_MK_BEGIN=$(call CY_LOG_TIME,secondstage,recipe_ide.mk,BEGIN)
+-include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/interface_version_1/recipe_ide.mk
+CY_TIMESTAMP_RECIPE_IDE_MK_END=$(call CY_LOG_TIME,secondstage,recipe_ide.mk,END)
 CY_TIMESTAMP_IDE_MK_BEGIN=$(call CY_LOG_TIME,secondstage,ide.mk,BEGIN)
-include $(MTB_TOOLS__CORE_DIR)/make/core/ide.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/interface_version_1/ide.mk
 CY_TIMESTAMP_IDE_MK_END=$(call CY_LOG_TIME,secondstage,ide.mk,END)
+endif
+
+ifeq ($(MTB_CORE__EXPORT_INTERFACE_VERSION),3.1)
+uvision: uvision5
+ewarm: ewarm8
+CY_TIMESTAMP_RECIPE_IDE_MK_BEGIN=$(call CY_LOG_TIME,secondstage,recipe_ide.mk,BEGIN)
+include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/interface_version_2/recipe_ide.mk
+CY_TIMESTAMP_RECIPE_IDE_MK_END=$(call CY_LOG_TIME,secondstage,recipe_ide.mk,END)
+CY_TIMESTAMP_IDE_MK_BEGIN=$(call CY_LOG_TIME,secondstage,ide.mk,BEGIN)
+include $(MTB_TOOLS__CORE_DIR)/make/core/interface_version_2/ide.mk
+CY_TIMESTAMP_IDE_MK_END=$(call CY_LOG_TIME,secondstage,ide.mk,END)
+endif
 
 #
 # Gather and print info messages so that they can be shown at the end of secondstage
@@ -514,6 +533,7 @@ $(call mtb__file_write,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cywarning,$(CY_PRINT_WAR
 
 # Empty on purpose
 secondstage:
+qsecondstage:
 
 endif # ifeq ($(CY_SECONDSTAGE),)
 
@@ -523,9 +543,9 @@ CY_TIMESTAMP_MAIN_MK_END=$(call CY_LOG_TIME,bothstages,main.mk,END)
 # Print the timestamps
 #
 ifneq ($(CY_INSTRUMENT_BUILD),)
-CY_TIMESTAMP_LIST=UTILS_MK EXTRA_INC FEATURES_MK DEFINES_MK TOOLCHAIN_MK CONFIG_MK TOOLS_MK HELP_MK\
-					PREBUILD_MK RECIPE_MK TRANSITION_MK PYTHON GET_APP_INFO \
-					SEARCH_MK CYQBUILD_MK SEARCH_FILTER_MK RECIPE_MK BUILD_MK PROGRAM_MK IDE_MK
+CY_TIMESTAMP_LIST=UTILS_MK RECIPE_VERSION_MK EXTRA_INC FEATURES_MK DEFINES_MK TOOLCHAIN_MK CONFIG_MK TOOLS_MK HELP_MK\
+					PREBUILD_MK RECIPE_MK TRANSITION_MK JLINK_MK PYTHON GET_APP_INFO \
+					SEARCH_MK CYQBUILD_MK SEARCH_FILTER_MK RECIPE_MK BUILD_MK PROGRAM_MK RECIPE_IDE_MK IDE_MK
 
 $(info )
 $(info ==============================================================================)
@@ -552,8 +572,7 @@ endif
 .PHONY: modlibs config config_bt config_usbdev config_secure config_ezpd config_lin
 .PHONY: bsp check get_env_info printlibs
 .PHONY: app memcalc help_default
+.PHONY: secondstage_build_check second_stage qsecondstage secondstage_build qsecondstage_build
 
 .PHONY: build build_proj qbuild qbuild_proj
 .PHONY: program program_proj qprogram debug qdebug erase attach
-.PHONY: eclipse vscode ewarm8 uvision5
-

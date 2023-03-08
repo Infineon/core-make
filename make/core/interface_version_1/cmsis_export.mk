@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2022 Cypress Semiconductor Corporation
+# Copyright 2022-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +32,7 @@ _MTB_CORE__CMSIS_CPDSC=$(MTB_TOOLS__PRJ_DIR)/$(CY_IDE_PRJNAME).cpdsc
 _MTB_CORE__CMSIS_GPDSC=$(MTB_TOOLS__PRJ_DIR)/$(CY_IDE_PRJNAME).gpdsc
 _MTB_CORE__CMSIS_CPRJ=$(MTB_TOOLS__PRJ_DIR)/$(CY_IDE_PRJNAME).cprj
 _MTB_CORE__CMSIS_CYIGNORE_PATH=$(MTB_TOOLS__PRJ_DIR)/.cyignore
-_MTB_CORE__CMSIS_TEMPLATE_PATH=$(MTB_TOOLS__CORE_DIR)/make/scripts/cmsis
+_MTB_CORE__CMSIS_TEMPLATE_PATH=$(MTB_TOOLS__CORE_DIR)/make/scripts/interface_version_1/cmsis
 
 # All paths are expected to be relative of the Makefile(Project Directory)
 _MTB_CORE__CMSIS_DEFINES=$(foreach onedef,$(_MTB_CORE__IDE_DEFINES),\"$(onedef)\",)

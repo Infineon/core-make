@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2021 Cypress Semiconductor Corporation
+# Copyright 2018-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,6 +37,7 @@ $(call mtb__file_append,$(_MTB_CORE__GET_APP_INFO_TEMP_FILE),MTB_DEVICE=$(DEVICE
 $(call mtb__file_append,$(_MTB_CORE__GET_APP_INFO_TEMP_FILE),MTB_SEARCH=$(MTB_TOOLS__SEARCH))
 $(call mtb__file_append,$(_MTB_CORE__GET_APP_INFO_TEMP_FILE),MTB_TOOLCHAIN=$(TOOLCHAIN))
 $(call mtb__file_append,$(_MTB_CORE__GET_APP_INFO_TEMP_FILE),MTB_TARGET=$(TARGET))
+$(call mtb__file_append,$(_MTB_CORE__GET_APP_INFO_TEMP_FILE),MTB_CONFIG=$(CONFIG))
 $(call mtb__file_append,$(_MTB_CORE__GET_APP_INFO_TEMP_FILE),MTB_APP_NAME=$(APPNAME)$(LIBNAME))
 $(call mtb__file_append,$(_MTB_CORE__GET_APP_INFO_TEMP_FILE),MTB_COMPONENTS=$(MTB_CORE__FULL_COMPONENT_LIST))
 $(call mtb__file_append,$(_MTB_CORE__GET_APP_INFO_TEMP_FILE),MTB_DISABLED_COMPONENTS=$(DISABLE_COMPONENTS))

@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2021 Cypress Semiconductor Corporation
+# Copyright 2018-2023 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +52,10 @@ _MTB_CORE__FULL_SEARCH_ROOTS=$(strip $(SEARCH) $(SEARCH_MTB_MK))
 # Prints for bypassing TARGET/DEVICE checks
 # $(1) : String to print
 #
-ifeq ($(CY_COMMENCE_BUILD),true)
+ifneq (,$(filter build build_proj qbuild qbuild_proj program program_proj debug,$(MAKECMDGOALS)))
+_MTB_CORE__FAIL_ON_ERROR:=true
+endif
+ifeq ($(_MTB_CORE__FAIL_ON_ERROR),true)
 mtb__error=$(error $(1))
 else
 mtb__error=$(info WARNING: $(1))
