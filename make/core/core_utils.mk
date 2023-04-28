@@ -67,6 +67,10 @@ endif
 #
 mtb_core__escaped_path=$(subst $(MTB__OPEN_PAREN),\$(MTB__OPEN_PAREN),$(subst $(MTB__CLOSE_PAREN),\$(MTB__CLOSE_PAREN),$(subst $(MTB__SPACE),\$(MTB__SPACE),$(1))))
 
+
+# escape " and \ for json
+mtb_core__json_escaped_string=$(subst ",\",$(subst \,\\,$(strip $1)))
+
 #
 # Prints the warning and creates a variable to hold that warning (for printing later)
 # Note that this doesn't use the $(warning) function as that adds the line number (not useful for end user)
@@ -103,11 +107,11 @@ MTB__NEWLINE_MARKER:=__!__
 
 bsp:
 	@:
-	$(error Make bsp target is no longer supported. Use BSP assitant tool instead.)
+	$(error Make bsp target is no longer supported. Use BSP assistant tool instead.)
 
 update_bsp:
 	@:
-	$(error Make bsp target is no longer supported. Use BSP assitant tool instead.)
+	$(error Make bsp target is no longer supported. Use BSP assistant tool instead.)
 
 
 ################################################################################

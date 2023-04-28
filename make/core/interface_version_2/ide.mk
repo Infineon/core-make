@@ -34,10 +34,13 @@ endif
 $(MTB_TOOLS__OUTPUT_CONFIG_DIR):
 	$(MTB__NOISE)mkdir -p $(MTB_TOOLS__OUTPUT_CONFIG_DIR);
 
-vscode_generate eclipse_generate uvision5 ewarm8: $(MTB_TOOLS__OUTPUT_CONFIG_DIR)
+vscode_generate eclipse_generate: $(MTB_TOOLS__OUTPUT_CONFIG_DIR)
 	$(MTB__NOISE)$(CY_TOOL_mtbideexport_EXE_ABS) -ide $(_MTB_CORE__IDE_EXPORT_TARGET) -export_interface 3.1 $(MTB_CORE__EXPORT_CMDLINE)
 
 .PHONY:vscode eclipse ewarm8 ewarm uvision5 uvision
+
+_MTB_CORE__IDE_PREBUILD_MSG:=Note: Building the application will run any prebuild steps. You may want to include their content as part of the project prebuild steps.
+_MTB_CORE__IDE_POSTBUILD_MSG:=Note: Building the application will run any postbuild steps. You may want to include their content as part of the project postbuild steps.
 
 ##############################################
 # VSCode Eclipse
@@ -51,6 +54,9 @@ ifeq ($(strip $(filter 3 2 1,$(MTB__MAKE_MAJOR_VER))),)
 # --output-sync argument is only supported on GNU make-4.0 or newer
 _MTB_CORE__IDE_OUTPUT_SYNC=--output-sync
 endif
+
+# warn about unsupported interface
+vscode_generate eclipse_generate: debug_interface_check
 
 # generate the compile_commands.json file.
 vscode_generate eclipse_generate: _mtb_build_cdb_postprint
@@ -91,30 +97,6 @@ endif #($(MTB_CORE__APPLICATION_BOOTSTRAP),true)
 ##############################################
 _MTB_CORE__IDE_ECLIPSE_META_FILE:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/core_ide_eclipse_meta.txt
 
-# If a custom name needs to be provided for the IDE environment it can be specified by
-# CY_IDE_PRJNAME. If CY_IDE_PRJNAME was not set on the command line, use APPNAME as the
-# default. CY_IDE_PRJNAME can be important in some environments like eclipse where the
-# name used within the project is not necessarily what the user created. This can happen
-# in Eclipse if there is already a project with the desired name. In this case Eclipse
-# will create its own name. That name must still be used for launch configurations instead
-# of the name the user actually gave. It can also be necessary when there are multiple
-# applications that get created for a single design. In either case we allow a custom name
-# to be provided. If one is not provided, we will fallback to the default APPNAME.
-ifeq ($(CY_IDE_PRJNAME),)
-CY_IDE_PRJNAME=$(APPNAME)
-_MTB_ECLIPSE_APPLICATION_NAME:=$(patsubst "%",%,$(MTB_APPLICATION_NAME))
-else
-# in a multi-core application, CY_IDE_PRJNAME is name selected in the project-creator and should only apply to the project
-_MTB_ECLIPSE_APPLICATION_NAME:=$(CY_IDE_PRJNAME)
-endif
-ifeq ($(MTB_TYPE),PROJECT)
-ifneq ($(MTB_APPLICATION_SUBPROJECTS),)
-_MTB_ECLIPSE_PROJECT_NAME=$(_MTB_ECLIPSE_APPLICATION_NAME).$(APPNAME)
-endif
-else #($(MTB_TYPE),PROJECT)
-_MTB_ECLIPSE_PROJECT_NAME=$(CY_IDE_PRJNAME)
-endif #($(MTB_TYPE),PROJECT)
-
 eclipse_generate: core_eclipse_template_meta_data core_eclipe_meta_data core_eclipe_text_data
 eclipse_generate: MTB_CORE__EXPORT_CMDLINE += -metadata $(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE) -metadata $(_MTB_CORE__IDE_ECLIPSE_META_FILE) -textdata $(_MTB_CORE__IDE_TEXT_FILE)
 eclipse_generate: _MTB_CORE__IDE_EXPORT_TARGET = eclipse
@@ -136,9 +118,7 @@ else
 endif
 
 core_eclipe_text_data:
-	$(call mtb__file_write,$(_MTB_CORE__IDE_TEXT_FILE),&&APP_NAME&&=$(_MTB_ECLIPSE_APPLICATION_NAME))
-	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&PRJ_NAME&&=$(_MTB_ECLIPSE_PROJECT_NAME))
-	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__IDE_OUTPUT_SYNC&&=$(_MTB_CORE__IDE_OUTPUT_SYNC))
+	$(call mtb__file_write,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__IDE_OUTPUT_SYNC&&=$(_MTB_CORE__IDE_OUTPUT_SYNC))
 
 .PHONY: core_eclipse_template_meta_data core_eclipe_meta_data core_eclipe_text_data
 
@@ -168,35 +148,51 @@ endif
 
 # JLink path
 ifneq (,$(MTB_JLINK_DIR))
-ifneq (,$(MTB_CORE__JLINK_EXE))
-_MTB_RECIPE__VSCODE_JLINK_EXE:=$(MTB_CORE__JLINK_EXE)
+ifneq (,$(MTB_CORE__JLINK_GDB_EXE))
+_MTB_CORE__VSCODE_JLINK_EXE:=$(MTB_CORE__JLINK_GDB_EXE)
 endif
 endif
+
+_mtb_core__vscode_json_string_array=$(subst ','"'"',$(call mtb_core__json_escaped_string,$1))
+_MTB_CORE__VSCODE_INCLUDES_LIST=$(subst $(MTB__SPACE),$(MTB__COMMA),$(foreach w,$(MTB_RECIPE__INCLUDES),"$(patsubst -I%,%,$(call _mtb_core__vscode_json_string_array,$(w))")))
+_MTB_CORE__VSCODE_DEFINES_LIST=$(subst $(MTB__SPACE),$(MTB__COMMA),$(foreach w,$(MTB_RECIPE__DEFINES),"$(patsubst -D%,%,$(call _mtb_core__vscode_json_string_array,$(w))")))
+_MTB_CORE__CFLAGS=$(subst $(MTB__SPACE),$(MTB__COMMA),$(foreach w,$(MTB_RECIPE__CFLAGS),"$(call _mtb_core__vscode_json_string_array,$(w))"))
 
 vscode_generate: core_vscode_template_meta_data core_vscode_text_data
 vscode_generate: MTB_CORE__EXPORT_CMDLINE += -metadata $(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE) -textdata $(_MTB_CORE__IDE_TEXT_FILE)
 vscode_generate: _MTB_CORE__IDE_EXPORT_TARGET = vscode
 
+# Output INCLUDES and DEFINES using echo so that those will have shell quoting rules.
 core_vscode_text_data:
 	$(call mtb__file_write,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE___VSCODE_BUILD_NUM_PROCESSOR&&=$(_MTB_CORE___VSCODE_BUILD_NUM_PROCESSOR))
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__VSCODE_CDB_FILE&&=$(_MTB_CORE__VSCODE_CDB_FILE))
-	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_RECIPE__VSCODE_JLINK_EXE&&=$(_MTB_RECIPE__VSCODE_JLINK_EXE))
-	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__VSCODE_COMPILER_PATH&&=$(MTB_TOOLCHAIN_$(TOOLCHAIN)__CC))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__VSCODE_JLINK_EXE&&=$(_MTB_CORE__VSCODE_JLINK_EXE))
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__IDE_OUTPUT_SYNC&&=$(_MTB_CORE__IDE_OUTPUT_SYNC))
+	$(shell echo '&&_MTB_CORE__INCLUDE_LIST&&=$(_MTB_CORE__VSCODE_INCLUDES_LIST)' >> $(_MTB_CORE__IDE_TEXT_FILE))
+	$(shell echo '&&_MTB_CORE__DEFINE_LIST&&=$(_MTB_CORE__VSCODE_DEFINES_LIST)' >> $(_MTB_CORE__IDE_TEXT_FILE))
+	$(shell echo '&&_MTB_CORE__CFLAGS&&=$(_MTB_CORE__CFLAGS)' >> $(_MTB_CORE__IDE_TEXT_FILE))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__CC&&=$(subst \,,$(CC)))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__VSCODE_INTELLISENSE_MODE&&=$(MTB_RECIPE__TOOLCHAIN_VSCODE_INTELLISENSE_MODE))
 
 core_vscode_template_meta_data:
-	$(call mtb__file_write,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),EXTERNAL_REF=$(SOURCES) $(INCLUDES) $(SEARCH))
-	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),EXTERNAL_REF_KEY=&&LINKED_RESOURCES&&)
-	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),MTB_SHARED_DIR=$(patsubst %/,%,$(CY_GETLIBS_SHARED_PATH))/$(CY_GETLIBS_SHARED_NAME))
+	$(call mtb__file_write,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),EXTERNAL_REF_KEY=&&LINKED_RESOURCES&&)
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),TEMPLATE_REPLACE=$(_MTB_CORE__IDE_TEMPLATE_DIR)/vscode/json=.vscode)
 ifneq (,$(MTB_APPLICATION_SUBPROJECTS))
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),TEMPLATE_REPLACE=$(_MTB_CORE__IDE_TEMPLATE_DIR)/vscode/json/settings.json=.vscode/settings.json)
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),TEMPLATE_REPLACE=$(_MTB_CORE__IDE_TEMPLATE_DIR)/vscode/json/extensions.json=.vscode/extensions.json)
 ifneq (,$(_MTB_CORE__IDE_IS_FIRST_CORE)) # Application level vscode files
+	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),TEMPLATE_REPLACE=$(_MTB_CORE__IDE_TEMPLATE_DIR)/vscode/workspace/wks.code-workspace=../$(MTB_APPLICATION_NAME).code-workspace)
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),TEMPLATE_REPLACE=$(_MTB_CORE__IDE_TEMPLATE_DIR)/vscode/json/settings.json=$(_MTB_CORE__IDE_ROOT_DIR)/.vscode/settings.json)
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),TEMPLATE_REPLACE=$(_MTB_CORE__IDE_TEMPLATE_DIR)/vscode/json/extensions.json=$(_MTB_CORE__IDE_ROOT_DIR)/.vscode/extensions.json)
+	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),EXTERNAL_REF=$(MTB_APPLICATION_SUBPROJECTS))
+else
+	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),TEMPLATE_REPLACE=../$(MTB_APPLICATION_NAME).code-workspace=../$(MTB_APPLICATION_NAME).code-workspace)
 endif #(,$(_MTB_CORE__IDE_IS_FIRST_CORE))
+else #(,$(MTB_APPLICATION_SUBPROJECTS))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),TEMPLATE_REPLACE=$(_MTB_CORE__IDE_TEMPLATE_DIR)/vscode/workspace/wks.code-workspace=$(APPNAME).code-workspace)
+	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),EXTERNAL_REF=. $(SEARCH))
 endif #(,$(MTB_APPLICATION_SUBPROJECTS))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),EXTERNAL_REF=$(patsubst %/,%,$(CY_GETLIBS_SHARED_PATH))/$(CY_GETLIBS_SHARED_NAME))
 
 .PHONY: core_vscode_template_meta_data core_vscode_text_data
 
@@ -216,7 +212,8 @@ ewarm8 uvision5: MTB_CORE__EXPORT_CMDLINE += -build_data $(_MTB_CORE__IDE_BUILD_
 # Output INCLUDES and DEFINES using echo so that those will have shell quoting rules.
 core_ide_build_data:
 	$(call mtb__file_write,$(_MTB_CORE__IDE_BUILD_DATA_FILE),APPNAME=$(CY_IDE_PRJNAME))
-	$(call mtb__file_append,$(_MTB_CORE__IDE_BUILD_DATA_FILE),SOURCES=$(MTB_RECIPE__SOURCE) $(SOURCES) $(MTB_RECIPE__LIBS))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_BUILD_DATA_FILE),SOURCES=$(MTB_RECIPE__SOURCE) $(SOURCES))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_BUILD_DATA_FILE),LIBS=$(MTB_RECIPE__LIBS))
 	$(call mtb__file_append,$(_MTB_CORE__IDE_BUILD_DATA_FILE),HEADERS=$(_MTB_CORE__SEACH_APP_HEADERS))
 	$(shell echo INCLUDES=$(patsubst -I%,%,$(MTB_RECIPE__INCLUDES)) >> $(_MTB_CORE__IDE_BUILD_DATA_FILE))
 	$(shell echo DEFINES=$(patsubst -D%,%,$(MTB_RECIPE__DEFINES)) >> $(_MTB_CORE__IDE_BUILD_DATA_FILE))
@@ -242,15 +239,32 @@ else ifneq ($(TOOLCHAIN), ARM)
 	$(error Unable to proceed. TOOLCHAIN must be set to ARM. Use TOOLCHAIN=ARM on the command line or edit the Makefile)
 endif
 
+uvision5: $(MTB_TOOLS__OUTPUT_CONFIG_DIR)
+	$(MTB__NOISE)$(CY_TOOL_mtbideexport_EXE_ABS) -ide $(_MTB_CORE__IDE_EXPORT_TARGET) -export_interface 3.1 $(MTB_CORE__EXPORT_CMDLINE)
+	$(MTB__NOISE)echo ;\
+	echo $(_MTB_CORE__IDE_PREBUILD_MSG);\
+	echo $(_MTB_CORE__IDE_POSTBUILD_MSG)
+
 ##############################################
 # EW
 ##############################################
 ewarm8: MTB_CORE__EXPORT_CMDLINE += -o $(CY_IDE_PRJNAME).ipcf
 ewarm8: _MTB_CORE__IDE_EXPORT_TARGET = ewarm8
 
-ewarm8: ewarm8_check_toolchain
-
-ewarm8_check_toolchain:
+ewarm8: $(MTB_TOOLS__OUTPUT_CONFIG_DIR)
 ifneq ($(TOOLCHAIN), IAR)
 	$(error Unable to proceed. TOOLCHAIN must be set to IAR. Use TOOLCHAIN=IAR on the command line, or edit the Makefile.)
 endif
+	$(MTB__NOISE)$(CY_TOOL_mtbideexport_EXE_ABS) -ide $(_MTB_CORE__IDE_EXPORT_TARGET) -export_interface 3.1 $(MTB_CORE__EXPORT_CMDLINE)
+ifneq (,$(filter MW_ABSTRACTION_RTOS,$(COMPONENTS)))
+	$(MTB__NOISE)echo ;\
+	echo "WARNING: Since RTOS is enabled for this project, the compiler and linker settings must be manually updated in IAR EW.";\
+	echo "    1. Project->Options->General Options->Library Configuration";\
+	echo "    2. Set the \"Library:\" dropdown to \"Full\"";\
+	echo "    3. Check the box for \"Enable thread support in library\"";\
+	echo "    4. Click \"OK\""
+endif
+	$(MTB__NOISE)echo;\
+	echo $(_MTB_CORE__IDE_PREBUILD_MSG);\
+	echo $(_MTB_CORE__IDE_POSTBUILD_MSG);\
+	echo "Some applications require additional customization to be functional in IAR EWARM environment. Check ModusToolbox user guide section 'Export IAR EWARM' for more details"

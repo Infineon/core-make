@@ -199,6 +199,8 @@ CY_HELP_DISABLE_COMPONENTS_VERBOSE=Include a <VALUE> to this make variable to ha
 CY_HELP_SEARCH=List of paths to include in auto-discovery. (e.g. ../mtb_shared/lib1)
 CY_HELP_SEARCH_VERBOSE=The SEARCH variable can also be used by the application to include other directories to auto-discovery.\
 					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage (within Makefile): SEARCH+=directory_containing_source_files
+CY_HELP_SKIP_CODE_GEN=Disables code generation from configurators when building
+CY_HELP_SKIP_CODE_GEN_VERBOSE=When set to non-empty value, the build process will no longer run code generation from out-dated configurators.
 CY_HELP_MERGE=List of projects in the application to generate a combined hex file from
 CY_HELP_MERGE_VERBOSE=By Default, building a multi-core application will generate a combined hex file from its sub-projects.\
 					This variable can be set from the application Makefile to override the set of projects to generate a combined hex file from.
@@ -214,15 +216,17 @@ CY_HELP_ADDITIONAL_DEVICES_VERBOSE=These include devices such as radios on the b
 #
 # Getlibs variables
 #
-CY_HELP_CY_GETLIBS_NO_CACHE=Disables the cache when running getlibs.
+CY_HELP_CY_GETLIBS_NO_CACHE=Disables the cache when running getlibs when this variable is set to non-empty.
 CY_HELP_CY_GETLIBS_NO_CACHE_VERBOSE=To improve the library creation time, the getlibs target uses a cache\
 					located in the user's home directory ($$HOME for macOS/Linux and $$USERPROFILE for Windows). Disabling the\
 					cache will result in slower application creation time but may be necessary for bringing in non-Infineon libraries.\
 					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make getlibs CY_GETLIBS_NO_CACHE=true
-CY_HELP_CY_GETLIBS_OFFLINE=Use the offline location as the library source.
-CY_HELP_CY_GETLIBS_OFFLINE_VERBOSE=Setting this variable signals to the build system to use the offline location (Default: <HOME>/.modustoolbox/offline)\
-					when running the "getlibs" target. The location of the offline content can be changed by defining the CY_GETLIBS_OFFLINE_PATH variable.\
-					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make getlibs CY_GETLIBS_OFFLINE=true
+CY_HELP_CY_GETLIBS_OFFLINE=This feature is no longer supported starting in ModusToolbox 3.1 and has been replaced with Local Content Storage feature.
+CY_HELP_CY_GETLIBS_OFFLINE_VERBOSE=This feature is no longer supported starting in ModusToolbox 3.1 and has been replaced with Local Content Storage feature.
+CY_HELP_MTB_USE_LOCAL_CONTENT=If set to non-empty, enable local content storage.
+CY_HELP_MTB_USE_LOCAL_CONTENT_VERBOSE=Enable local content storage to allow use of ModusToolbox without requiring internet access.\
+					$(MTB__NEWLINE)See ModusToolbox User Guide for more information on Local Content Storage.\
+					$(MTB__NEWLINE)This feature is added in ModusToolbox 3.1.
 CY_HELP_CY_GETLIBS_PATH=Path to the intended location of libs info directory.
 CY_HELP_CY_GETLIBS_PATH_VERBOSE=The directory contains local libraries and metadata files about shared libraries.
 CY_HELP_CY_GETLIBS_DEPS_PATH=Path to where the library-manager stores .mtb files.
@@ -233,10 +237,8 @@ CY_HELP_CY_GETLIBS_CACHE_PATH_VERBOSE=The build system caches all cloned repos i
 					(Default: <HOME>/.modustoolbox/cache). Setting this variable allows the cache to be relocated to\
 					elsewhere on disk. Usage is similar to CY_GETLIBS_PATH. To disable the cache entirely, \
 					set the CY_GETLIBS_NO_CACHE variable to [true].
-CY_HELP_CY_GETLIBS_OFFLINE_PATH=Absolute path to the offline content directory.
-CY_HELP_CY_GETLIBS_OFFLINE_PATH_VERBOSE=The offline content is used to create/update applications when not connected\
-					to the internet (Default: <HOME>/.modustoolbox/offline). Setting this variable allows to relocate the\
-					offline content to elsewhere on disk. Usage is similar to CY_GETLIBS_PATH.
+CY_HELP_CY_GETLIBS_OFFLINE_PATH=This feature is no longer supported starting in ModusToolbox 3.1 and has been replaced with Local Content Storage feature.
+CY_HELP_CY_GETLIBS_OFFLINE_PATH_VERBOSE=This feature is no longer supported starting in ModusToolbox 3.1 and has been replaced with Local Content Storage feature.
 CY_HELP_CY_GETLIBS_SHARED_PATH=Relative path to the shared repo location.
 CY_HELP_CY_GETLIBS_SHARED_PATH_VERBOSE=All .mtb files have the format, <URI><COMMIT><LOCATION>.\
 					If the <LOCATION> field begins with $$$$ASSET_REPO$$$$, then the repo is deposited in the path\
@@ -301,7 +303,7 @@ CY_HELP_CY_IGNORE=Adds to the directory and file ignore list. (e.g. ./file1.c ./
 CY_HELP_CY_IGNORE_VERBOSE=Directories and files listed in this variable are ignored in the auto-discovery.\
 					This mechanism works in combination with any existing .cyignore files in the application.\
 					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make build CY_IGNORE="path/to/file/ignore_file"
-CY_HELP_CY_SIMULATOR_GEN_AUTO=If set to 1, automatically generate a simulator archive (if supported by the target device).
+CY_HELP_CY_SIMULATOR_GEN_AUTO=If set to non-empty, automatically generate a simulator archive (if supported by the target device).
 CY_HELP_CY_SIMULATOR_GEN_AUTO_VERBOSE=When enabled, build make target will generate a debugging tgz archive for the\
 					Infineon online simulator as part of the postbuild process.
 
@@ -313,7 +315,7 @@ CY_HELP_TARGETS_ALL=all getlibs build build_proj qbuild qbuild_proj program prog
 CY_HELP_BASIC_CFG_ALL=TARGET CORE CORE_NAME APPNAME TOOLCHAIN CONFIG VERBOSE
 CY_HELP_ADVANCED_CFG_ALL=SOURCES INCLUDES DEFINES VFP_SELECT CFLAGS CXXFLAGS ASFLAGS LDFLAGS LDLIBS LINKER_SCRIPT \
 					PREBUILD POSTBUILD COMPONENTS DISABLE_COMPONENTS SEARCH MERGE DEVICE ADDITIONAL_DEVICES
-CY_HELP_GETLIBS_ALL=CY_GETLIBS_NO_CACHE CY_GETLIBS_OFFLINE CY_GETLIBS_PATH CY_GETLIBS_DEPS_PATH CY_GETLIBS_CACHE_PATH \
+CY_HELP_GETLIBS_ALL=CY_GETLIBS_NO_CACHE CY_HELP_MTB_USE_LOCAL_CONTENT CY_GETLIBS_OFFLINE CY_GETLIBS_PATH CY_GETLIBS_DEPS_PATH CY_GETLIBS_CACHE_PATH \
 					CY_GETLIBS_OFFLINE_PATH CY_GETLIBS_SHARED_PATH CY_GETLIBS_SHARED_NAME 
 CY_HELP_PATHS_ALL=CY_APP_PATH CY_COMPILER_GCC_ARM_DIR CY_COMPILER_ARM_DIR CY_COMPILER_IAR_DIR \
 					CY_COMPILER_PATH CY_TOOLS_DIR CY_BUILD_LOCATION CY_PYTHON_PATH
@@ -321,7 +323,7 @@ CY_HELP_MISC_ALL=CY_IGNORE
 CY_HELP_PRINT_ALL=$(CY_HELP_TARGETS_ALL) $(CY_HELP_BASIC_CFG_ALL) $(CY_HELP_ADVANCED_CFG_ALL) \
 					$(CY_HELP_GETLIBS_ALL) $(CY_HELP_PATHS_ALL) $(CY_HELP_MISC_ALL)
 
-help:
+mtb_help_header:
 ifneq ($(CY_HELP),)
 	@:
 	$(foreach topic,$(CY_HELP),\
@@ -430,6 +432,7 @@ else
 	$(info $(MTB__SPACE)COMPONENTS          $(CY_HELP_COMPONENTS))
 	$(info $(MTB__SPACE)DISABLE_COMPONENTS  $(CY_HELP_DISABLE_COMPONENTS))
 	$(info $(MTB__SPACE)SEARCH              $(CY_HELP_SEARCH))
+	$(info $(MTB__SPACE)SKIP_CODE_GEN       $(CY_HELP_SKIP_CODE_GEN))
 	$(info $(MTB__SPACE)MERGE               $(CY_HELP_MERGE))
 	$(info                                                               )
 	$(info =======================================                       )
@@ -443,6 +446,7 @@ else
 	$(info =======================================                       )
 	$(info $(MTB__SPACE)CY_GETLIBS_NO_CACHE $(CY_HELP_CY_GETLIBS_NO_CACHE))
 	$(info $(MTB__SPACE)CY_GETLIBS_OFFLINE  $(CY_HELP_CY_GETLIBS_OFFLINE))
+	$(info $(MTB__SPACE)MTB_USE_LOCAL_CONTENT $(CY_HELP_MTB_USE_LOCAL_CONTENT))
 	$(info $(MTB__SPACE)CY_GETLIBS_PATH     $(CY_HELP_CY_GETLIBS_PATH))
 	$(info $(MTB__SPACE)CY_GETLIBS_DEPS_PATH  $(CY_HELP_CY_GETLIBS_DEPS_PATH))
 	$(info $(MTB__SPACE)CY_GETLIBS_CACHE_PATH  $(CY_HELP_CY_GETLIBS_CACHE_PATH))
@@ -471,4 +475,12 @@ else
 	$(info )
 endif
 
-.PHONY: help
+mtb_help_tools_start: mtb_help_header
+	@:
+	$(info =======================================                       )
+	$(info $(MTB__SPACE)Configurator targets                       )
+	$(info =======================================                       )
+mtb_help_tools_end: mtb_help_tools_start
+help: mtb_help_tools_end
+
+.PHONY: help mtb_help_header mtb_help_tools_start mtb_help_tools_end

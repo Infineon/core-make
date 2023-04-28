@@ -417,7 +417,7 @@ ifneq ($(strip $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS)),)
 	$(MTB__NOISE)$(_MTB_CORE__BUILD_ARCHIVE) $(MTB__SILENT_OUTPUT)
 endif
 else
-$(_MTB_CORE__BUILD_TARGET): $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS) $(MTB_RECIPE__LINKER_SCRIPT)
+$(_MTB_CORE__BUILD_TARGET): $(_MTB_CORE__BUILD_ALL_OBJ_FILES) $(MTB_RECIPE__LIBS) $(call mtb_core__escaped_path,$(MTB_RECIPE__LINKER_SCRIPT))
 	$(info $(MTB__INDENT)Linking output file $(notdir $@))
 	$(MTB__NOISE)$(_MTB_CORE__BUILD_LINK)
 endif
@@ -499,16 +499,16 @@ endif
 $(_MTB_CORE__CDB_FILE)_temp: _mtb_build_mkdirs
 	$(info Generating compilation database file...)
 	$(info -> $(_MTB_CORE__CDB_FILE))
-	$(call mtb__file_write,$@_s_lc,$(subst ",\",$(_MTB_CORE__CDB_BUILD_COMPILE_AS_LC)))
+	$(call mtb__file_write,$@_s_lc,$(call mtb_core__json_escaped_string,$(_MTB_CORE__CDB_BUILD_COMPILE_AS_LC)))
 	$(call mtb__file_append,$@_s_lc,$(_MTB_CORE__BUILD_SRC_s_FILES) $(_MTB_CORE__BUILD_GENSRC_s_FILES) $(_MTB_CORE__BUILD_EXTSRC_s_FILES))
 	$(call mtb__file_append,$@_s_lc,$(_MTB_CORE__BUILD_SRC_s_OBJ_FILES) $(_MTB_CORE__BUILD_GENSRC_s_OBJ_FILES) $(_MTB_CORE__BUILD_EXTSRC_s_OBJ_FILES))
-	$(call mtb__file_write,$@_S_uc,$(subst ",\",$(_MTB_CORE__CDB_BUILD_COMPILE_AS_UC)))
+	$(call mtb__file_write,$@_S_uc,$(call mtb_core__json_escaped_string,$(_MTB_CORE__CDB_BUILD_COMPILE_AS_UC)))
 	$(call mtb__file_append,$@_S_uc,$(_MTB_CORE__BUILD_SRC_S_FILES) $(_MTB_CORE__BUILD_GENSRC_S_FILES) $(_MTB_CORE__BUILD_EXTSRC_S_FILES))
 	$(call mtb__file_append,$@_S_uc,$(_MTB_CORE__BUILD_SRC_S_OBJ_FILES) $(_MTB_CORE__BUILD_GENSRC_S_OBJ_FILES) $(_MTB_CORE__BUILD_EXTSRC_S_OBJ_FILES))
-	$(call mtb__file_write,$@_c,$(subst ",\",$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_C)))
+	$(call mtb__file_write,$@_c,$(call mtb_core__json_escaped_string,$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_C)))
 	$(call mtb__file_append,$@_c,$(_MTB_CORE__BUILD_SRC_C_FILES) $(_MTB_CORE__BUILD_GENSRC_C_FILES) $(_MTB_CORE__BUILD_EXTSRC_C_FILES))
 	$(call mtb__file_append,$@_c,$(_MTB_CORE__BUILD_SRC_C_OBJ_FILES) $(_MTB_CORE__BUILD_GENSRC_C_OBJ_FILES) $(_MTB_CORE__BUILD_EXTSRC_C_OBJ_FILES))
-	$(call mtb__file_write,$@_cpp,$(subst ",\",$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_CPP)))
+	$(call mtb__file_write,$@_cpp,$(call mtb_core__json_escaped_string,$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_CPP)))
 	$(call mtb__file_append,$@_cpp,$(_MTB_CORE__BUILD_SRC_CPP_FILES) $(_MTB_CORE__BUILD_GENSRC_CPP_FILES) $(_MTB_CORE__BUILD_EXTSRC_CPP_FILES))
 	$(call mtb__file_append,$@_cpp,$(_MTB_CORE__BUILD_SRC_CPP_OBJ_FILES) $(_MTB_CORE__BUILD_GENSRC_CPP_OBJ_FILES) $(_MTB_CORE__BUILD_EXTSRC_CPP_OBJ_FILES))
 

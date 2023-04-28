@@ -29,16 +29,23 @@ endif
 
 ifneq (,$(MTB_JLINK_DIR))
 # if MTB_JLINK_DIR is set, look for the JLinkGDBServerCL.exe (windows) or JLinkGDBServerCLExe (unix) there
-MTB_CORE__JLINK_EXE:=$(wildcard $(call mtb_core__escaped_path,$(MTB_JLINK_DIR))/JLinkGDBServerCL.exe)
-ifeq (,$(MTB_CORE__JLINK_EXE))
-MTB_CORE__JLINK_EXE:=$(wildcard $(call mtb_core__escaped_path,$(MTB_JLINK_DIR))/JLinkGDBServerCLExe)
+MTB_CORE__JLINK_GDB_EXE:=$(wildcard $(call mtb_core__escaped_path,$(MTB_JLINK_DIR))/JLinkGDBServerCL.exe)
+ifeq (,$(MTB_CORE__JLINK_GDB_EXE))
+MTB_CORE__JLINK_GDB_EXE:=$(wildcard $(call mtb_core__escaped_path,$(MTB_JLINK_DIR))/JLinkGDBServerCLExe)
 endif
-
+MTB_CORE__JLINK_EXE:=$(wildcard $(call mtb_core__escaped_path,$(MTB_JLINK_DIR))/JLink.exe)
+ifeq (,$(MTB_CORE__JLINK_EXE))
+MTB_CORE__JLINK_EXE:=$(wildcard $(call mtb_core__escaped_path,$(MTB_JLINK_DIR))/JLinkExe)
+endif
 else #(,$(JLINK_DIR))
 # if MTB_JLINK_DIR is not set, look for it in the user PATH env var.
-MTB_CORE__JLINK_EXE:=$(call mtb__get_file_path,JLinkGDBServerCL.exe)
+MTB_CORE__JLINK_GDB_EXE:=$(call mtb__get_file_path,JLinkGDBServerCL.exe)
+ifeq (,$(MTB_CORE__JLINK_GDB_EXE))
+MTB_CORE__JLINK_GDB_EXE:=$(call mtb__get_file_path,JLinkGDBServerCLExe)
+endif
+MTB_CORE__JLINK_EXE:=$(call mtb__get_file_path,JLink.exe)
 ifeq (,$(MTB_CORE__JLINK_EXE))
-MTB_CORE__JLINK_EXE:=$(call mtb__get_file_path,JLinkGDBServerCLExe)
+MTB_CORE__JLINK_EXE:=$(call mtb__get_file_path,JLinkExe)
 endif
 endif #(,$(JLINK_DIR))
 

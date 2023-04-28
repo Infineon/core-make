@@ -49,11 +49,11 @@ _MTB_CORE__VSCODE_WORKSPACE_NAME=$(CY_IDE_PRJNAME).code-workspace
 CY_VSCODE_WORKSPACE_TEMPLATE_NAME?=wks.code-workspace
 _MTB_CORE__VSCODE_APPLICATION_WORKSPACE_NAME=$(MTB_APPLICATION_NAME).code-workspace
 
-_MTB_CORE__VSCODE_INCLUDES=$(foreach onedef,$(patsubst -I%,%,$(_MTB_CORE__IDE_INCLUDES)),\"$(onedef)\",)
-_MTB_CORE__VSCODE_INCLUDES_LIST=$(subst $(MTB__SPACE),$(MTB__NEWLINE_MARKER),$(_MTB_CORE__VSCODE_INCLUDES))
+_MTB_CORE__VSCODE_INCLUDES=$(foreach onedef,$(patsubst -I%,%,$(subst ",\\\\\\\",$(subst \,\\\\\\\\,$(_MTB_CORE__IDE_INCLUDES)))),\"$(onedef)\",)
+_MTB_CORE__VSCODE_INCLUDES_LIST=$(patsubst %$(MTB__COMMA),%,$(subst $(MTB__SPACE),$(MTB__NEWLINE_MARKER),$(_MTB_CORE__VSCODE_INCLUDES)))
 
-_MTB_CORE__VSCODE_DEFINES=$(foreach onedef,$(patsubst -D%,%,$(_MTB_CORE__IDE_DEFINES)),\"$(onedef)\",)
-_MTB_CORE__VSCODE_DEFINES_LIST=$(subst $(MTB__SPACE),$(MTB__NEWLINE_MARKER),$(_MTB_CORE__VSCODE_DEFINES))
+_MTB_CORE__VSCODE_DEFINES=$(foreach onedef,$(patsubst -D%,%,$(subst ",\\\\\\\",$(subst \,\\\\\\\\,$(_MTB_CORE__IDE_DEFINES)))),\"$(onedef)\",)
+_MTB_CORE__VSCODE_DEFINES_LIST=$(patsubst %$(MTB__COMMA),%,$(subst $(MTB__SPACE),$(MTB__NEWLINE_MARKER),$(_MTB_CORE__VSCODE_DEFINES)))
 
 # Toolchain-specific VFP and CPU settings for c_cpp_properties.json
 ifeq ($(TOOLCHAIN),GCC_ARM)
@@ -335,9 +335,13 @@ $(MTB_RECIPE__IDE_RECIPE_DATA_FILE): $(MTB_TOOLS__OUTPUT_CONFIG_DIR) $(MTB_RECIP
 $(MTB_RECIPE__IDE_RECIPE_DATA_FILE_2):
 	$(MTB__NOISE)echo "s|&&_MTB_CORE__VSCODE_CPU&&|$(_MTB_CORE__VSCODE_CPU)|" > $@;\
 	echo "s|&&_MTB_CORE__VSCODE_VFP&&|$(_MTB_CORE__VSCODE_VFP)|" >> $@;\
+	echo "s|&&_MTB_RECIPE__INCLUDE_LIST&&|$(_MTB_CORE__VSCODE_INCLUDES_LIST)|" >> $@;\
+	echo "s|&&_MTB_RECIPE__DEFINE_LIST&&|$(_MTB_CORE__VSCODE_DEFINES_LIST)|"   >> $@;\
+	echo "s|&&_MTB_RECIPE__CC&&|$(CC)|" >> $@;\
 	echo "s|&&_MTB_CORE__VSCODE_CDB_FILE&&|$(_MTB_CORE__VSCODE_CDB_FILE)|" >> $@;\
 	echo "s|&&_MTB_RECIPE__SEARCH_DIRS&&|$(_MTB_CORE__VSCODE_SEARCH)|" | sed s/'\\t'/'    '/g | sed s/'\\n'/'$(MTB__NEWLINE_MARKER)'/g >> $@;\
 	echo "s|&&_MTB_CORE___VSCODE_BUILD_NUM_PROCESSOR&&|$(_MTB_CORE___VSCODE_BUILD_NUM_PROCESSOR)|" >> $@;\
+	echo "s|&&_MTB_CORE__IDE_OUTPUT_SYNC&&|$(_MTB_CORE__IDE_OUTPUT_SYNC)|" >> $@;\
 	echo;
 
 ################################################################################

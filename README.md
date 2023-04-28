@@ -1,6 +1,6 @@
 # Core GNU make Build System
 
-## This version of the core-make library is a Beta release to support CYW55513 devices only. Do not use it for production development or in applications targeting other devices.
+## This version of the core-make library is a Beta release to support 20829B0 devices only. Do not use it for production development or in applications targeting other devices.
 
 ## Overview
 

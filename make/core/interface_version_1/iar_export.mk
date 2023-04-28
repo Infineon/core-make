@@ -98,9 +98,10 @@ ifneq ($(LDFLAGS),)
 endif
 	$(MTB__NOISE)echo;\
 	echo $(_MTB_CORE__IDE_PREBUILD_MSG);\
-	echo $(_MTB_CORE__IDE_POSTBUILD_MSG)
-ifeq ($(filter FREERTOS,$(COMPONENTS)),FREERTOS)
-# Note: If the FreeRTOS-specific flags set in IAR.mk are modified, this section should be updated to reflect the changes.
+	echo $(_MTB_CORE__IDE_POSTBUILD_MSG);\
+	echo "Some applications require additional customization to be functional in IAR EWARM environment. Check ModusToolbox user guide section 'Export IAR EWARM' for more details"
+ifneq (,$(filter MW_ABSTRACTION_RTOS,$(COMPONENTS)))
+# Note: If the RTOS-specific flags set in IAR.mk are modified, this section should be updated to reflect the changes.
 	$(MTB__NOISE)echo;\
 	echo "WARNING: Since FreeRTOS is enabled for this project, the compiler and linker settings must be manually updated in IAR EW.";\
 	echo "Option 1: Set the project options";\
