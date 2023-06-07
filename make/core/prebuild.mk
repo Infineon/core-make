@@ -37,6 +37,12 @@ CY_PREBUILD_TARGET=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).$(MTB_RECIPE__SUFF
 # Targets
 ################################################################################
 
+_mtb_print_start_build_message:
+	@:
+	$(info Initializing build: $(APPNAME)$(LIBNAME) $(CONFIG) $(TARGET) $(TOOLCHAIN))
+
+prebuild $(_MTB_CORE__QBUILD_MK_FILE)|: _mtb_print_start_build_message
+
 $(_MTB_CORE__FORCEBUILD_MK_FILE): prebuild
 
 _mtb_build_prebuild_mkdirs:
@@ -57,5 +63,5 @@ _mtb_build_prebuild_postprint: project_prebuild
 #
 prebuild: _mtb_build_prebuild_postprint
 
-.PHONY: prebuild recipe_prebuild project_prebuild bsp_prebuild qprebuild
+.PHONY: prebuild recipe_prebuild project_prebuild bsp_prebuild qprebuild _mtb_print_start_build_message
 .PHONY: _mtb_build_prebuild_mkdirs _mtb_build_prebuild_postprint

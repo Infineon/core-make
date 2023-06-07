@@ -15,7 +15,9 @@
         "modustoolbox.toolsPath": "&&_MTB_RECIPE__MTB_PATH&&",
         "cortex-debug.armToolchainPath": "&&_MTB_RECIPE__GCC_BIN_DIR&&",
         "cortex-debug.openocdPath": "${config:modustoolbox.toolsPath}/&&_MTB_RECIPE__OPENOCD_EXE_DIR_RELATIVE&&",
-        "cortex-debug.JLinkGDBServerPath": "&&_MTB_CORE__VSCODE_JLINK_EXE&&"
+        "cortex-debug.JLinkGDBServerPath.windows": "&&_MTB_CORE__VSCODE_JLINK_EXE_WINDOWS&&",
+        "cortex-debug.JLinkGDBServerPath.osx": "&&_MTB_CORE__VSCODE_JLINK_EXE_OSX&&",
+        "cortex-debug.JLinkGDBServerPath.linux": "&&_MTB_CORE__VSCODE_JLINK_EXE_LINUX&&"
     },
     "extensions": {
         "recommendations": [ "marus25.cortex-debug", "ms-vscode.cpptools", "dan-c-underwood.arm" ]

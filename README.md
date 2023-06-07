@@ -1,7 +1,5 @@
 # Core GNU make Build System
 
-## This version of the core-make library is a Beta release to support 20829B0 devices only. Do not use it for production development or in applications targeting other devices.
-
 ## Overview
 
 This repo provides the core make build files and scripts for building and programming ModusToolbox applications. Builds can be run either through a command-line interface (CLI) or through the Eclipse IDE for ModusToolbox.
@@ -19,4 +17,4 @@ To list the build options, run the "help" target by typing "make help" in CLI. F
 * [Infineon GitHub](https://github.com/Infineon)
 * [ModusToolbox](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software)
 ---
-© Cypress Semiconductor Corporation, 2019-2022.
+© Cypress Semiconductor Corporation, 2019-2023.

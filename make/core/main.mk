@@ -382,7 +382,6 @@ qsecondstage second_stage:
 	mtb__file_read,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cywarning))))
 
 secondstage_build_check: secondstage_build
-	$(info Initializing build: $(APPNAME)$(LIBNAME) $(CONFIG) $(TARGET) $(TOOLCHAIN))
 ifeq ($(wildcard $(MTB_TOOLS__RECIPE_DIR)),)
 	$(info )
 	$(call mtb__error,Cannot find the base library. Run "make getlibs" and/or check\

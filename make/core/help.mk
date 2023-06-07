@@ -39,7 +39,7 @@ CY_HELP_build_VERBOSE=The build process involves source auto-discovery, code gen
 					For faster incremental builds, use the "qbuild" target to skip the auto-generation step.\
 					For multi-core applications, running this target builds all projects in the application, and generates a combined hex file.
 CY_HELP_build_proj=Build the current project.
-CY_HELP_build_proj_VERBOSE=Build the current project in the application. In the single-core applications, this target is the same as the "build" target.
+CY_HELP_build_proj_VERBOSE=Build the current project in the application. In single-core applications, this target is the same as the "build" target.
 CY_HELP_qbuild=Builds the application using the previous build's source list.
 CY_HELP_qbuild_VERBOSE=When no other sources need to be auto-discovered, this target can be used to skip\
 					the auto-discovery step for a faster incremental build.
@@ -50,7 +50,7 @@ CY_HELP_qbuild_proj_VERBOSE=When no other sources need to be auto-discovered, th
 CY_HELP_program=Builds the application and programs it to the target device. In multi-core applications, this will program the combined hex file.
 CY_HELP_program_VERBOSE=The build process performs the same operations as the "build" target. Upon completion,\
 					the artifact is programmed to the board.
-CY_HELP_program_proj=Builds the current project and programs it to the target device." In the single-core applications, this target is the same as the "program" target
+CY_HELP_program_proj=Builds the current project and programs it to the target device." In single-core applications, this target is the same as the "program" target.
 CY_HELP_program_proj_VERBOSE=The build process performs the same operations as the "build" target. Upon completion,\
 					the artifact is programmed to the board.
 CY_HELP_qprogram=Programs a built application to the target device without rebuilding.
@@ -58,16 +58,9 @@ CY_HELP_qprogram_VERBOSE=This target allows programming an existing artifact to 
 CY_HELP_qprogram_proj=Programs the current built project to the target device without rebuilding.\
 					In single-core applications, this target is the same as the "qprogram" target.
 CY_HELP_qprogram_proj_VERBOSE=This target allows programming an existing artifact to the board without a build step.
-CY_HELP_debug=Builds and programs. Then launches a GDB server.
-CY_HELP_debug_VERBOSE=Once the GDB server is launched, another shell should be opened to launch a GDB client.
-CY_HELP_qdebug=Skips the build and program step. Launches a GDB server.
-CY_HELP_qdebug_VERBOSE=Once the GDB server is launched, another shell should be opened to launch a GDB client.
-CY_HELP_attach=Used to attach to a target for debugging.
-CY_HELP_attach_VERBOSE=Run in a separate shell before starting the debug target.
 CY_HELP_clean=Cleans the /build/<TARGET> directory.
 CY_HELP_clean_VERBOSE=The directory and all its contents are deleted from disk.
-CY_HELP_help=Prints the help documentation. Use the CY_HELP=<Name of make target or variable> to see the verbose documentation for a\
-					particular make target or variable.
+CY_HELP_help=Prints the help documentation.
 CY_HELP_help_VERBOSE=Use the CY_HELP=<Name of make target or variable> to see the verbose documentation for a\
 					particular make target or variable.
 CY_HELP_prebuild=Generates code for the application.
@@ -81,11 +74,11 @@ CY_HELP_eclipse_VERBOSE=This target generates .cproject and .project files if th
 CY_HELP_vscode=Generates VS Code IDE files.
 CY_HELP_vscode_VERBOSE=This target generates VS Code files for debug/program launches, IntelliSense, and custom tasks.\
 					These overwrite the existing files in the application directory except for settings.json.
-CY_HELP_ewarm8=Generates IAR-EW v8 IDE .ipcf file.
-CY_HELP_ewarm8_VERBOSE=This target generates an IAR Embedded Workbench v8.x compatible .ipcf file that can be imported\
+CY_HELP_ewarm8=Generates IAR-EW v8 or later IDE .ipcf file.
+CY_HELP_ewarm8_VERBOSE=This target generates an IAR Embedded Workbench compatible .ipcf file that can be imported\
 					into IAR-EW. The .ipcf file is overwritten every time this target is run.\
 					$(MTB__NEWLINE)Note: Project generation requires python3 to be installed and present in the PATH variable.
-CY_HELP_uvision5=Generates Keil uVision5 IDE .cpdsc, .gpdsc, and .cprj files.
+CY_HELP_uvision5=Generates Keil uVision v5 or later IDE .cpdsc, .gpdsc, and .cprj files.
 CY_HELP_uvision5_VERBOSE=This target generates a CMSIS compatible .cpdsc and .gpdsc files that can be imported\
 					into Keil uVision 5. Both files are overwritten every time this target is run.\
 					Files in the default cmsis output directory will be automatically excluded when calling make uvision5.\
@@ -101,7 +94,7 @@ CY_HELP_check=Checks for the necessary tools.
 CY_HELP_check_VERBOSE=Not all tools are necessary for every build recipe. This target allows you\
 					to get an idea of which tools are missing if a build fails in an unexpected way.
 CY_HELP_printlibs=Prints the status of the library repos.
-CY_HELP_printlibs_VERBOSE=This target parses through the library repos and prints the SHA1 commit id for each library.\
+CY_HELP_printlibs_VERBOSE=This target parses through the library repos and prints the SHA1 commit ID for each library.\
 					It also shows whether the repo is clean (no changes) or dirty (modified or new files).
 
 #
@@ -131,7 +124,7 @@ CY_HELP_APPNAME_VERBOSE=This variable is used to set the name of the application
 				$(MTB__NEWLINE)$(MTB__NEWLINE)Note: This variable may also be used when generating launch configs when invoking the "eclipse" target.\
 				$(MTB__NEWLINE)Example Usage: make eclipse APPNAME="AppV1"
 CY_HELP_TOOLCHAIN=Specifies the toolchain for building the application. (e.g. GCC_ARM)
-CY_HELP_TOOLCHAIN_VERBOSE=Supported toolchains for this target are, [ $(CY_SUPPORTED_TOOLCHAINS) ].\
+CY_HELP_TOOLCHAIN_VERBOSE=Supported toolchains for this target are: [ $(CY_SUPPORTED_TOOLCHAINS) ].\
 							$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make build TOOLCHAIN=IAR
 CY_HELP_CONFIG=Specifies the configuration option for the build [Debug Release].
 CY_HELP_CONFIG_VERBOSE=The CONFIG variable is not limited to Debug/Release. It can be\
@@ -157,6 +150,10 @@ CY_HELP_INCLUDES_VERBOSE=Note: These MUST NOT have -I prepended.\
 CY_HELP_DEFINES=Specifies additional defines passed to the compiler.
 CY_HELP_DEFINES_VERBOSE=Note: These MUST NOT have -D prepended.\
 						$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage (within Makefile): DEFINES+=EXAMPLE_DEFINE=0x01
+CY_HELP_MVE_SELECT=Selects M-Profile Vector Extension (MVE) operating mode [NO_MVE MVE-I MVE-F].
+CY_HELP_MVE_SELECT_VERBOSE=If not defined, this value defaults to MVE-F.\
+							$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage (within Makefile): MVE_SELECT=MVE-I.\
+							MVE_SELECT is ignored for IAR toolchain.
 CY_HELP_VFP_SELECT=Selects hard/soft ABI or full software for floating-point operations [softfp hardfp softfloat].
 CY_HELP_VFP_SELECT_VERBOSE=If not defined, this value defaults to softfp.\
 							$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage (within Makefile): VFP_SELECT=hardfp
@@ -199,9 +196,11 @@ CY_HELP_DISABLE_COMPONENTS_VERBOSE=Include a <VALUE> to this make variable to ha
 CY_HELP_SEARCH=List of paths to include in auto-discovery. (e.g. ../mtb_shared/lib1)
 CY_HELP_SEARCH_VERBOSE=The SEARCH variable can also be used by the application to include other directories to auto-discovery.\
 					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage (within Makefile): SEARCH+=directory_containing_source_files
-CY_HELP_SKIP_CODE_GEN=Disables code generation from configurators when building
-CY_HELP_SKIP_CODE_GEN_VERBOSE=When set to non-empty value, the build process will no longer run code generation from out-dated configurators.
-CY_HELP_MERGE=List of projects in the application to generate a combined hex file from
+CY_HELP_SKIP_CODE_GEN=Disables code generation for configurators when building.
+CY_HELP_SKIP_CODE_GEN_VERBOSE=When set to a non-empty value, the build process will not run code generation for configurators.\
+					$(MTB__NEWLINE)NOTE: By default code examples specify the GeneratedSource directory in .gitignore file.\
+					If this variable is used, the GeneratedSouce directory should be removed from the .gitignore file.
+CY_HELP_MERGE=List of projects in the application to include when generating a combined hex file.
 CY_HELP_MERGE_VERBOSE=By Default, building a multi-core application will generate a combined hex file from its sub-projects.\
 					This variable can be set from the application Makefile to override the set of projects to generate a combined hex file from.
 
@@ -212,9 +211,13 @@ CY_HELP_DEVICE=Device ID for the primary MCU on the target board/kit. Set by bsp
 CY_HELP_DEVICE_VERBOSE=The device identifier is mandatory for all board/kits.
 CY_HELP_ADDITIONAL_DEVICES=IDs for additional devices on the target board/kit. Set by bsp.mk.
 CY_HELP_ADDITIONAL_DEVICES_VERBOSE=These include devices such as radios on the board/kit. This variable is optional.
+CY_HELP_BSP_PROGRAM_INTERFACE=Specifies the debugging and programming interface to use. The default value and valid values all depend on the BSP.
+CY_HELP_BSP_PROGRAM_INTERFACE_VERBOSE=Possible values include KitProg3, JLink, and FTDI. Most BSPs will only support a subset of this list.
 
 #
 # Getlibs variables
+#
+# I thought CY_GETLIBS_NO_CACHE and CY_GETLIBS_CACHE_PATH were obsolete?
 #
 CY_HELP_CY_GETLIBS_NO_CACHE=Disables the cache when running getlibs when this variable is set to non-empty.
 CY_HELP_CY_GETLIBS_NO_CACHE_VERBOSE=To improve the library creation time, the getlibs target uses a cache\
@@ -223,10 +226,10 @@ CY_HELP_CY_GETLIBS_NO_CACHE_VERBOSE=To improve the library creation time, the ge
 					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make getlibs CY_GETLIBS_NO_CACHE=true
 CY_HELP_CY_GETLIBS_OFFLINE=This feature is no longer supported starting in ModusToolbox 3.1 and has been replaced with Local Content Storage feature.
 CY_HELP_CY_GETLIBS_OFFLINE_VERBOSE=This feature is no longer supported starting in ModusToolbox 3.1 and has been replaced with Local Content Storage feature.
-CY_HELP_MTB_USE_LOCAL_CONTENT=If set to non-empty, enable local content storage.
+CY_HELP_MTB_USE_LOCAL_CONTENT=If set to a non-empty value, enable local content storage.
 CY_HELP_MTB_USE_LOCAL_CONTENT_VERBOSE=Enable local content storage to allow use of ModusToolbox without requiring internet access.\
-					$(MTB__NEWLINE)See ModusToolbox User Guide for more information on Local Content Storage.\
-					$(MTB__NEWLINE)This feature is added in ModusToolbox 3.1.
+					$(MTB__NEWLINE)See the LCS Manager CLI User Guide for more information.\
+					$(MTB__NEWLINE)This feature is new as of ModusToolbox 3.1.
 CY_HELP_CY_GETLIBS_PATH=Path to the intended location of libs info directory.
 CY_HELP_CY_GETLIBS_PATH_VERBOSE=The directory contains local libraries and metadata files about shared libraries.
 CY_HELP_CY_GETLIBS_DEPS_PATH=Path to where the library-manager stores .mtb files.
@@ -261,19 +264,19 @@ CY_HELP_CY_COMPILER_PATH_VERBOSE=DEPRECATED. Use CY_COMPILER_GCC_ARM_DIR CY_COMP
 CY_HELP_CY_COMPILER_GCC_ARM_DIR=Absolute path to the gcc-arm toolchain directory.
 CY_HELP_CY_COMPILER_GCC_ARM_DIR_VERBOSE=Setting this path overrides the default GCC_ARM toolchain directory.\
 					It is used when the compiler is located at a non-default directory.\
-					Make uses this variable for the path to the assember, compiler, linker, objcopy, and other toolchain binaries.\
+					Make uses this variable for the path to the assembler, compiler, linker, objcopy, and other toolchain binaries.\
 					For example, CY_COMPILER_GCC_ARM_DIR=C:/Program Files (x86)GNU Arm Embedded Toolchain/10 2021.10\
 					NOTE: when set in the Makefile, no quotes are required.
 CY_HELP_CY_COMPILER_IAR_DIR=Absolute path to the IAR toolchain directory.
 CY_HELP_CY_COMPILER_IAR_DIR_VERBOSE=Setting this path overrides the default IAR toolchain directory.\
 					It is used when the compiler is located at a non-default directory.\
-					Make uses this variable for the path to the assember, compiler, and linker, and other toolchain binaries.\
+					Make uses this variable for the path to the assembler, compiler, and linker, and other toolchain binaries.\
 					For example, CY_COMPILER_IAR_DIR=C:/Program Files/IAR Systems/Embedded Workbench 9.1/arm\
 					NOTE: when set in the Makefile, no quotes are required.
 CY_HELP_CY_COMPILER_ARM_DIR=Absolute path to the ARM toolchain directory.
 CY_HELP_CY_COMPILER_ARM_DIR_VERBOSE=Setting this path overrides the default ARM toolchain directory.\
 					It is used when the compiler is located at a non-default directory.\
-					Make uses this variable for the path to the assember, compiler, linker, objcopy, and other toolchain binaries.\
+					Make uses this variable for the path to the assembler, compiler, linker, objcopy, and other toolchain binaries.\
 					For example, CY_COMPILER_ARM_DIR=C:/Program Files/ARMCompiler6.16\
 					NOTE: when set in the Makefile, no quotes are required.
 CY_HELP_CY_TOOLS_DIR=Absolute path to the tools root directory.
@@ -285,15 +288,15 @@ CY_HELP_CY_TOOLS_DIR_VERBOSE=Applications must specify the directory of the tool
 CY_HELP_CY_BUILD_LOCATION=Absolute path to the build output directory (Default: ./build).
 CY_HELP_CY_BUILD_LOCATION_VERBOSE=The build output directory is structured as /<TARGET>/<CONFIG>/. Setting this variable\
 					allows the build artifacts to be located in the directory pointed to by this variable.\
-					Content of this directory is automatically excluded from autodiscovery.
+					Content of this directory is automatically excluded from auto-discovery.
 CY_HELP_CY_PYTHON_PATH=Specifies the path to the Python executable.
 CY_HELP_CY_PYTHON_PATH_VERBOSE=For make targets that depend on Python, the build system looks for a Python 3 in the user's PATH\
 					and uses that to invoke python. If however CY_PYTHON_PATH is defined, it will use that python executable.\
 					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: CY_PYTHON_PATH="path/to/python/executable/python.exe"
-CY_HELP_MTB_JLINK_DIR=Specifes the path JLink directory.
-CY_HELP_MTB_JLINK_DIR_VERBOSE:=Settings this path allow make to locate JLink executable when calling make program and make debug.\
-					If not specified, make will default to look for the JLink executable in PATH variable.\
-					When generating launch config for IDE, this will override the JLink path in the generated launch configs.\
+CY_HELP_MTB_JLINK_DIR=Specifies the path to the SEGGER J-Link software install directory "JLink".
+CY_HELP_MTB_JLINK_DIR_VERBOSE=Setting this path allows the make system to locate the JLink executable when calling make program.\
+					If not specified, make will default to the JLink executable in the PATH variable.\
+					When generating launch config for IDE, this will override the default JLink path.\
 					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: MTB_JLINK_DIR:=C:/Program Files/SEGGER/JLink
 
 #
@@ -323,8 +326,8 @@ CY_HELP_MISC_ALL=CY_IGNORE
 CY_HELP_PRINT_ALL=$(CY_HELP_TARGETS_ALL) $(CY_HELP_BASIC_CFG_ALL) $(CY_HELP_ADVANCED_CFG_ALL) \
 					$(CY_HELP_GETLIBS_ALL) $(CY_HELP_PATHS_ALL) $(CY_HELP_MISC_ALL)
 
-mtb_help_header:
 ifneq ($(CY_HELP),)
+mtb_help_topic:
 	@:
 	$(foreach topic,$(CY_HELP),\
 	$(if $(CY_HELP_$(topic)),\
@@ -333,7 +336,12 @@ ifneq ($(CY_HELP),)
 	$(info $(MTB__NEWLINE)$(CY_HELP_$(topic)_VERBOSE)),\
 	$(info $(MTB__NEWLINE)Topic-specific help for "$(topic) not found")\
 	))
+
+help: mtb_help_topic
+.PHONY: mtb_help_topic
+
 else
+mtb_help_header:
 	@:
 	$(info                                                                                    )
 	$(info ==============================================================================     )
@@ -380,9 +388,6 @@ else
 	$(info $(MTB__SPACE)program_proj        $(CY_HELP_program_proj))
 	$(info $(MTB__SPACE)qprogram            $(CY_HELP_qprogram))
 	$(info $(MTB__SPACE)qprogram_proj       $(CY_HELP_qprogram_proj))
-	$(info $(MTB__SPACE)debug               $(CY_HELP_debug))
-	$(info $(MTB__SPACE)qdebug              $(CY_HELP_qdebug))
-	$(info $(MTB__SPACE)attach              $(CY_HELP_attach))
 	$(info $(MTB__SPACE)clean               $(CY_HELP_clean))
 	$(info $(MTB__SPACE)help                $(CY_HELP_help))
 	$(info $(MTB__SPACE)prebuild            $(CY_HELP_prebuild))
@@ -419,6 +424,7 @@ else
 	$(info $(MTB__SPACE)SOURCES             $(CY_HELP_SOURCES))
 	$(info $(MTB__SPACE)INCLUDES            $(CY_HELP_INCLUDES))
 	$(info $(MTB__SPACE)DEFINES             $(CY_HELP_DEFINES))
+	$(info $(MTB__SPACE)MVE_SELECT          $(CY_HELP_MVE_SELECT))
 	$(info $(MTB__SPACE)VFP_SELECT          $(CY_HELP_VFP_SELECT))
 	$(info $(MTB__SPACE)VFP_SELECT_PRECISION $(CY_HELP_VFP_SELECT_PRECISION))
 	$(info $(MTB__SPACE)CFLAGS              $(CY_HELP_CFLAGS))
@@ -440,17 +446,22 @@ else
 	$(info =======================================                       )
 	$(info $(MTB__SPACE)DEVICE              $(CY_HELP_DEVICE))
 	$(info $(MTB__SPACE)ADDITIONAL_DEVICES  $(CY_HELP_ADDITIONAL_DEVICES))
+	$(info $(MTB__SPACE)BSP_PROGRAM_INTERFACE $(CY_HELP_BSP_PROGRAM_INTERFACE))
 	$(info                                                               )
 	$(info =======================================                       )
 	$(info $(MTB__SPACE)Getlibs make variables                             )
 	$(info =======================================                       )
+ifeq ($(MTB_TOOLS__INTERFACE_VERSION),)
 	$(info $(MTB__SPACE)CY_GETLIBS_NO_CACHE $(CY_HELP_CY_GETLIBS_NO_CACHE))
+	$(info $(MTB__SPACE)CY_GETLIBS_CACHE_PATH  $(CY_HELP_CY_GETLIBS_CACHE_PATH))
 	$(info $(MTB__SPACE)CY_GETLIBS_OFFLINE  $(CY_HELP_CY_GETLIBS_OFFLINE))
+	$(info $(MTB__SPACE)CY_GETLIBS_OFFLINE_PATH  $(CY_HELP_CY_GETLIBS_OFFLINE_PATH))
+endif
+ifeq ($(MTB_TOOLS__INTERFACE_VERSION),1)
 	$(info $(MTB__SPACE)MTB_USE_LOCAL_CONTENT $(CY_HELP_MTB_USE_LOCAL_CONTENT))
+endif
 	$(info $(MTB__SPACE)CY_GETLIBS_PATH     $(CY_HELP_CY_GETLIBS_PATH))
 	$(info $(MTB__SPACE)CY_GETLIBS_DEPS_PATH  $(CY_HELP_CY_GETLIBS_DEPS_PATH))
-	$(info $(MTB__SPACE)CY_GETLIBS_CACHE_PATH  $(CY_HELP_CY_GETLIBS_CACHE_PATH))
-	$(info $(MTB__SPACE)CY_GETLIBS_OFFLINE_PATH  $(CY_HELP_CY_GETLIBS_OFFLINE_PATH))
 	$(info $(MTB__SPACE)CY_GETLIBS_SHARED_PATH $(CY_HELP_CY_GETLIBS_SHARED_PATH))
 	$(info $(MTB__SPACE)CY_GETLIBS_SHARED_NAME $(CY_HELP_CY_GETLIBS_SHARED_NAME))
 	$(info                                                               )
@@ -473,14 +484,14 @@ else
 	$(info $(MTB__SPACE)CY_IGNORE                $(CY_HELP_CY_IGNORE))
 	$(info $(MTB__SPACE)CY_SIMULATOR_GEN_AUTO    $(CY_HELP_CY_SIMULATOR_GEN_AUTO))
 	$(info )
-endif
 
 mtb_help_tools_start: mtb_help_header
 	@:
 	$(info =======================================                       )
-	$(info $(MTB__SPACE)Configurator targets                       )
+	$(info $(MTB__SPACE)Tools targets                       )
 	$(info =======================================                       )
 mtb_help_tools_end: mtb_help_tools_start
 help: mtb_help_tools_end
+endif
 
 .PHONY: help mtb_help_header mtb_help_tools_start mtb_help_tools_end
