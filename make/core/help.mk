@@ -197,7 +197,9 @@ CY_HELP_SEARCH=List of paths to include in auto-discovery. (e.g. ../mtb_shared/l
 CY_HELP_SEARCH_VERBOSE=The SEARCH variable can also be used by the application to include other directories to auto-discovery.\
 					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage (within Makefile): SEARCH+=directory_containing_source_files
 CY_HELP_SKIP_CODE_GEN=Disables code generation for configurators when building.
-CY_HELP_SKIP_CODE_GEN_VERBOSE=When set to a non-empty value, the build process will not run code generation for configurators.
+CY_HELP_SKIP_CODE_GEN_VERBOSE=When set to a non-empty value, the build process will not run code generation for configurators.\
+					$(MTB__NEWLINE)NOTE: By default code examples specify the GeneratedSource directory in .gitignore file.\
+					If this variable is used, the GeneratedSouce directory should be removed from the .gitignore file.
 CY_HELP_MERGE=List of projects in the application to include when generating a combined hex file.
 CY_HELP_MERGE_VERBOSE=By Default, building a multi-core application will generate a combined hex file from its sub-projects.\
 					This variable can be set from the application Makefile to override the set of projects to generate a combined hex file from.

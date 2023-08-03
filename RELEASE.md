@@ -16,8 +16,14 @@ This release of the core GNU make Build System includes a framework to support b
 
 ### What Changed?
 
-#### v3.2.0
-* TBD
+#### v3.2.2
+* Fixed an issue where files from SOURCES are not compiled if they start with "./"
+
+#### v3.2.1
+* Added SKIP_CODE_GEN make variable, when set to non-empty value, code generation step will be skipped.
+* Added MTB_JLINK_DIR make variable to override the default path to JLink base diretory.
+* Added support for BSP_PROGRAM_INTERFACE make variable to specify programming interface. Valid values depends on recipe-make. Some valid values include "KitProg3", "JLink", "FTDI". Not all recipes support all interfaces.
+* Eclipse and VSCode export will now only generate the launch configuration for the selected programming interface.
 
 #### v3.1.0
 * This version of the core-make library is a Beta release to support CYW55513 devices only. Do not use it for production development or in applications targeting other devices.
@@ -74,7 +80,7 @@ This version of the core make build system was validated for compatibility with 
 
 | Software and Tools                        | Version |
 | :---                                      | :----:  |
-| ModusToolbox Software Environment         | 3.0     |
+| ModusToolbox Software Environment         | 3.1     |
 | GCC Compiler                              | 11.3    |
 | IAR Compiler                              | 9.3     |
 | ARM Compiler                              | 6.16    |
@@ -86,5 +92,5 @@ Minimum required ModusToolbox Software Environment: v3.0
 * [ModusToolbox](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software)
 
 ---
-© Cypress Semiconductor Corporation, 2019-2022.
+© Cypress Semiconductor Corporation, 2019-2023.
 

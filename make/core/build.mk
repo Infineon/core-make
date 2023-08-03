@@ -100,10 +100,10 @@ endif
 #
 _MTB_CORE__BUILD_EXTSRC_LIST:=$(SOURCES) $(_MTB_CORE__SEARCH_EXT_SOURCE_ASSET)
 _MTB_CORE__BUILD_INTSRC_LIST:=$(filter-out $(_MTB_CORE__BUILD_EXTSRC_LIST),$(MTB_RECIPE__SOURCE))
-_MTB_CORE__BUILD_SRC_STRIPPED:=$(patsubst $(MTB_TOOLS__REL_PRJ_PATH)/%,/%,$(_MTB_CORE__BUILD_INTSRC_LIST))
+_MTB_CORE__BUILD_SRC_STRIPPED:=$(patsubst $(MTB_TOOLS__REL_PRJ_PATH)/%,%,$(_MTB_CORE__BUILD_INTSRC_LIST))
 _MTB_CORE__BUILD_EXTSRC_RELATIVE:=$(sort $(filter $(MTB_TOOLS__REL_PRJ_PATH)/%,$(_MTB_CORE__BUILD_EXTSRC_LIST)) $(filter ../%,$(_MTB_CORE__BUILD_EXTSRC_LIST)) $(filter ./%,$(_MTB_CORE__BUILD_EXTSRC_LIST)))
 _MTB_CORE__BUILD_EXTSRC_ABSOLUTE:=$(filter-out $(_MTB_CORE__BUILD_EXTSRC_RELATIVE),$(_MTB_CORE__BUILD_EXTSRC_LIST))
-_MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED:=$(patsubst $(MTB_TOOLS__REL_PRJ_PATH)/%,/%,$(subst ../,,$(_MTB_CORE__BUILD_EXTSRC_RELATIVE)))
+_MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED:=$(patsubst $(MTB_TOOLS__REL_PRJ_PATH)/%,%,$(subst ../,,$(_MTB_CORE__BUILD_EXTSRC_RELATIVE)))
 _MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED:=$(notdir $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE))
 
 #
@@ -275,7 +275,7 @@ mtb_explicit_build_rule,$(explicit),$(patsubst $(MTB_TOOLS__OUTPUT_TARGET_DIR)/%
 
 # Create explicit rules for ext (relative path) files
 $(foreach explicit,$(_MTB_CORE__BUILD_EXTSRC_RELATIVE),$(eval $(call \
-mtb_explicit_build_rule,$(explicit),$(addprefix ext/,$(patsubst $(MTB_TOOLS__REL_PRJ_PATH)/%,/%,$(subst ../,,$(addsuffix \
+mtb_explicit_build_rule,$(explicit),$(addprefix ext/,$(patsubst $(MTB_TOOLS__REL_PRJ_PATH)/%,%,$(subst ../,,$(addsuffix \
 .$(MTB_RECIPE__SUFFIX_O),$(basename $(explicit)))))),ext)))
 
 # Create explicit rules for ext (absolute path) files
