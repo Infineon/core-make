@@ -23,7 +23,7 @@ shift 1
 working_directory=$1
 shift 1
 
-echo '[' > $output_file
+buffer="["$'\n'
 
 first_entry=true
 
@@ -52,18 +52,18 @@ do
         obj_file=${obj_file_array[$i]}
 
         if [ "$first_entry" != "true" ]; then
-            echo "," >> $output_file
+            buffer+=","$'\n'
         else
             first_entry=false
         fi
 
-        echo '    {' >> $output_file
-        echo "        \"directory\": \"$working_directory\"," >> $output_file
-        echo "        \"file\": \"$src_file\"," >> $output_file
-        echo "        \"command\": \"$arguments $obj_file $src_file\"" >> $output_file
-        echo -n '    }' >> $output_file
+        buffer+="    {"$'\n'
+        buffer+="        \"directory\": \"$working_directory\","$'\n'
+        buffer+="        \"file\": \"$src_file\","$'\n'
+        buffer+="        \"command\": \"$arguments $obj_file $src_file\""$'\n'
+        buffer+="    }"
     done
 done
 
-echo >> $output_file
-echo ']' >> $output_file
+buffer+=$'\n'"]"
+echo "$buffer" >> $output_file

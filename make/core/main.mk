@@ -7,7 +7,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2023 Cypress Semiconductor Corporation
+# Copyright 2018-2024 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -210,6 +210,16 @@ CY_TIMESTAMP_CONFIG_MK_BEGIN=$(call CY_LOG_TIME,bothstages,config.mk,BEGIN)
 include $(MTB_TOOLS__CORE_DIR)/make/core/config.mk
 CY_TIMESTAMP_CONFIG_MK_END=$(call CY_LOG_TIME,bothstages,config.mk,END)
 
+#
+# Export interface version set up for IDE file generation
+#
+MTB_CORE__EXPORT_INTERFACE_VERSION:=3.0
+ifeq ($(CY_TOOL_mtbideexport_EXPORT_INTERFACE),3.1)
+ifeq ($(MTB_RECIPE__INTERFACE_VERSION),2)
+MTB_CORE__EXPORT_INTERFACE_VERSION:=3.1
+endif
+endif
+
 ################################################################################
 # Include make files continued only for first build stage
 ################################################################################
@@ -251,7 +261,10 @@ CY_TIMESTAMP_TRANSITION_MK_END=$(call CY_LOG_TIME,firststage,transition.mk,END)
 # Environment check
 ##########################
 
-CY_TIMESTAMP_PYTHON_BEGIN=$(call CY_LOG_TIME,firststage,PYTHON,BEGIN)
+#
+# Python check for interface version 3.0 only
+#
+ifeq ($(MTB_CORE__EXPORT_INTERFACE_VERSION),3.0)
 
 #
 # Find Python path
@@ -270,6 +283,7 @@ ifneq ($(CY_MAKE_IDE),eclipse)
 CY_PYTHON_REQUIREMENT=true
 endif
 endif
+endif # ifeq ($(MTB_CORE__EXPORT_INTERFACE_VERSION),3.0)
 
 ifeq ($(CY_PYTHON_REQUIREMENT),true)
 ifeq ($(CY_PYTHON_PATH),)
@@ -304,18 +318,18 @@ endif
 
 #
 # Check for python 3 intallation in the user's PATH
-#   py -3 Windows python installer from python.org
-#   python3 - Standard python3
 #   python - Mapped python3 to python
+#   python3 - Standard python3
+#   py -3 - Windows python installer from python.org
 #
 ifeq ($(CY_PYTHON_SEARCH_PATH),NotFoundError)
 CY_PYTHON_SEARCH_PATH:=$(shell \
-	if [[ $$(py -3 --version 2>&1) == "Python 3"* ]]; then\
-		echo py -3;\
+	if [[ $$($(CY_PYTHON_FROM_CMD)python --version 2>&1) == "Python 3"* ]]; then\
+		echo $(MTB_TOOLS__CORE_DIR)/make/scripts/python.bash;\
 	elif [[ $$($(CY_PYTHON_FROM_CMD)python3 --version 2>&1) == "Python 3"* ]]; then\
-		echo $(CY_PYTHON_FROM_CMD)python3;\
-	elif [[ $$($(CY_PYTHON_FROM_CMD)python --version 2>&1) == "Python 3"* ]]; then\
-		echo $(CY_PYTHON_FROM_CMD)python;\
+		echo $(MTB_TOOLS__CORE_DIR)/make/scripts/python3.bash;\
+	elif [[ $$(py -3 --version 2>&1) == "Python 3"* ]]; then\
+		echo $(MTB_TOOLS__CORE_DIR)/make/scripts/py.bash;\
 	else\
 		echo NotFoundError;\
 	fi)
@@ -347,9 +361,6 @@ endif
 
 endif # ifeq ($(CY_PYTHON_PATH),)
 endif # ifeq ($(CY_PYTHON_REQUIREMENT),true)
-
-# Note: leave the space after PYTHON. It's intentional for cosmetics
-CY_TIMESTAMP_PYTHON_END=$(call CY_LOG_TIME,firststage,PYTHON ,END)
 
 # get_app_info data file will be generated at the end of first stage.
 CY_TIMESTAMP_GET_APP_INFO_MK_BEGIN=$(call CY_LOG_TIME,firststage,get_app_info.mk,BEGIN)
@@ -474,16 +485,6 @@ CY_TIMESTAMP_PROGRAM_MK_BEGIN=$(call CY_LOG_TIME,secondstage,program.mk,BEGIN)
 CY_TIMESTAMP_PROGRAM_MK_END=$(call CY_LOG_TIME,secondstage,program.mk,END)
 endif
 
-#
-# IDE file generation
-#
-MTB_CORE__EXPORT_INTERFACE_VERSION:=3.0
-ifeq ($(CY_TOOL_mtbideexport_EXPORT_INTERFACE),3.1)
-ifeq ($(MTB_RECIPE__INTERFACE_VERSION),2)
-MTB_CORE__EXPORT_INTERFACE_VERSION:=3.1
-endif
-endif
-
 ifeq ($(MTB_CORE__EXPORT_INTERFACE_VERSION),3.0)
 CY_TIMESTAMP_RECIPE_IDE_MK_BEGIN=$(call CY_LOG_TIME,secondstage,recipe_ide.mk,BEGIN)
 -include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/interface_version_1/recipe_ide.mk
@@ -543,7 +544,7 @@ CY_TIMESTAMP_MAIN_MK_END=$(call CY_LOG_TIME,bothstages,main.mk,END)
 #
 ifneq ($(CY_INSTRUMENT_BUILD),)
 CY_TIMESTAMP_LIST=UTILS_MK RECIPE_VERSION_MK EXTRA_INC FEATURES_MK DEFINES_MK TOOLCHAIN_MK CONFIG_MK TOOLS_MK HELP_MK\
-					PREBUILD_MK RECIPE_MK TRANSITION_MK JLINK_MK PYTHON GET_APP_INFO \
+					PREBUILD_MK RECIPE_MK TRANSITION_MK JLINK_MK GET_APP_INFO \
 					SEARCH_MK CYQBUILD_MK SEARCH_FILTER_MK RECIPE_MK BUILD_MK PROGRAM_MK RECIPE_IDE_MK IDE_MK
 
 $(info )

@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2023 Cypress Semiconductor Corporation
+# Copyright 2018-2024 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -129,6 +129,11 @@ _MTB_CORE__BUILD_EXTSRC_C_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_C),$(_MTB_COR
 _MTB_CORE__BUILD_EXTSRC_CPP_FILES:=$(filter %.$(MTB_RECIPE__SUFFIX_CPP),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED))
 _MTB_CORE__BUILD_EXTSRC_CXX_FILES:=$(filter %.$(MTB_RECIPE__SUFFIX_CXX),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED))
 _MTB_CORE__BUILD_EXTSRC_CC_FILES :=$(filter %.$(MTB_RECIPE__SUFFIX_CC),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE_STRIPPED) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE_STRIPPED))
+
+_MTB_CORE__BUILD_EXTSRC_CDB_S_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_S),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE))
+_MTB_CORE__BUILD_EXTSRC_CDB_s_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_s),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE))
+_MTB_CORE__BUILD_EXTSRC_CDB_C_FILES  :=$(filter %.$(MTB_RECIPE__SUFFIX_C),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE))
+_MTB_CORE__BUILD_EXTSRC_CDB_CPP_FILES:=$(filter %.$(MTB_RECIPE__SUFFIX_CPP),$(_MTB_CORE__BUILD_EXTSRC_RELATIVE) $(_MTB_CORE__BUILD_EXTSRC_ABSOLUTE))
 
 #
 # The list of object files
@@ -500,20 +505,21 @@ $(_MTB_CORE__CDB_FILE)_temp: _mtb_build_mkdirs
 	$(info Generating compilation database file...)
 	$(info -> $(_MTB_CORE__CDB_FILE))
 	$(call mtb__file_write,$@_s_lc,$(call mtb_core__json_escaped_string,$(_MTB_CORE__CDB_BUILD_COMPILE_AS_LC)))
-	$(call mtb__file_append,$@_s_lc,$(_MTB_CORE__BUILD_SRC_s_FILES) $(_MTB_CORE__BUILD_GENSRC_s_FILES) $(_MTB_CORE__BUILD_EXTSRC_s_FILES))
+	$(call mtb__file_append,$@_s_lc,$(_MTB_CORE__BUILD_SRC_s_FILES) $(_MTB_CORE__BUILD_GENSRC_s_FILES) $(_MTB_CORE__BUILD_EXTSRC_CDB_s_FILES))
 	$(call mtb__file_append,$@_s_lc,$(_MTB_CORE__BUILD_SRC_s_OBJ_FILES) $(_MTB_CORE__BUILD_GENSRC_s_OBJ_FILES) $(_MTB_CORE__BUILD_EXTSRC_s_OBJ_FILES))
 	$(call mtb__file_write,$@_S_uc,$(call mtb_core__json_escaped_string,$(_MTB_CORE__CDB_BUILD_COMPILE_AS_UC)))
-	$(call mtb__file_append,$@_S_uc,$(_MTB_CORE__BUILD_SRC_S_FILES) $(_MTB_CORE__BUILD_GENSRC_S_FILES) $(_MTB_CORE__BUILD_EXTSRC_S_FILES))
+	$(call mtb__file_append,$@_S_uc,$(_MTB_CORE__BUILD_SRC_S_FILES) $(_MTB_CORE__BUILD_GENSRC_S_FILES) $(_MTB_CORE__BUILD_EXTSRC_CDB_S_FILES))
 	$(call mtb__file_append,$@_S_uc,$(_MTB_CORE__BUILD_SRC_S_OBJ_FILES) $(_MTB_CORE__BUILD_GENSRC_S_OBJ_FILES) $(_MTB_CORE__BUILD_EXTSRC_S_OBJ_FILES))
 	$(call mtb__file_write,$@_c,$(call mtb_core__json_escaped_string,$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_C)))
-	$(call mtb__file_append,$@_c,$(_MTB_CORE__BUILD_SRC_C_FILES) $(_MTB_CORE__BUILD_GENSRC_C_FILES) $(_MTB_CORE__BUILD_EXTSRC_C_FILES))
+	$(call mtb__file_append,$@_c,$(_MTB_CORE__BUILD_SRC_C_FILES) $(_MTB_CORE__BUILD_GENSRC_C_FILES) $(_MTB_CORE__BUILD_EXTSRC_CDB_C_FILES))
 	$(call mtb__file_append,$@_c,$(_MTB_CORE__BUILD_SRC_C_OBJ_FILES) $(_MTB_CORE__BUILD_GENSRC_C_OBJ_FILES) $(_MTB_CORE__BUILD_EXTSRC_C_OBJ_FILES))
 	$(call mtb__file_write,$@_cpp,$(call mtb_core__json_escaped_string,$(_MTB_CORE__CDB_BUILD_COMPILE_EXPLICIT_CPP)))
-	$(call mtb__file_append,$@_cpp,$(_MTB_CORE__BUILD_SRC_CPP_FILES) $(_MTB_CORE__BUILD_GENSRC_CPP_FILES) $(_MTB_CORE__BUILD_EXTSRC_CPP_FILES))
+	$(call mtb__file_append,$@_cpp,$(_MTB_CORE__BUILD_SRC_CPP_FILES) $(_MTB_CORE__BUILD_GENSRC_CPP_FILES) $(_MTB_CORE__BUILD_EXTSRC_CDB_CPP_FILES))
 	$(call mtb__file_append,$@_cpp,$(_MTB_CORE__BUILD_SRC_CPP_OBJ_FILES) $(_MTB_CORE__BUILD_GENSRC_CPP_OBJ_FILES) $(_MTB_CORE__BUILD_EXTSRC_CPP_OBJ_FILES))
 
 $(_MTB_CORE__CDB_FILE): $(_MTB_CORE__CDB_FILE)_temp
-	$(MTB__NOISE)$(MTB_TOOLS_BASH) $(MTB_TOOLS__CORE_DIR)/make/scripts/gen_compile_commands.bash $@ $(MTB_TOOLS__PRJ_DIR) $<_s_lc $<_S_uc $<_c $<_cpp
+	$(MTB__NOISE)$(MTB_TOOLS_BASH) $(MTB_TOOLS__CORE_DIR)/make/scripts/gen_compile_commands.bash $@.tmp $(MTB_TOOLS__PRJ_DIR) $<_s_lc $<_S_uc $<_c $<_cpp
+	$(MTB__NOISE)mv $@.tmp $@
 	$(MTB__NOISE)rm -f $<_s_lc $<_S_uc $<_c $<_cpp
 
 _mtb_build_cdb_postprint: $(_MTB_CORE__CDB_FILE)

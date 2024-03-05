@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2023 Cypress Semiconductor Corporation
+# Copyright 2018-2024 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -248,6 +248,18 @@ endif
 
 uvision5: $(MTB_TOOLS__OUTPUT_CONFIG_DIR)
 	$(MTB__NOISE)$(CY_TOOL_mtbideexport_EXE_ABS) -ide $(_MTB_CORE__IDE_EXPORT_TARGET) -export_interface 3.1 $(MTB_CORE__EXPORT_CMDLINE)
+ifneq ($(filter SECURE,$(VCORE_ATTRS)),)
+	$(MTB__NOISE)echo;\
+	echo "The project is an ARM Trustzone secure project. The following need to enabled in UVision IDE:";\
+	echo "    Project->Options->Target->Software Model"
+endif
+ifneq ($(filter NON_SECURE,$(VCORE_ATTRS)),)
+	$(MTB__NOISE)echo;\
+	echo "The project is an ARM Trustzone non-secure project. The following need to enabled in UVision IDE:";\
+	echo "    Project->Options->Target->Software Model";\
+	echo "The generated veneer file from secure project need to be added to this Option:";\
+	echo "    Project->Options->Linker->Misc Control"
+endif
 	$(MTB__NOISE)echo ;\
 	echo $(_MTB_CORE__IDE_PREBUILD_MSG);\
 	echo $(_MTB_CORE__IDE_POSTBUILD_MSG)
@@ -270,6 +282,18 @@ ifneq (,$(filter MW_ABSTRACTION_RTOS,$(COMPONENTS)))
 	echo "    2. Set the \"Library:\" dropdown to \"Full\"";\
 	echo "    3. Check the box for \"Enable thread support in library\"";\
 	echo "    4. Click \"OK\""
+endif
+ifneq ($(filter SECURE,$(VCORE_ATTRS)),)
+	$(MTB__NOISE)echo;\
+	echo "The project is an ARM Trustzone secure project. The following need to enabled in Embedded Workbench IDE.";\
+	echo "    Project->Options->General Options->32 bit->TrustZone";\
+	echo "    Project->Options->Linker->Output->TrustZone import library"
+endif
+ifneq ($(filter NON_SECURE,$(VCORE_ATTRS)),)
+	$(MTB__NOISE)echo;\
+	echo "The project is an ARM Trustzone non-secure project. The following need to enabled in Embedded Workbench IDE.";\
+	echo "    Project->Options->General Options->32 bit->TrustZone";\
+	echo "    Project->Options->Linker->Library->Additional Libraries"
 endif
 	$(MTB__NOISE)echo;\
 	echo $(_MTB_CORE__IDE_PREBUILD_MSG);\

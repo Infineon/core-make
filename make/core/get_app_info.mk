@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2023 Cypress Semiconductor Corporation
+# Copyright 2018-2024 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@ endif
 _MTB_CORE__SUPPORTED_TOOL_IDS:=$(DEVICE_TOOL_IDS) $(CY_SUPPORTED_TOOL_TYPES)
 
 # a temp file, so that get_app_info_data.mk only is modified if it has changed.
-_MTB_CORE__GET_APP_INFO_TEMP_FILE:=$(MTB_TOOLS__OUTPUT_BASE_DIR)/get_app_info.temp
+_MTB_CORE__GET_APP_INFO_TEMP_FILE:=$(shell mktemp)
 $(info $(shell mkdir -p $(MTB_TOOLS__OUTPUT_BASE_DIR)))
 $(call mtb__file_write,$(_MTB_CORE__GET_APP_INFO_TEMP_FILE),MTB_MPN_LIST=$(MPN_LIST))
 $(call mtb__file_append,$(_MTB_CORE__GET_APP_INFO_TEMP_FILE),MTB_DEVICE_LIST=$(DEVICE_LIST))

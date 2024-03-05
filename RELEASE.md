@@ -16,6 +16,13 @@ This release of the core GNU make Build System includes a framework to support b
 
 ### What Changed?
 
+#### v3.3.0
+* Fixed an issue causing the compile_commands.json file to not be generated properly for files outside of project directory.
+* Fixed an issue where the compile_commands.json file generation did not properly handle some escape characters correctly.
+* Dropped support for Python as part of the ModusToolbox tools package in favor of pre-installed Python 3 in the user's PATH.
+* Updated Eclipse export to support parallel build jobs in Eclipse IDE for ModusToolbox 3.2 and later.
+* Multiple bug fixes and performance improvements.
+
 #### v3.2.2
 * Fixed an issue where files from SOURCES are not compiled if they start with "./"
 
@@ -92,5 +99,5 @@ Minimum required ModusToolbox Software Environment: v3.0
 * [ModusToolbox](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software)
 
 ---
-© Cypress Semiconductor Corporation, 2019-2023.
+© Cypress Semiconductor Corporation, 2019-2024.
 

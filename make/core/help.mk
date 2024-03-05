@@ -6,7 +6,7 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2023 Cypress Semiconductor Corporation
+# Copyright 2018-2024 Cypress Semiconductor Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -74,15 +74,35 @@ CY_HELP_eclipse_VERBOSE=This target generates .cproject and .project files if th
 CY_HELP_vscode=Generates VS Code IDE files.
 CY_HELP_vscode_VERBOSE=This target generates VS Code files for debug/program launches, IntelliSense, and custom tasks.\
 					These overwrite the existing files in the application directory except for settings.json.
-CY_HELP_ewarm8=Generates IAR-EW v8 or later IDE .ipcf file.
-CY_HELP_ewarm8_VERBOSE=This target generates an IAR Embedded Workbench compatible .ipcf file that can be imported\
-					into IAR-EW. The .ipcf file is overwritten every time this target is run.\
-					$(MTB__NEWLINE)Note: Project generation requires python3 to be installed and present in the PATH variable.
-CY_HELP_uvision5=Generates Keil uVision v5 or later IDE .cpdsc, .gpdsc, and .cprj files.
-CY_HELP_uvision5_VERBOSE=This target generates a CMSIS compatible .cpdsc and .gpdsc files that can be imported\
-					into Keil uVision 5. Both files are overwritten every time this target is run.\
-					Files in the default cmsis output directory will be automatically excluded when calling make uvision5.\
-					$(MTB__NEWLINE)Note: Project generation requires python3 to be installed and present in the PATH variable.
+CY_HELP_ewarm8=Deprecated as of core-make 3.3.0, replaced by "ewarm".
+CY_HELP_ewarm8_VERBOSE=
+CY_HELP_uvision5=Deprecated as of core-make 3.3.0, replaced by "uvision".
+CY_HELP_uvision5_VERBOSE=
+CY_HELP_ewarm=Generates an IAR Embedded Workbench v8 or later IDE .ipcf file. Available since core-make 3.3.0.
+CY_HELP_ewarm_VERBOSE=$(MTB__SPACE)$(MTB__SPACE)This target generates a .ipcf file that allows you to export your application to the IAR\
+					Embedded Workbench v8 IDE or later. The .ipcf file is overwritten every time this target is run.\
+					The CY_IDE_PRJNAME variable controls the .ipcf file name. By default it is equal to APPNAME.\
+					If you already have .ipcf file with non-default name and you want to refresh it then\
+					ensure that you set the CY_IDE_PRJNAME variable with the .ipcf file name.\
+					This target requires setting the TOOLCHAIN make variable to IAR. Setting the CY_IDE_PRJNAME make variable is optional.\
+					$(MTB__NEWLINE)$(MTB__NEWLINE)Example: make ewarm TOOLCHAIN=IAR CY_IDE_PRJNAME=Empty_Application\
+					$(MTB__NEWLINE)$(MTB__NEWLINE)Notes:\
+					$(MTB__NEWLINE)$(MTB__SPACE)$(MTB__SPACE)1. For older versions of core-make use "make ewarm8".\
+					$(MTB__NEWLINE)$(MTB__SPACE)$(MTB__SPACE)2. Application export using ModusToolbox 3.0 requires Python3 to be installed\
+					and present either in the PATH variable or set explicitly using CY_PYTHON_PATH make variable.
+CY_HELP_uvision=Generates a Keil uVision v5 or later IDE .cprj file. Available since core-make 3.3.0.
+CY_HELP_uvision_VERBOSE=$(MTB__SPACE)$(MTB__SPACE)This target generates a CMSIS a .cprj file that allows you to export your application\
+					to Keil uVision v5 IDE or later. The .cprj file is overwritten every time this target is run. Files in the default\
+					cmsis output directory will be automatically excluded when calling "make uvision".\
+					The CY_IDE_PRJNAME variable controls the .cprj file name. By default it is equal to APPNAME.\
+					If you already have .cprj file with non-default name and you want to refresh it then\
+					ensure that you set the CY_IDE_PRJNAME variable with the .cprj file name.\
+					This target requires you to set the TOOLCHAIN make variable to ARM. Setting the CY_IDE_PRJNAME make variable is optional.\
+					$(MTB__NEWLINE)$(MTB__NEWLINE)Example: make uvision TOOLCHAIN=ARM CY_IDE_PRJNAME=Empty_Application.\
+					$(MTB__NEWLINE)$(MTB__NEWLINE)Notes:\
+					$(MTB__NEWLINE)$(MTB__SPACE)$(MTB__SPACE)1. For older versions of core-make use "make uvision5".\
+					$(MTB__NEWLINE)$(MTB__SPACE)$(MTB__SPACE)2. Application export using ModusToolbox 3.0 requires Python3 to be installed\
+					and present either in the PATH variable or set explicitly using CY_PYTHON_PATH make variable.
 
 #
 # Utility targets
@@ -123,6 +143,12 @@ CY_HELP_APPNAME_VERBOSE=This variable is used to set the name of the application
 				$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make build APPNAME="AppV1"\
 				$(MTB__NEWLINE)$(MTB__NEWLINE)Note: This variable may also be used when generating launch configs when invoking the "eclipse" target.\
 				$(MTB__NEWLINE)Example Usage: make eclipse APPNAME="AppV1"
+CY_HELP_CY_IDE_PRJNAME=This variable contains the name that will be used to create the application name and support files for an IDE\
+				during application export.
+CY_HELP_CY_IDE_PRJNAME_VERBOSE=Use this variable to provide a custom name of an application for the IDE during application export.\
+				If CY_IDE_PRJNAME is not set on the command line, then APPNAME (which is specified in the Makefile) is used as the\
+				default. This name can be important for some IDEs to set a correct meaningful name for the application, support files,\
+				and launch configurations in the IDE.
 CY_HELP_TOOLCHAIN=Specifies the toolchain for building the application. (e.g. GCC_ARM)
 CY_HELP_TOOLCHAIN_VERBOSE=Supported toolchains for this target are: [ $(CY_SUPPORTED_TOOLCHAINS) ].\
 							$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make build TOOLCHAIN=IAR
@@ -203,6 +229,11 @@ CY_HELP_SKIP_CODE_GEN_VERBOSE=When set to a non-empty value, the build process w
 CY_HELP_MERGE=List of projects in the application to include when generating a combined hex file.
 CY_HELP_MERGE_VERBOSE=By Default, building a multi-core application will generate a combined hex file from its sub-projects.\
 					This variable can be set from the application Makefile to override the set of projects to generate a combined hex file from.
+CY_HELP_VCORE_ATTRS=Virtual core attribute.
+CY_HELP_VCORE_ATTRS_VERBOSE=Currently supported values are "SECURE", "NON_SECURE", and ""(empty string). Used specify the core property for ARM Cortex-M security extension.
+CY_HELP_NSC_VENEER=The path of the veneer object file used for Non-Secure-Callbacks.
+CY_HELP_NSC_VENEER_VERBOSE=When specified for a secure project, it specifies the path of the veneer object file to generate.\
+					When specified for a non-secure project, it specifies the path of the veneer object file to include.
 
 #
 # BSP variables
@@ -347,7 +378,7 @@ mtb_help_header:
 	$(info ==============================================================================     )
 	$(info $(MTB__SPACE)Cypress Build System                                                    )
 	$(info ==============================================================================     )
-	$(info $(MTB__SPACE)Copyright 2018-2023 Cypress Semiconductor Corporation                   )
+	$(info $(MTB__SPACE)Copyright 2018-2024 Cypress Semiconductor Corporation                   )
 	$(info $(MTB__SPACE)SPDX-License-Identifier: Apache-2.0                                     )
 	$(info                                                                                    )
 	$(info $(MTB__SPACE)Licensed under the Apache License, Version 2.0 (the "License");         )
@@ -397,7 +428,9 @@ mtb_help_header:
 	$(info =======================================                       )
 	$(info $(MTB__SPACE)eclipse             $(CY_HELP_eclipse))
 	$(info $(MTB__SPACE)vscode              $(CY_HELP_vscode))
+	$(info $(MTB__SPACE)ewarm               $(CY_HELP_ewarm))
 	$(info $(MTB__SPACE)ewarm8              $(CY_HELP_ewarm8))
+	$(info $(MTB__SPACE)uvision             $(CY_HELP_uvision))
 	$(info $(MTB__SPACE)uvision5            $(CY_HELP_uvision5))
 	$(info                                                               )
 	$(info =======================================                       )
@@ -440,6 +473,8 @@ mtb_help_header:
 	$(info $(MTB__SPACE)SEARCH              $(CY_HELP_SEARCH))
 	$(info $(MTB__SPACE)SKIP_CODE_GEN       $(CY_HELP_SKIP_CODE_GEN))
 	$(info $(MTB__SPACE)MERGE               $(CY_HELP_MERGE))
+	$(info $(MTB__SPACE)VCORE_ATTRS         $(CY_HELP_VCORE_ATTRS))
+	$(info $(MTB__SPACE)NSC_VENEER          $(CY_HELP_NSC_VENEER))
 	$(info                                                               )
 	$(info =======================================                       )
 	$(info $(MTB__SPACE)BSP make variables                                 )
@@ -482,6 +517,7 @@ endif
 	$(info $(MTB__SPACE)Miscellaneous make variables                       )
 	$(info =======================================                       )
 	$(info $(MTB__SPACE)CY_IGNORE                $(CY_HELP_CY_IGNORE))
+	$(info $(MTB__SPACE)CY_IDE_PRJNAME           $(CY_HELP_CY_IDE_PRJNAME))
 	$(info $(MTB__SPACE)CY_SIMULATOR_GEN_AUTO    $(CY_HELP_CY_SIMULATOR_GEN_AUTO))
 	$(info )
 
