@@ -61,7 +61,7 @@ case "$KERNEL" in
 # Do not remove the space at the end of the following variable assignment
 #
         PYTHON_FROM_CMD="cmd /c "
-        ${PYTHON_FROM_CMD}"$(${CYGPATH}"$(which python)")" $@
+        ${PYTHON_FROM_CMD}"$(${CYGPATH}"$(which python)")" "$@"
         ;;
 
     MINGW*|MSYS*)
@@ -77,12 +77,12 @@ case "$KERNEL" in
 # Do not remove the space at the end of the following variable assignment
 #
         PYTHON_FROM_CMD="cmd /c "
-        ${PYTHON_FROM_CMD}"$(which python)" $@ 
+        ${PYTHON_FROM_CMD}"$(which python)" "$@"
         ;;
 #
 # Other environments
 #
     *)
-        "$(which python)" $@
+        "$(which python)" "$@"
         ;;
 esac

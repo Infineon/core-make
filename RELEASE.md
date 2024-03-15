@@ -16,6 +16,9 @@ This release of the core GNU make Build System includes a framework to support b
 
 ### What Changed?
 
+#### v3.3.1
+* Fixed an issue causing some python calls to not be quoted properly.
+
 #### v3.3.0
 * Fixed an issue causing the compile_commands.json file to not be generated properly for files outside of project directory.
 * Fixed an issue where the compile_commands.json file generation did not properly handle some escape characters correctly.
