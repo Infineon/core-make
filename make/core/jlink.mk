@@ -28,10 +28,13 @@ endif
 
 # default install path on windows
 _MTB_CORE__JLINK_DEFAULT_GDB_WINDOWS:=C:/Program Files/SEGGER/JLink/JLinkGDBServerCL.exe
+_MTB_CORE__JLINK_EXE_DEFAULT_WINDOWS:=C:/Program Files/SEGGER/JLink/JLink.exe
 # default installp path on macos
 _MTB_CORE__JLINK_DEFAULT_GDB_OSX:=/Applications/SEGGER/JLink/JLinkGDBServerCLExe
+_MTB_CORE__JLINK_EXE_DEFAULT_OSX:=/Applications/SEGGER/JLink/JLinkExe
 # There is no default install path on linux, just tgz archive.
 _MTB_CORE__JLINK_DEFAULT_GDB_LINUX:=JLinkGDBServerCLExe
+_MTB_CORE__JLINK_EXE_DEFAULT_LINUX:=JLinkExe
 
 ifneq (,$(MTB_JLINK_DIR))
 # if MTB_JLINK_DIR is set, look for the JLinkGDBServerCL.exe (windows) or JLinkGDBServerCLExe (unix) there
@@ -45,13 +48,23 @@ MTB_CORE__JLINK_EXE:=$(wildcard $(call mtb_core__escaped_path,$(MTB_JLINK_DIR))/
 endif
 else #(,$(JLINK_DIR))
 # if MTB_JLINK_DIR is not set, look for it in the user PATH env var.
-MTB_CORE__JLINK_GDB_EXE:=$(call mtb__get_file_path,,JLinkGDBServerCL.exe)
+MTB_CORE__JLINK_GDB_EXE:=$(call mtb_core__search_in_path,JLinkGDBServerCL.exe)
 ifeq (,$(MTB_CORE__JLINK_GDB_EXE))
-MTB_CORE__JLINK_GDB_EXE:=$(call mtb__get_file_path,,JLinkGDBServerCLExe)
+MTB_CORE__JLINK_GDB_EXE:=$(call mtb_core__search_in_path,JLinkGDBServerCLExe)
 endif
-MTB_CORE__JLINK_EXE:=$(call mtb__get_file_path,,JLink.exe)
+MTB_CORE__JLINK_EXE:=$(call mtb_core__search_in_path,JLink.exe)
 ifeq (,$(MTB_CORE__JLINK_EXE))
-MTB_CORE__JLINK_EXE:=$(call mtb__get_file_path,,JLinkExe)
+MTB_CORE__JLINK_EXE:=$(call mtb_core__search_in_path,JLinkExe)
+endif
+# if MTB_CORE__JLINK_EXE still not found, try default locations
+ifeq (,$(MTB_CORE__JLINK_EXE))
+MTB_CORE__JLINK_EXE:=$(wildcard $(call mtb_core__escaped_path,$(_MTB_CORE__JLINK_EXE_DEFAULT_WINDOWS)))
+ifeq (,$(MTB_CORE__JLINK_EXE))
+MTB_CORE__JLINK_EXE:=$(wildcard $(call mtb_core__escaped_path,$(_MTB_CORE__JLINK_EXE_DEFAULT_OSX)))
+ifeq (,$(MTB_CORE__JLINK_EXE))
+MTB_CORE__JLINK_EXE:=$(wildcard $(_MTB_CORE__JLINK_EXE_DEFAULT_LINUX))
+endif
+endif
 endif
 endif #(,$(JLINK_DIR))
 

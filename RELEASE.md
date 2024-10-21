@@ -1,8 +1,8 @@
 # Core GNU make Build System Release Notes
-This repo provides the core make build files and scripts for building and programming ModusToolbox applications. Builds can be run either through a command-line interface (CLI) or through the Eclipse IDE for ModusToolbox.
+This repo provides the core make build files and scripts for building and programming ModusToolbox applications. Builds can be run either through a command-line interface (CLI) or through a supported IDE such as Eclipse or VS Code.
 
 ### What's Included?
-This release of the core GNU make Build System includes a framework to support building, programming, and debugging application projects. It must be used in conjunction with a recipe specific make package (eg: recipe-make-cat1a). It is expected that a code example contains a top level make file for itself and references a Board Support Package (BSP) that defines specific items, like the PSoC part, for the target board. Supported functionality includes the following:
+This release of the core GNU make Build System includes a framework to support building, programming, and debugging application projects. It must be used in conjunction with a recipe specific make package (eg: recipe-make-cat1a). It is expected that a code example contains a top level make file for itself and references a Board Support Package (BSP) that defines specific items, like the PSOC™ part, for the target board. Supported functionality includes the following:
 
 * Supported operations:
     * Build
@@ -13,8 +13,17 @@ This release of the core GNU make Build System includes a framework to support b
     * GCC
     * IAR
     * ARM Compiler 6
+    * LLVM Embedded Toolchain for Arm (Experimental)
 
 ### What Changed?
+#### v3.4.0
+* Added experimental LLVM Embedded Toolchain for Arm support.
+* Added support for Infineon EdgeProtectTool.
+* Added task in VS Code export's tasks.json in multicore application to only build the current project.
+* Added option for Eclipse export to only build the current project in multicore application.
+* Added launch configurations for Eclipse and VS Code to only program/debug a single project in multi-core application.
+* Added experimental ninja support.
+* Multiple bug fixes and build performance improvements.
 
 #### v3.3.1
 * Fixed an issue causing some python calls to not be quoted properly.
@@ -33,7 +42,7 @@ This release of the core GNU make Build System includes a framework to support b
 * Added SKIP_CODE_GEN make variable, when set to non-empty value, code generation step will be skipped.
 * Added MTB_JLINK_DIR make variable to override the default path to JLink base diretory.
 * Added support for BSP_PROGRAM_INTERFACE make variable to specify programming interface. Valid values depends on recipe-make. Some valid values include "KitProg3", "JLink", "FTDI". Not all recipes support all interfaces.
-* Eclipse and VSCode export will now only generate the launch configuration for the selected programming interface.
+* Eclipse and VS Code export will now only generate the launch configurations for the selected programming interface.
 
 #### v3.1.0
 * This version of the core-make library is a Beta release to support CYW55513 devices only. Do not use it for production development or in applications targeting other devices.
@@ -90,7 +99,7 @@ This version of the core make build system was validated for compatibility with 
 
 | Software and Tools                        | Version |
 | :---                                      | :----:  |
-| ModusToolbox Software Environment         | 3.1     |
+| ModusToolbox Software Environment         | 3.3     |
 | GCC Compiler                              | 11.3    |
 | IAR Compiler                              | 9.3     |
 | ARM Compiler                              | 6.16    |
@@ -102,5 +111,5 @@ Minimum required ModusToolbox Software Environment: v3.0
 * [ModusToolbox](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software)
 
 ---
-© Cypress Semiconductor Corporation, 2019-2024.
+(c) 2019-2024, Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation. All rights reserved.
 

@@ -189,3 +189,6 @@ mtb__file_append=$(file >>$1,$2)
 else
 mtb__file_append=$(shell echo '$(subst ','"'"',$2)' >>$1)
 endif
+
+# Empty target for BWC for recipe that depends on this target.
+_mtb_build_gensrc:

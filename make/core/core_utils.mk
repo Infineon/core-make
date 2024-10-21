@@ -49,6 +49,24 @@ _MTB_CORE__FULL_SEARCH_ROOTS=$(strip $(SEARCH) $(SEARCH_MTB_MK))
 ################################################################################
 
 #
+# Convert a relative or absolute path to absolute path
+# 
+# $1 : the path to convert
+#
+ifeq ($(OS),Windows_NT)
+# NOTE: Cannot use $(abspath) function on windows as it might generate a cygwin path.
+# Which we would require a very slow function to convert back to windows path for each path.
+# Instead we run cygpath once and just prepend that to the path.
+_MTB_CORE__WIN_PROJECT_ABSPATH:=$(call mtb__path_normalize,.)
+_MTB_CORE__WIN_ABSPATH_FILTER:=A:/% B:/% C:/% D:/% E:/% F:/% G:/% H:/% I:/% J:/% K:/% L:/% M:/% N:/% O:/% P:/% Q:/% R:/% S:/% T:/% U:/% V:/% W:/% X:/% Y:/% Z:/%
+mtb_core__abspath=$(if $(filter $(_MTB_CORE__WIN_ABSPATH_FILTER),$1),$1,$(_MTB_CORE__WIN_PROJECT_ABSPATH)/$1)
+else
+mtb_core__abspath=$(abspath $1)
+endif
+
+mtb_core__search_in_path=$(if $(shell type -P $(1)),$(1),)
+
+#
 # Prints for bypassing TARGET/DEVICE checks
 # $(1) : String to print
 #
@@ -171,7 +189,36 @@ endif
 # CY_PROTOCOl=2, MTB_QUERY=1. Supports ModusToolbox 3.0
 get_app_info_2_1:
 	@:
-	$(MTB__NOISE)cat $(_MTB_CORE__GET_APP_INFO_DATA_FILE)
+	$(info MTB_MPN_LIST=$(MPN_LIST))
+	$(info MTB_DEVICE_LIST=$(DEVICE_LIST))
+	$(info MTB_DEVICE=$(DEVICE))
+	$(info MTB_SEARCH=$(MTB_TOOLS__SEARCH))
+	$(info MTB_TOOLCHAIN=$(TOOLCHAIN))
+	$(info MTB_TARGET=$(TARGET))
+	$(info MTB_CONFIG=$(CONFIG))
+	$(info MTB_APP_NAME=$(APPNAME)$(LIBNAME))
+	$(info MTB_COMPONENTS=$(MTB_CORE__FULL_COMPONENT_LIST))
+	$(info MTB_DISABLED_COMPONENTS=$(DISABLE_COMPONENTS))
+	$(info MTB_ADDITIONAL_DEVICES=$(ADDITIONAL_DEVICES))
+	$(info MTB_LIBS=$(CY_GETLIBS_PATH))
+	$(info MTB_DEPS=$(CY_GETLIBS_DEPS_PATH))
+	$(info MTB_WKS_SHARED_NAME=$(CY_GETLIBS_SHARED_NAME))
+	$(info MTB_WKS_SHARED_DIR=$(CY_GETLIBS_SHARED_PATH))
+	$(info MTB_FLOW_VERSION=$(FLOW_VERSION))
+	$(info MTB_QUERY=$(MTB_CORE__MTB_QUERY))
+	$(info MTB_TOOLS_DIR=$(MTB_TOOLS__TOOLS_DIR))
+	$(info MTB_DEVICE_PROGRAM_IDS=$(strip $(DEVICE_TOOL_IDS) $(CY_SUPPORTED_TOOL_TYPES)))
+	$(info MTB_BSP_TOOL_TYPES=$(_MTB_CORE__SUPPORTED_TOOL_ID))
+	$(info MTB_MW_TOOL_TYPES=)
+	$(info MTB_IGNORE=$(strip $(CY_IGNORE) $(MTB_TOOLS__OUTPUT_BASE_DIR)))
+	$(info MTB_TYPE=$(MTB_TYPE))
+	$(info MTB_CORE_TYPE=$(MTB_RECIPE__CORE))
+	$(info MTB_CORE_NAME=$(MTB_RECIPE__CORE_NAME))
+	$(info MTB_BUILD_SUPPORT=$(MTB_BUILD_SUPPORT))
+	$(info MTB_CACHE_DIR=$(MTB_TOOLS__CACHE_DIR))
+	$(info MTB_OFFLINE_DIR=$(MTB_TOOLS__OFFLINE_DIR))
+	$(info MTB_GLOBAL_DIR=$(MTB_TOOLS__GLOBAL_DIR))
+	$(info MTB_APP_PATH=$(MTB_TOOLS__REL_PRJ_PATH))
 
 get_app_info: get_app_info_$(MTB_CORE__CY_PROTOCOL_VERSION)_$(MTB_CORE__MTB_QUERY)
 	@:

@@ -6,7 +6,8 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2024 Cypress Semiconductor Corporation
+# (c) 2018-2024, Cypress Semiconductor Corporation (an Infineon company) or
+# an affiliate of Cypress Semiconductor Corporation. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,7 +71,7 @@ _MTB_CORE__IDE_DEFINES=$(patsubst -D%,%,$(MTB_RECIPE__DEFINES))
 _MTB_CORE__IDE_INCLUDES=$(patsubst -I%,%,$(MTB_RECIPE__INCLUDES))
 
 # SOURCES
-_MTB_CORE__IDE_SOURCES=$(MTB_RECIPE__SOURCE) $(CY_RECIPE_GENERATED) $(SOURCES)
+_MTB_CORE__IDE_SOURCES=$(MTB_RECIPE__SOURCE) $(SOURCES)
 _MTB_CORE__IDE_SOURCES_C=$(filter %.$(MTB_RECIPE__SUFFIX_C),$(_MTB_CORE__IDE_SOURCES))
 _MTB_CORE__IDE_SOURCES_CPP=$(filter %.$(MTB_RECIPE__SUFFIX_CPP),$(_MTB_CORE__IDE_SOURCES))
 _MTB_CORE__IDE_SOURCES_CXX=$(filter %.$(MTB_RECIPE__SUFFIX_CXX),$(_MTB_CORE__IDE_SOURCES))

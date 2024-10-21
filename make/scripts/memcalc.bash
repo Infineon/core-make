@@ -26,7 +26,8 @@ memcalc() {
     printf "   ---------------------------------------------------- \n"
 
     while IFS=$' \t\n\r' read -r line; do
-        local lineArray=($line)
+        local lineArray
+        read -r -a lineArray <<<"$line"
         local numElem=${#lineArray[@]}
 
         # Only look at potentially valid lines
@@ -38,7 +39,7 @@ memcalc() {
                 local sizeElement=000000
                 for (( idx = 0 ; idx <= $numElem-4 ; idx = $idx+1 ));
                 do
-                    if [[ ${lineArray[$idx]} == *"]" ]]; then
+                    if [[ ${lineArray[$idx]} == *"]" ]] && [[ $sectionElement == NULL ]]; then
                         sectionElement=${lineArray[$idx+1]}
                     fi
                     # Look for regions with SHF_ALLOC = A
@@ -56,7 +57,7 @@ memcalc() {
                 fi
             # Program headers
             elif [[ ${lineArray[1]} == "0x"* ]] && [[ ${lineArray[2]} == "0x"* ]] && [[ ${lineArray[3]} == "0x"* ]] && [[ ${lineArray[4]} == "0x"* ]]\
-                && [[ ${lineArray[3]} -ge "$STARTFLASH" ]] && [[ ${lineArray[3]} -lt "$ENDFLASH" ]]; then
+                && [[ ${lineArray[3]} -ge "$STARTFLASH" ]] && [[ ${lineArray[3]} -lt "$ENDFLASH" ]] && [[ ${lineArray[0]} != "EXIDX" ]]; then
                 # Use the program headers for Flash tally
                 internalFlash=$((internalFlash+${lineArray[4]}))
             fi

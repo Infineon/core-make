@@ -31,9 +31,11 @@ endif
 #
 CY_HELP_all=Same as build.
 CY_HELP_all_VERBOSE=This target is equivalent to the "build" target.
-CY_HELP_getlibs=Clones the repositories and checks out the identified commit.
-CY_HELP_getlibs_VERBOSE=When using .mtb files, the repos are cloned to the shared location $$(CY_GETLIBS_SHARED_PATH)/$$(CY_GETLIBS_SHARED_NAME).\
-					By default, this directory is specified by the project Makefile.
+CY_HELP_getlibs=Updates all dependencies for the application.
+CY_HELP_getlibs_VERBOSE=This target finds and processes all .mtb files and uses the git command to clone or pull\
+					the code as appropriate. The target generates .mtb files for indirect dependencies.\
+					Then, it checks out the specific tag listed in the .mtb file. The Project Creator and\
+					Library Manager invoke this process automatically.
 CY_HELP_build=Builds the application.
 CY_HELP_build_VERBOSE=The build process involves source auto-discovery, code generation, prebuild, and postbuilds.\
 					For faster incremental builds, use the "qbuild" target to skip the auto-generation step.\
@@ -42,11 +44,11 @@ CY_HELP_build_proj=Build the current project.
 CY_HELP_build_proj_VERBOSE=Build the current project in the application. In single-core applications, this target is the same as the "build" target.
 CY_HELP_qbuild=Builds the application using the previous build's source list.
 CY_HELP_qbuild_VERBOSE=When no other sources need to be auto-discovered, this target can be used to skip\
-					the auto-discovery step for a faster incremental build.
+					the auto-discovery step for a faster incremental build. This also skips any prebuild steps.
 CY_HELP_qbuild_proj=Builds the current project using the previous build's source list.\
 					In single-core applications, this target is the same as the "qbuild" target.
 CY_HELP_qbuild_proj_VERBOSE=When no other sources need to be auto-discovered, this target can be used to skip\
-					the auto-discovery step for a faster incremental build.
+					the auto-discovery step for a faster incremental build. This also skips any prebuild steps.
 CY_HELP_program=Builds the application and programs it to the target device. In multi-core applications, this will program the combined hex file.
 CY_HELP_program_VERBOSE=The build process performs the same operations as the "build" target. Upon completion,\
 					the artifact is programmed to the board.
@@ -58,19 +60,23 @@ CY_HELP_qprogram_VERBOSE=This target allows programming an existing artifact to 
 CY_HELP_qprogram_proj=Programs the current built project to the target device without rebuilding.\
 					In single-core applications, this target is the same as the "qprogram" target.
 CY_HELP_qprogram_proj_VERBOSE=This target allows programming an existing artifact to the board without a build step.
-CY_HELP_clean=Cleans the /build/<TARGET> directory.
-CY_HELP_clean_VERBOSE=The directory and all its contents are deleted from disk.
-CY_HELP_help=Prints the help documentation.
-CY_HELP_help_VERBOSE=Use the CY_HELP=<Name of make target or variable> to see the verbose documentation for a\
-					particular make target or variable.
+CY_HELP_clean=Cleans the application and project "build" directories.
+CY_HELP_clean_VERBOSE=The directories and all its contents are deleted from disk.
+CY_HELP_clean_proj=Clean the current project's "build" directory.\
+					In signle-core applications, this target is the same as the "clean" target.
+CY_HELP_clean_proj_VERBOSE=The directory and all its contents are deleted from disk.
+CY_HELP_help=Prints this help documentation. Use the CY_HELP=<Name of make target or variable> to see the verbose documentation for a\
+					particular make target or variable. For example, CY_HELP=build.
+CY_HELP_help_VERBOSE=
 CY_HELP_prebuild=Generates code for the application.
-CY_HELP_prebuild_VERBOSE=Runs configurators and custom prebuild commands to generate source code.
+CY_HELP_prebuild_VERBOSE=Runs custom prebuild commands to generate source code.
 
 #
 # IDE targets
 #
 CY_HELP_eclipse=Generates Eclipse IDE launch configs and project files.
-CY_HELP_eclipse_VERBOSE=This target generates .cproject and .project files if they do not exist in the application root directory.
+CY_HELP_eclipse_VERBOSE=This target generates .cproject and .project files if they do not exist in the application root directory.\
+					It also creates a set of launch configurations, as well as formatting for IntelliSense.
 CY_HELP_vscode=Generates VS Code IDE files.
 CY_HELP_vscode_VERBOSE=This target generates VS Code files for debug/program launches, IntelliSense, and custom tasks.\
 					These overwrite the existing files in the application directory except for settings.json.
@@ -107,10 +113,11 @@ CY_HELP_uvision_VERBOSE=$(MTB__SPACE)$(MTB__SPACE)This target generates a CMSIS 
 #
 # Utility targets
 #
-CY_HELP_progtool=Performs specified operations on the programmer/firmware-loader. Only available for devices that use KitProg3.
-CY_HELP_progtool_VERBOSE=This target expects user-interaction on the shell while running it. When prompted, you must specify the\
-					command(s) to run for the tool.
-CY_HELP_check=Checks for the necessary tools.
+CY_HELP_progtool=Opens a prompt to interact with the fw-loader tool. Only available for devices that use KitProg3.
+CY_HELP_progtool_VERBOSE=This target helps you to interact with the device using the fw-loader tool. When launched,\
+					the tool lists supported commands and connected devices, and then prompts you to run fw-loader\
+					command(s) on the device.
+CY_HELP_check=This target checks your system to ensure all required tools, including bash, git, perl, etc., are available.
 CY_HELP_check_VERBOSE=Not all tools are necessary for every build recipe. This target allows you\
 					to get an idea of which tools are missing if a build fails in an unexpected way.
 CY_HELP_printlibs=Prints the status of the library repos.
@@ -120,10 +127,13 @@ CY_HELP_printlibs_VERBOSE=This target parses through the library repos and print
 #
 # Project defined targets
 #
-CY_HELP_project_prebuild=Project specific prebuild target.
-CY_HELP_project_prebuild_VERBOSE=If defined this target will be executed during the prebuild step.
+CY_HELP_project_prebuild=Project-specific prebuild target.
+CY_HELP_project_prebuild_VERBOSE=This target defines the commands that run for a project during the prebuild step.\
+					Leave this target empty if no prebuild commands are required for the project.
 CY_HELP_project_postbuild=Project specific postbuild target.
-CY_HELP_project_postbuild_VERBOSE=If defined this target will be executed between the linking and hex file generation step.
+CY_HELP_project_postbuild_VERBOSE=This target defines the commands that run for a project during the postbuild step\
+					between the linking and hex file generation. Leave this target empty if no postbuild commands are\
+					required for the project.
 
 #
 # Basic configuration
@@ -136,8 +146,7 @@ CY_HELP_CORE_VERBOSE=Use this variable to select compiler and linker options to 
 				$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make build CORE=CM4
 CY_HELP_CORE_NAME=Specifies the name of the on-chip core for which a project is building (e.g. CM7_0).
 CY_HELP_CORE_NAME_VERBOSE=Use this variable to select compiler and linker options to build a project for a specified on-chip core.\
-				$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make build CORE_NAME=CM7_0\
-				$(MTB__NEWLINE)$(MTB__NEWLINE)Note: This variable is applicable for some multi-core devices only (e.g. XMC7xxx).
+				$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make build CORE_NAME=CM7_0.
 CY_HELP_APPNAME=Specifies the name of the app. (e.g. "AppV1" -> AppV1.elf)
 CY_HELP_APPNAME_VERBOSE=This variable is used to set the name of the application artifact (programmable image).\
 				$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make build APPNAME="AppV1"\
@@ -150,8 +159,11 @@ CY_HELP_CY_IDE_PRJNAME_VERBOSE=Use this variable to provide a custom name of an 
 				default. This name can be important for some IDEs to set a correct meaningful name for the application, support files,\
 				and launch configurations in the IDE.
 CY_HELP_TOOLCHAIN=Specifies the toolchain for building the application. (e.g. GCC_ARM)
-CY_HELP_TOOLCHAIN_VERBOSE=Supported toolchains for this target are: [ $(CY_SUPPORTED_TOOLCHAINS) ].\
+CY_HELP_TOOLCHAIN_VERBOSE=Supported toolchains for this target are: [ $(sort $(MTB_SUPPORTED_TOOLCHAINS) $(CY_SUPPORTED_TOOLCHAINS)) ].\
 							$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make build TOOLCHAIN=IAR
+CY_HELP_MTB_SUPPORTED_TOOLCHAINS=Specifies the list of supported toolchains for building the application. (e.g. GCC_ARM IAR ARM)
+CY_HELP_MTB_SUPPORTED_TOOLCHAINS_VERBOSE=This can be used to override the default list of supported toolchains.\
+						$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage (within Makefile): MTB_SUPPORTED_TOOLCHAINS=GCC_ARM IAR ARM
 CY_HELP_CONFIG=Specifies the configuration option for the build [Debug Release].
 CY_HELP_CONFIG_VERBOSE=The CONFIG variable is not limited to Debug/Release. It can be\
 						other values. However in those instances, the build system will not configure the optimization flags.\
@@ -192,7 +204,7 @@ CY_HELP_CFLAGS_VERBOSE=Example Usage (within Makefile): CFLAGS+= -Werror -Wall -
 CY_HELP_CXXFLAGS=Prepends additional C++ compiler flags.
 CY_HELP_CXXFLAGS_VERBOSE=Example Usage (within Makefile): CXXFLAGS+= -finline-functions
 CY_HELP_ASFLAGS=Prepends additional assembler flags.
-CY_HELP_ASFLAGS_VERBOSE=Usage is similar to CFLAGS.
+CY_HELP_ASFLAGS_VERBOSE=Example Usage (within Makefile): ASFLAGS+= -masm=armasm
 CY_HELP_LDFLAGS=Prepends additional linker flags.
 CY_HELP_LDFLAGS_VERBOSE=Example Usage (within Makefile): LDFLAGS+= -nodefaultlibs
 CY_HELP_LDLIBS=Includes application-specific prebuilt libraries.
@@ -230,7 +242,8 @@ CY_HELP_MERGE=List of projects in the application to include when generating a c
 CY_HELP_MERGE_VERBOSE=By Default, building a multi-core application will generate a combined hex file from its sub-projects.\
 					This variable can be set from the application Makefile to override the set of projects to generate a combined hex file from.
 CY_HELP_VCORE_ATTRS=Virtual core attribute.
-CY_HELP_VCORE_ATTRS_VERBOSE=Currently supported values are "SECURE", "NON_SECURE", and ""(empty string). Used specify the core property for ARM Cortex-M security extension.
+CY_HELP_VCORE_ATTRS_VERBOSE=Currently supported values are "SECURE", "NON_SECURE", and ""(empty string).\
+					It is used to specify the core property for ARM Cortex-M security extension.
 CY_HELP_NSC_VENEER=The path of the veneer object file used for Non-Secure-Callbacks.
 CY_HELP_NSC_VENEER_VERBOSE=When specified for a secure project, it specifies the path of the veneer object file to generate.\
 					When specified for a non-secure project, it specifies the path of the veneer object file to include.
@@ -242,8 +255,10 @@ CY_HELP_DEVICE=Device ID for the primary MCU on the target board/kit. Set by bsp
 CY_HELP_DEVICE_VERBOSE=The device identifier is mandatory for all board/kits.
 CY_HELP_ADDITIONAL_DEVICES=IDs for additional devices on the target board/kit. Set by bsp.mk.
 CY_HELP_ADDITIONAL_DEVICES_VERBOSE=These include devices such as radios on the board/kit. This variable is optional.
-CY_HELP_BSP_PROGRAM_INTERFACE=Specifies the debugging and programming interface to use. The default value and valid values all depend on the BSP.
-CY_HELP_BSP_PROGRAM_INTERFACE_VERBOSE=Possible values include KitProg3, JLink, and FTDI. Most BSPs will only support a subset of this list.
+CY_HELP_BSP_PROGRAM_INTERFACE=Specifies the debugging and programming interface to use. The default value and valid values all depend on the BSP.\
+					Should be set in the bsp.mk file.
+CY_HELP_BSP_PROGRAM_INTERFACE_VERBOSE=Possible values include KitProg3, JLink, and FTDI. Most BSPs will only support a subset of this list.\
+					Should be set in the bsp.mk file.
 
 #
 # Getlibs variables
@@ -256,13 +271,14 @@ CY_HELP_CY_GETLIBS_NO_CACHE_VERBOSE=To improve the library creation time, the ge
 					cache will result in slower application creation time but may be necessary for bringing in non-Infineon libraries.\
 					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make getlibs CY_GETLIBS_NO_CACHE=true
 CY_HELP_CY_GETLIBS_OFFLINE=This feature is no longer supported starting in ModusToolbox 3.1 and has been replaced with Local Content Storage feature.
-CY_HELP_CY_GETLIBS_OFFLINE_VERBOSE=This feature is no longer supported starting in ModusToolbox 3.1 and has been replaced with Local Content Storage feature.
+CY_HELP_CY_GETLIBS_OFFLINE_VERBOSE=
 CY_HELP_MTB_USE_LOCAL_CONTENT=If set to a non-empty value, enable local content storage.
 CY_HELP_MTB_USE_LOCAL_CONTENT_VERBOSE=Enable local content storage to allow use of ModusToolbox without requiring internet access.\
 					$(MTB__NEWLINE)See the LCS Manager CLI User Guide for more information.\
 					$(MTB__NEWLINE)This feature is new as of ModusToolbox 3.1.
 CY_HELP_CY_GETLIBS_PATH=Path to the intended location of libs info directory.
-CY_HELP_CY_GETLIBS_PATH_VERBOSE=The directory contains local libraries and metadata files about shared libraries.
+CY_HELP_CY_GETLIBS_PATH_VERBOSE=The directory contains local libraries and metadata files about shared libraries.\
+					The default location is in a directory named /libs.
 CY_HELP_CY_GETLIBS_DEPS_PATH=Path to where the library-manager stores .mtb files.
 CY_HELP_CY_GETLIBS_DEPS_PATH_VERBOSE=Setting this path allows relocating the directory that the library-manager uses to store\
 					the .mtb files in your application. The default location is in a directory named /deps.
@@ -272,11 +288,11 @@ CY_HELP_CY_GETLIBS_CACHE_PATH_VERBOSE=The build system caches all cloned repos i
 					elsewhere on disk. Usage is similar to CY_GETLIBS_PATH. To disable the cache entirely, \
 					set the CY_GETLIBS_NO_CACHE variable to [true].
 CY_HELP_CY_GETLIBS_OFFLINE_PATH=This feature is no longer supported starting in ModusToolbox 3.1 and has been replaced with Local Content Storage feature.
-CY_HELP_CY_GETLIBS_OFFLINE_PATH_VERBOSE=This feature is no longer supported starting in ModusToolbox 3.1 and has been replaced with Local Content Storage feature.
+CY_HELP_CY_GETLIBS_OFFLINE_PATH_VERBOSE=
 CY_HELP_CY_GETLIBS_SHARED_PATH=Relative path to the shared repo location.
 CY_HELP_CY_GETLIBS_SHARED_PATH_VERBOSE=All .mtb files have the format, <URI><COMMIT><LOCATION>.\
 					If the <LOCATION> field begins with $$$$ASSET_REPO$$$$, then the repo is deposited in the path\
-					specified by the CY_GETLIBS_SHARED_PATH variable. The default this is set from the project Makefile.
+					specified by the CY_GETLIBS_SHARED_PATH variable. The default is set from the project Makefile.
 CY_HELP_CY_GETLIBS_SHARED_NAME=Directory name of the shared repo location.
 CY_HELP_CY_GETLIBS_SHARED_NAME_VERBOSE=All .mtb files have the format, <URI><COMMIT><LOCATION>.\
 					If the <LOCATION> field begins with $$$$ASSET_REPO$$$$, then the repo is deposited in the directory\
@@ -291,7 +307,7 @@ CY_HELP_CY_APP_PATH_VERBOSE=Setting this path to other than ./ allows the auto-d
 					For example, CY_APP_PATH=../../ allows auto-discovery of files from a location that is\
 					two directories above the location of the Makefile.
 CY_HELP_CY_COMPILER_PATH=DEPRECATED. Use CY_COMPILER_GCC_ARM_DIR CY_COMPILER_ARM_DIR CY_COMPILER_IAR_DIR instead.
-CY_HELP_CY_COMPILER_PATH_VERBOSE=DEPRECATED. Use CY_COMPILER_GCC_ARM_DIR CY_COMPILER_ARM_DIR CY_COMPILER_IAR_DIR instead.
+CY_HELP_CY_COMPILER_PATH_VERBOSE=
 CY_HELP_CY_COMPILER_GCC_ARM_DIR=Absolute path to the gcc-arm toolchain directory.
 CY_HELP_CY_COMPILER_GCC_ARM_DIR_VERBOSE=Setting this path overrides the default GCC_ARM toolchain directory.\
 					It is used when the compiler is located at a non-default directory.\
@@ -345,7 +361,7 @@ CY_HELP_CY_SIMULATOR_GEN_AUTO_VERBOSE=When enabled, build make target will gener
 
 CY_HELP_TARGETS_ALL=all getlibs build build_proj qbuild qbuild_proj program program_proj qprogram qprogram_proj \
 					debug qdebug attach clean prebuild help check project_prebuild project_postbuild \
-					eclipse vscode ewarm8 uvision5 modlibs check printlibs
+					eclipse vscode ewarm uvision modlibs check printlibs
 CY_HELP_BASIC_CFG_ALL=TARGET CORE CORE_NAME APPNAME TOOLCHAIN CONFIG VERBOSE
 CY_HELP_ADVANCED_CFG_ALL=SOURCES INCLUDES DEFINES VFP_SELECT CFLAGS CXXFLAGS ASFLAGS LDFLAGS LDLIBS LINKER_SCRIPT \
 					PREBUILD POSTBUILD COMPONENTS DISABLE_COMPONENTS SEARCH MERGE DEVICE ADDITIONAL_DEVICES
@@ -378,7 +394,8 @@ mtb_help_header:
 	$(info ==============================================================================     )
 	$(info $(MTB__SPACE)Cypress Build System                                                    )
 	$(info ==============================================================================     )
-	$(info $(MTB__SPACE)Copyright 2018-2024 Cypress Semiconductor Corporation                   )
+	$(info $(MTB__SPACE)(c) 2018-2024, Cypress Semiconductor Corporation (an Infineon company))
+	$(info $(MTB__SPACE)or an affiliate of Cypress Semiconductor Corporation.  All rights reserved. )
 	$(info $(MTB__SPACE)SPDX-License-Identifier: Apache-2.0                                     )
 	$(info                                                                                    )
 	$(info $(MTB__SPACE)Licensed under the Apache License, Version 2.0 (the "License");         )
@@ -420,6 +437,7 @@ mtb_help_header:
 	$(info $(MTB__SPACE)qprogram            $(CY_HELP_qprogram))
 	$(info $(MTB__SPACE)qprogram_proj       $(CY_HELP_qprogram_proj))
 	$(info $(MTB__SPACE)clean               $(CY_HELP_clean))
+	$(info $(MTB__SPACE)clean_proj          $(CY_HELP_clean_proj))
 	$(info $(MTB__SPACE)help                $(CY_HELP_help))
 	$(info $(MTB__SPACE)prebuild            $(CY_HELP_prebuild))
 	$(info                                                               )

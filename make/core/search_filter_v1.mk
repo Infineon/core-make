@@ -1,5 +1,5 @@
 ################################################################################
-# \file search.mk
+# \file search_filter.mk
 #
 # \brief
 # Parses the data from cyqbuild.mk to generate useful build variables
@@ -45,7 +45,7 @@ CY_SEARCH_ALL_FILES:=$(call _MTB_CORE__MACRO_FILTER_CONFIGURATION,$(CY_SEARCH_AL
 CY_SEARCH_ALL_INCLUDES:=$(call _MTB_CORE__MACRO_FILTER_CONFIGURATION,$(CY_SEARCH_ALL_INCLUDES),CONFIG)
 
 _MTB_CORE__SEARCH_SOURCE_EXT=$(foreach ext,$(MTB_RECIPE__SUFFIX_C) $(MTB_RECIPE__SUFFIX_S) $(MTB_RECIPE__SUFFIX_s) $(MTB_RECIPE__SUFFIX_C) $(MTB_RECIPE__SUFFIX_CPP) $(MTB_RECIPE__SUFFIX_CXX) $(MTB_RECIPE__SUFFIX_CC),.$(ext))
-_MTB_CORE__SEARCH_LIB_EXT=$(foreach ext,$(MTB_RECIPE__SUFFIX_O) $(MTB_RECIPE__SUFFIX_A),.$(ext))
+_MTB_CORE__SEARCH_LIB_EXT=$(foreach ext,$(MTB_RECIPE__SUFFIX_O) $(MTB_RECIPE__SUFFIX_A) $(MTB_RECIPE__SUFFIX_AR),.$(ext))
 _MTB_CORE__SEARCH_HEADER_EXT=$(foreach ext,$(MTB_RECIPE__SUFFIX_H) $(MTB_RECIPE__SUFFIX_HPP),.$(ext))
 
 MTB_CORE__SEARCH_APP_SOURCE:=$(sort $(filter $(foreach ext,$(_MTB_CORE__SEARCH_SOURCE_EXT),%$(ext)),$(CY_SEARCH_ALL_FILES)))
