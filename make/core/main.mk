@@ -30,7 +30,7 @@ endif
 
 # Only enable Ninja if requested AND running a build target.
 ifneq ($(NINJA),)
-ifneq ($(filter build build_proj qbuild qbuild_proj all program qprogram,$(MAKECMDGOALS)),)
+ifneq ($(filter build build_proj qbuild qbuild_proj all program qprogram program_proj qprogram_proj,$(MAKECMDGOALS)),)
 _MTB_CORE__NINJA_ENABLED=$(NINJA)
 endif
 endif

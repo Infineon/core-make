@@ -123,6 +123,53 @@ MTB_CORE__SEARCH_APP_LIBS:=
 # include the remainder of the recipe.
 include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe.mk
 
+# temporary work-around for recipe. copy elf and hex file to last_config
+MTB_RECIPE__LAST_CONFIG_DIR:=$(MTB_TOOLS__OUTPUT_BASE_DIR)/last_config
+$(MTB_RECIPE__LAST_CONFIG_DIR):|
+	$(MTB__NOISE)mkdir -p $(MTB_RECIPE__LAST_CONFIG_DIR)
+
+_MTB_RECIPE__LAST_CONFIG_PROG_FILE:=$(MTB_RECIPE__LAST_CONFIG_DIR)/$(APPNAME).$(MTB_RECIPE__SUFFIX_PROGRAM)
+_MTB_RECIPE__LAST_CONFIG_TARG_FILE:=$(MTB_RECIPE__LAST_CONFIG_DIR)/$(APPNAME).$(MTB_RECIPE__SUFFIX_TARGET)
+_MTB_RECIPE__LAST_CONFIG_PROG_FILE_D:=$(_MTB_RECIPE__LAST_CONFIG_PROG_FILE).d
+
+build_proj qbuild_proj: $(_MTB_RECIPE__LAST_CONFIG_PROG_FILE)
+
+$(_MTB_RECIPE__LAST_CONFIG_PROG_FILE_D): | $(MTB_RECIPE__LAST_CONFIG_DIR)
+	$(MTB__NOISE)echo $(_MTB_RECIPE__PROG_FILE_USER) > $@.tmp
+	$(MTB__NOISE)if ! cmp -s "$@" "$@.tmp"; then \
+		mv -f "$@.tmp" "$@" ; \
+	else \
+		rm -f "$@.tmp"; \
+	fi
+
+$(_MTB_RECIPE__LAST_CONFIG_PROG_FILE): $(_MTB_RECIPE__PROG_FILE) $(_MTB_RECIPE__LAST_CONFIG_PROG_FILE_D) | project_postbuild
+	$(MTB__NOISE)cp -rf $(_MTB_RECIPE__PROG_FILE_USER) $@
+	$(MTB__NOISE)cp -rf $(_MTB_RECIPE__TARG_FILE) $(_MTB_RECIPE__LAST_CONFIG_TARG_FILE)
+
+# temporary workaround. ninja does not have auto-discovry info. Use a wildcard function to locate QSPI flash loader path.
+# get the path of design.cyqspi file
+mtb_core__rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call mtb_core__rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d)))
+_MTB_RECIPE__QSPI_CONFIG_FILE:=$(call mtb_core__rwildcard,$(SEARCH_TARGET_$(TARGET)),*.cyqspi)
+ifneq ($(words $(_MTB_RECIPE__QSPI_CONFIG_FILE)),1)
+ifneq ($(words $(_MTB_RECIPE__QSPI_CONFIG_FILE)),0)
+$(warning Multiple .cyqspi files found: $(_MTB_RECIPE__QSPI_CONFIG_FILE) -- using the first.)
+ _MTB_RECIPE__QSPI_CONFIG_FILE:=$(word 1,$(_MTB_RECIPE__QSPI_CONFIG_FILE))
+endif
+endif
+
+_MTB_RECIPE__PROJECT_DIR_NAME=$(notdir $(realpath $(MTB_TOOLS__PRJ_DIR)))
+
+ifeq ($(_MTB_RECIPE__QSPI_CONFIG_FILE),)
+_MTB_RECIPE__OPENOCD_QSPI_CFG_PATH=
+_MTB_RECIPE__OPENOCD_QSPI_CFG_PATH_WITH_FLAG=
+_MTB_RECIPE__OPENOCD_QSPI_CFG_PATH_APPLICATION_WITH_FLAG=
+else
+_MTB_RECIPE__OPENOCD_QSPI_CFG_PATH=$(call mtb__get_dir,$(_MTB_RECIPE__QSPI_CONFIG_FILE))/GeneratedSource
+_MTB_RECIPE__OPENOCD_QSPI_CFG_PATH_WITH_FLAG=-s &quot;$(_MTB_RECIPE__OPENOCD_QSPI_CFG_PATH)&quot;&\#13;&\#10;
+_MTB_RECIPE__OPENOCD_QSPI_CFG_PATH_APPLICATION_WITH_FLAG=-s &quot;$(patsubst $(call mtb_path_normalize,$(MTB_TOOLS__PRJ_DIR)/..)/%,%,$(call mtb_path_normalize,$(_MTB_RECIPE__OPENOCD_QSPI_CFG_PATH)))&quot;&\#13;&\#10;
+endif
+_MTB_RECIPE__OPENOCD_QSPI_CFG_PATH_APPLICATION=$(patsubst $(call mtb_path_normalize,$(MTB_TOOLS__PRJ_DIR)/..)/%,%,$(call mtb_path_normalize,$(_MTB_RECIPE__OPENOCD_QSPI_CFG_PATH)))
+
 
 ##########################################################################
 # temporary work-around for recipes (they are not yet ninja-aware).
@@ -378,15 +425,13 @@ ifeq ($(MTB_TYPE),PROJECT)
 # we're 1 project in an app that likely has more projects.
 build qbuild:
 	$(MTB__NOISE)make -C .. $@
+else # ($(MTB_TYPE),PROJECT)
+# we're a unified app+prj
+build: build_proj
+qbuild: qbuild_proj
+endif # ($(MTB_TYPE),PROJECT)
 
 build_proj qbuild_proj: postbuild
-
-else # ($(MTB_TYPE),PROJECT)
-
-# we're a unified app+prj
-build build_proj qbuild qbuild_proj: postbuild
-
-endif # ($(MTB_TYPE),PROJECT)
 
 ifneq ($(filter all build build_proj,$(MAKECMDGOALS)),)
 # only run mtbninja if not doing a qbuild / qbuild_proj
@@ -407,6 +452,8 @@ endif
 
 ##########################################################################
 # Where the ninja build "magic" happens
+
+$(_MTB_RECIPE__TARG_FILE): | _mtb_core__ninja_run
 
 _mtb_core__build_proj: _mtb_core__ninja_run
 

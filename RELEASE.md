@@ -16,6 +16,9 @@ This release of the core GNU make Build System includes a framework to support b
     * LLVM Embedded Toolchain for Arm (Experimental)
 
 ### What Changed?
+#### v3.4.1
+* Fixed an issue with programming using Eclipse for a hex file built with experimental ninja support.
+
 #### v3.4.0
 * Added experimental LLVM Embedded Toolchain for Arm support.
 * Added support for Infineon EdgeProtectTool.

@@ -45,6 +45,17 @@ MTB_CORE__FULL_COMPONENT_LIST=$(sort $(MTB_RECIPE__CORE) $(MTB_RECIPE__CORE_NAME
 _MTB_CORE__FULL_SEARCH_ROOTS=$(strip $(SEARCH) $(SEARCH_MTB_MK))
 
 ################################################################################
+# Defines
+################################################################################
+
+#
+# VFP-specific defines
+#
+ifeq ($(VFP_SELECT),softfloat)
+DEFINES+=MTB_SOFTFLOAT
+endif
+
+################################################################################
 # Macros
 ################################################################################
 
