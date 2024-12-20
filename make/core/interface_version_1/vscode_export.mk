@@ -278,13 +278,8 @@ endif
 # vscode targets
 ################################################################################
 
+vscode_generate:
 ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),true)
-# Need to force the other cores in multi-core to not skip first stage.
-vscode_application_bootstrap:
-	$(MTB__NOISE)$(MAKE) -C .. vscode CY_SECONDSTAGE=
-
-vscode: vscode_application_bootstrap
-
 _MTB_VSCODE_SKIP_CLEAN_UP=true
 endif
 
@@ -570,8 +565,8 @@ ifneq ($(_MTB_VSCODE_SKIP_CLEAN_UP),true)
 	rm -rf $(CY_VSCODE_OUT_TEMPLATE_PATH);
 endif
 
-.PHONY: vscode vscode_application_bootstrap $(MTB_RECIPE__IDE_RECIPE_DATA_FILE) $(MTB_RECIPE__IDE_RECIPE_DATA_FILE_2)
+.PHONY: vscode  $(MTB_RECIPE__IDE_RECIPE_DATA_FILE) $(MTB_RECIPE__IDE_RECIPE_DATA_FILE_2)
 
 .PHONY: vsocde_project_gen vscode_project_settings_json vscode_project_tasks_json vscode_project_extensions_json vscode_project_toolchain_c_cpp_json vscode_project_recipe_json vscode_project_openocd_process vscode_project_workspace
 
-.PHONY: vscode_application_gen vscode_application_sed vscode_application_workspace_gen vscode_application_workspace_sed vscode_application_recipe_gen vscode_application_recipe_sed vscode_application_openocd_process
+.PHONY: vscode_application_gen vscode_application_sed vscode_application_workspace_gen vscode_application_workspace_sed vscode_application_recipe_gen vscode_application_recipe_sed vscode_application_openocd_process vscode_generate

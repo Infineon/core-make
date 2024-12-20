@@ -29,6 +29,14 @@ endif
 #
 # post-build step
 #
+
+
+# Postbuild command can modify hexfile, so hex file copying need to run after all postbuild command has run.
+# The sign_combine step depends on the copied hex file. But running the application sign_combine should not trigger a project_postbuild.
+# We define a mtb_conditional_postbuild target that has dependency on the rest of the postbuild target if we are doing a build operation.
+# If we not doing a build operation (like sign_combine), then the postbuild.mk is not included and mtb_conditional_postbuild has no dependency.
+mtb_conditional_postbuild: project_postbuild
+
 recipe_postbuild: $(_MTB_CORE__BUILD_TARGET)
 
 bsp_postbuild: recipe_postbuild
@@ -74,6 +82,7 @@ ifneq (,$(CY_SIMULATOR_GEN_AUTO))
 app: $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).tar.tgz
 endif
 $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).tar.tgz: _mtb_build_postprint
+
 	$(info )
 	$(info ==============================================================================)
 	$(info = Generating simulator archive file =)
@@ -87,5 +96,4 @@ ifneq (,$(CY_OPEN_online_simulator_FILE_RAW))
 	$(info $(patsubst "%",%,$(CY_OPEN_online_simulator_FILE_RAW)))
 endif
 endif
-
-.PHONY:  recipe_postbuild bsp_postbuild project_postbuild _mtb_build_postprint
+.PHONY: recipe_postbuild bsp_postbuild project_postbuild _mtb_build_postprint

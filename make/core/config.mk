@@ -48,7 +48,6 @@ _MTB_CORE__SIM_ARGS=
 endif
 endif
 
-
 online_simulator:
 ifeq ($(MTB_RECIPE__SIM_URL),)
 	$(error $(MTB__NEWLINE)Infineon simulator not supported for the current device)

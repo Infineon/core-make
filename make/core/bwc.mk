@@ -176,7 +176,7 @@ endif
 ifeq ($(MTB_FILE_TYPE),file)
 mtb__file_write=$(file >$1,$2)
 else
-mtb__file_write=$(shell echo '$(subst ','"'"',$2)' >$1)
+mtb__file_write=$(shell echo -e '$(subst ','"'"',$(subst $(MTB__NEWLINE),\n,$(subst \,\\,$2)))' >$1)
 endif
 
 #
@@ -187,8 +187,35 @@ endif
 ifeq ($(MTB_FILE_TYPE),file)
 mtb__file_append=$(file >>$1,$2)
 else
-mtb__file_append=$(shell echo '$(subst ','"'"',$2)' >>$1)
+mtb__file_append=$(shell echo -e '$(subst ','"'"',$(subst $(MTB__NEWLINE),\n,$(subst \,\\,$2)))' >>$1)
 endif
 
 # Empty target for BWC for recipe that depends on this target.
 _mtb_build_gensrc:
+
+#
+# Python check for interface version 3.0 only
+#
+ifeq ($(_MTB_CORE__EXPORT_INTERFACE_VERSION),1)
+
+#
+# Find Python path
+# Note: This check has a dependency on target.mk and features.mk and
+# is hence placed after these files are included.
+#
+ifeq ($(filter uvision5,$(MAKECMDGOALS)),uvision5)
+CY_PYTHON_REQUIREMENT=true
+endif
+ifeq ($(filter ewarm8,$(MAKECMDGOALS)),ewarm8)
+CY_PYTHON_REQUIREMENT=true
+endif
+ifeq ($(filter eclipse,$(MAKECMDGOALS)),eclipse)
+# IDE does not require project generation. Hence no python
+ifneq ($(CY_MAKE_IDE),eclipse)
+CY_PYTHON_REQUIREMENT=true
+endif
+endif
+endif # ifeq ($(_MTB_CORE__EXPORT_INTERFACE_VERSION),1)
+
+-include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe_version.mk
+-include $(MTB_TOOLS__RECIPE_DIR)/make/udd/features.mk

@@ -79,22 +79,6 @@ else #($(MTB_TYPE),PROJECT)
 _MTB_CORE__IDE_ROOT_DIR=.
 endif #($(MTB_TYPE),PROJECT)
 
-ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),true)
-# Need to force the other cores in multi-core to not skip first stage.
-eclipse_application_bootstrap:
-	$(MTB__NOISE)$(MAKE) -C .. eclipse CY_SECONDSTAGE=
-vscode_application_bootstrap:
-	$(MTB__NOISE)$(MAKE) -C .. vscode CY_SECONDSTAGE=
-
-eclipse: eclipse_application_bootstrap
-vscode: vscode_application_bootstrap
-.PHONY:eclipse_application_bootstrap vscode_application_bootstrap
-else
-eclipse: eclipse_generate
-vscode: vscode_generate
-.PHONY:eclipse_generate vscode_generate
-endif #($(MTB_CORE__APPLICATION_BOOTSTRAP),true)
-
 ##############################################
 # Eclipse
 ##############################################

@@ -26,9 +26,6 @@ ifeq ($(WHICHFILE),true)
 $(info Processing $(lastword $(MAKEFILE_LIST)))
 endif
 
-$(info )
-$(info Constructing build rules...)
-
 #
 # Prints full/shortened source name
 # This can't be set with = since it contains $<
@@ -164,28 +161,6 @@ $(MTB_TOOLS__OUTPUT_BASE_DIR)/%.$(MTB_RECIPE__SUFFIX_A):
 ################################################################################
 
 #
-# Build multi-core application
-#
-ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),true)
-# Need to force the other cores in multi-core to not skip first stage.
-build_application_bootstrap:
-	$(MTB__NOISE)$(MAKE) -C .. build CY_SECONDSTAGE=
-	$(MTB__NOISE)echo;\
-	echo "Note: Running the \"build_proj\" target in this sub-project will only build this sub-project, and not the entire application."
-
-qbuild_application_bootstrap:
-	$(MTB__NOISE)$(MAKE) -C .. qbuild CY_SECONDSTAGE=
-	$(MTB__NOISE)echo;\
-	echo "Note: Running the \"qbuild_proj\" target in this sub-project will only build this sub-project, and not the entire application."
-
-build: build_application_bootstrap
-qbuild: qbuild_application_bootstrap
-else
-build: build_proj
-qbuild: qbuild_proj
-endif
-
-#
 # Dependencies
 #
 build_proj: app memcalc
@@ -276,8 +251,6 @@ $(_MTB_CORE__BUILD_TARGET): $(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cylinker | _mtb_bui
 _MTB_CORE__DEPENDENCY_FILES:=$(MTB_SEARCH_OBJECTS:%.$(MTB_RECIPE__SUFFIX_O)=%.$(MTB_RECIPE__SUFFIX_D))
 -include $(_MTB_CORE__DEPENDENCY_FILES)
 
-$(info Build rules construction complete)
-
 #
 # Generate the compilation database (cdb) file that is used by the .vscode/c_cpp_properties.json file
 #
@@ -325,7 +298,7 @@ _mtb_build_cdb_postprint: $(_MTB_CORE__CDB_FILE)
 #
 # Indicate all phony targets that should be built regardless
 #
-.PHONY: app build_application_bootstrap qbuild_application_bootstrap
+.PHONY: app
 .PHONY: _mtb_build_mkdirs
 .PHONY: _mtb_build_preprint
 .PHONY: $(_MTB_CORE__CDB_FILE) $(_MTB_CORE__CDB_FILE)_temp

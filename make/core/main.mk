@@ -27,36 +27,28 @@ ifeq ($(WHICHFILE),true)
 $(info Processing $(lastword $(MAKEFILE_LIST)))
 endif
 
+################################################################################
+# Application support
+################################################################################
 
-# Only enable Ninja if requested AND running a build target.
-ifneq ($(NINJA),)
-ifneq ($(filter build build_proj qbuild qbuild_proj all program qprogram program_proj qprogram_proj,$(MAKECMDGOALS)),)
-_MTB_CORE__NINJA_ENABLED=$(NINJA)
+ifeq ($(MTB_TYPE),PROJECT)
+_MTB_RECIPE__APPLICATION_RELATIVE=..
+ifeq ($(MTB_APPLICATION_SUBPROJECTS),)
+ifneq ($(filter $(MAKECMDGOALS),all build qbuild program qprogram clean eclipse vscode),)
+# We are directly calling make target from the project that belongs to multi-core
+# application - pass this target to the application level
+MTB_CORE__APPLICATION_BOOTSTRAP=true
 endif
 endif
-
-ifneq ($(_MTB_CORE__NINJA_ENABLED),)
-
-include $(MTB_TOOLS__CORE_DIR)/make/core/ninja.mk
-
 else
-
-
-################################################################################
-# Macros
-################################################################################
-
-#
-# Prints for getting time
-# $(1) : Type - firststage, secondstage
-# $(2) : Identifier
-# $(3) : BEGIN or END
-#
-ifneq ($(CY_INSTRUMENT_BUILD),)
-# Note: Use perl as "date" in macOS is based on ancient BSD
-CY_LOG_TIME=$(shell perl -MTime::HiRes -e 'printf("%-40s%.0f\n","$1 $2 $3:",Time::HiRes::time()*1000)')
+_MTB_RECIPE__APPLICATION_RELATIVE=.
 endif
 
+clean_proj:
+	rm -rf $(MTB_TOOLS__OUTPUT_BASE_DIR)
+
+# Backwards-compatibility variables
+include $(MTB_TOOLS__CORE_DIR)/make/core/bwc.mk
 
 ################################################################################
 # User-facing make targets
@@ -68,108 +60,51 @@ getlibs:
 
 prebuild:
 
-build:
+build build_proj qbuild qbuild_proj:
 
-build_proj:
+program program_proj qprogram qprogram_proj:
 
-qbuild:
+debug qdebug:
 
-qbuild_proj:
-
-program:
-
-program_proj:
-
-qprogram:
-
-qprogram_proj:
-
-debug:
-
-qdebug:
-
-clean:
-
-clean_proj:
+clean clean_proj:
 
 # Note: Define the help target in BSP/recipe for custom help
 help:
 
-modlibs:
+eclipse vscode ewarm ewarm8 uvision uvision5:
 
-config:
+check get_app_info get_env_info printlibs check_toolchain:
 
-config_bt:
+memcalc application_postbuild mtb_conditional_postbuild project_postbuild:
 
-config_ezpd:
+include $(MTB_TOOLS__CORE_DIR)/make/core/application_bootstrap.mk
 
-config_lin:
+FORCE:
+_MTB_CORE__SKIP_BUILD_MK_FILES:=
+ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),)
 
-config_usbdev:
-
-config_secure:
-
-get_app_info:
-
-check_toolchain:
-
-eclipse:
-
-ewarm8:
-
-uvision5:
-
-vscode:
-
-#
-# Targets that do not require a second build stage
-#
-all getlibs clean clean_proj help:
-modlibs config config_bt config_usbdev config_secure config_ezpd config_lin:
-bsp check get_app_info get_env_info printlibs check_toolchain:
-app memcalc application_postbuild:
-
-#
-# Targets that require a second build stage
-#
-build build_proj app program program_proj debug eclipse vscode ewarm8 uvision5 ewarm uvision: secondstage
-#
-# Targets that require don't require second build stage, but does need auto-discovery
-#
-qbuild qbuild_proj qprogram qprogram_proj qdebug erase attach sign_combine: qsecondstage
-
-################################################################################
-# Applicable for both first and second build stages
-################################################################################
-
-
-ifeq ($(MTB_TYPE),PROJECT)
-_MTB_RECIPE__APPLICATION_RELATIVE=..
-ifeq ($(MTB_APPLICATION_SUBPROJECTS),)
-# We are directly calling make target from the project that belongs to multi-core
-# application - pass this target to the application level
-MTB_CORE__APPLICATION_BOOTSTRAP=true
+_MTB_CORE__QBUILD_MK_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/cyqbuild.mk
+_MTB_CORE__NINJA_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).ninja
+ifneq ($(filter $(MAKECMDGOALS),all build build_proj app program program_proj debug erase attach eclipse vscode ewarm8 uvision5 ewarm uvision),)
+$(_MTB_CORE__NINJA_FILE): FORCE prebuild
+ifeq ($(MAKE_RESTARTS),)
+$(_MTB_CORE__QBUILD_MK_FILE): FORCE prebuild
 endif
+endif
+
+# optimization if command is not one of these (i.e. clean) then don't load files like build.mk and program.mk
+ifeq ($(filter $(MAKECMDGOALS),all build build_proj qbuild qbuild_proj app program program_proj qprogram qprogram_proj debug qdebug erase attach eclipse vscode ewarm8 uvision5 ewarm uvision),)
+_MTB_CORE__SKIP_BUILD_MK_FILES:=1
+endif
+
+$(_MTB_CORE__QBUILD_MK_FILE) $(_MTB_CORE__NINJA_FILE):| start_build
+
+# mtbsearch and mtbninja option
+ifneq ($(ASSET_ARCHIVES),)
+_MTB_CORE__ASSET_ARCHIVES=--archive-assets
 else
-_MTB_RECIPE__APPLICATION_RELATIVE=.
+_MTB_CORE__ASSET_ARCHIVES=
 endif
-
-ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),true)
-clean_application_bootstrap:
-	$(MTB__NOISE)$(MAKE) -C .. clean
-
-clean: clean_application_bootstrap
-else
-clean: clean_proj
-endif
-
-clean_proj:
-	rm -rf $(MTB_TOOLS__OUTPUT_BASE_DIR)
-
-# Backwards-compatibility variables
-include $(MTB_TOOLS__CORE_DIR)/make/core/bwc.mk
-
-CY_TIMESTAMP_MAIN_MK_BEGIN=$(call CY_LOG_TIME,bothstages,main.mk,BEGIN)
 
 ##########################
 # Include make files
@@ -178,57 +113,31 @@ CY_TIMESTAMP_MAIN_MK_BEGIN=$(call CY_LOG_TIME,bothstages,main.mk,BEGIN)
 #
 # Include utilities used by all make files
 #
-CY_TIMESTAMP_UTILS_MK_BEGIN=$(call CY_LOG_TIME,bothstages,core_utils.mk,BEGIN)
 include $(MTB_TOOLS__CORE_DIR)/make/core/core_utils.mk
-CY_TIMESTAMP_UTILS_MK_END=$(call CY_LOG_TIME,bothstages,core_utils.mk,END)
 
-CY_TIMESTAMP_RECIPE_VERSION_MK_BEGIN=$(call CY_LOG_TIME,bothstages,recipe_version.mk,BEGIN)
--include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe_version.mk
-CY_TIMESTAMP_RECIPE_VERSION_MK_END=$(call CY_LOG_TIME,bothstages,recipe_version.mk,END)
-
-CY_TIMESTAMP_FEATURES_MK_BEGIN=$(call CY_LOG_TIME,bothstages,features.mk,BEGIN)
--include $(MTB_TOOLS__RECIPE_DIR)/make/udd/features.mk
-CY_TIMESTAMP_FEATURES_MK_END=$(call CY_LOG_TIME,bothstages,features.mk,END)
-
-CY_TIMESTAMP_TOOLCHAIN_MK_BEGIN=$(call CY_LOG_TIME,bothstages,core_selection.mk,BEGIN)
 include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/core_selection.mk
-CY_TIMESTAMP_TOOLCHAIN_MK_END=$(call CY_LOG_TIME,bothstages,core_selection.mk,END)
 
-CY_TIMESTAMP_TOOLCHAIN_MK_BEGIN=$(call CY_LOG_TIME,bothstages,toolchain.mk,BEGIN)
 # The GCC_ARM readelf is used by all toolchain build for memory calculation. So always include GCC_ARM toolchain.
 -include $(MTB_TOOLS__RECIPE_DIR)/make/toolchains/GCC_ARM.mk
 ifneq ($(TOOLCHAIN),GCC_ARM)
 include $(MTB_TOOLS__RECIPE_DIR)/make/toolchains/$(TOOLCHAIN).mk
 endif
-CY_TIMESTAMP_TOOLCHAIN_MK_END=$(call CY_LOG_TIME,bothstages,toolchain.mk,END)
 
-CY_TIMESTAMP_RECIPE_TC_TYPES_MK_BEGIN=$(call CY_LOG_TIME,bothstages,recipe_toolchain_file_types.mk,BEGIN)
 include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe_toolchain_file_types.mk
-CY_TIMESTAMP_RECIPE_TC_TYPES_MK_END=$(call CY_LOG_TIME,bothstages,recipe_toolchain_file_types.mk,END)
 
-CY_TIMESTAMP_DEFINES_MK_BEGIN=$(call CY_LOG_TIME,bothstages,defines.mk,BEGIN)
 include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/defines.mk
-CY_TIMESTAMP_DEFINES_MK_END=$(call CY_LOG_TIME,bothstages,defines.mk,END)
 
-CY_TIMESTAMP_RECIPE_SETUP_MK_BEGIN=$(call CY_LOG_TIME,bothstages,recipe_setup.mk,BEGIN)
 include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe_setup.mk
-CY_TIMESTAMP_RECIPE_SETUP_MK_END=$(call CY_LOG_TIME,bothstages,recipe_setup.mk,END)
 
-CY_TIMESTAMP_SEARCH_MK_BEGIN=$(call CY_LOG_TIME,bothstages,search.mk,BEGIN)
 include $(MTB_TOOLS__CORE_DIR)/make/core/search.mk
-CY_TIMESTAMP_SEARCH_MK_END=$(call CY_LOG_TIME,bothstages,search.mk,END)
 
-CY_TIMESTAMP_LIBRARY_MK_BEGIN=$(call CY_LOG_TIME,bothstages,library.mk,BEGIN)
 _MTB_CORE__LIB_MK=$(wildcard $(foreach dir,$(SEARCH_MTB_MK),$(dir)/library.mk))
 -include $(_MTB_CORE__LIB_MK)
-CY_TIMESTAMP_LIBRARY_MK_END=$(call CY_LOG_TIME,bothstages,library.mk,END)
 
 #
 # Configurator-related routines
 #
-CY_TIMESTAMP_CONFIG_MK_BEGIN=$(call CY_LOG_TIME,bothstages,config.mk,BEGIN)
 include $(MTB_TOOLS__CORE_DIR)/make/core/config.mk
-CY_TIMESTAMP_CONFIG_MK_END=$(call CY_LOG_TIME,bothstages,config.mk,END)
 
 #
 # Export interface version set up for IDE file generation
@@ -250,42 +159,51 @@ endif #($(filter 2,$(MTB_RECIPE__EXPORT_INTERFACES)),2)
 endif #($(CY_TOOL_mtbideexport_EXPORT_INTERFACE),3.1)
 endif #($(_MTB_CORE__ALL_SUPPORTED_EXPORT_VERSION),)
 
+ifeq ($(filter $(MAKECMDGOALS),get_app_info getlibs),)
+ifeq ($(MTB_RECIPE__NINJA_SUPPORT),)
+$(error $(MTB__NEWLINE)$(MTB__NEWLINE)Error: The current version of core-make is incompatible with the current version of recipe-make.\
+$(MTB__NEWLINE)See https://community.infineon.com/t5/ModusToolbox/ModusToolbox-incompatible-core-make-version-error-message/td-p/918743 for more information.$(MTB__NEWLINE)$(MTB__NEWLINE))
+endif
+endif
+# Set ninja as default if all assets support a matching version
+_MTB_CORE__NINJA_SUPPORT:=1
+NINJA?=$(filter $(filter $(MTB_RECIPE__NINJA_SUPPORT),$(_MTB_CORE__NINJA_SUPPORT)),$(MTB_TOOLS__NINJA_SUPPORT))
+
+#
+# Targets that require auto-discovery
+#
+ifeq ($(NINJA),)
+_MTB_CORE__AUTO_DISCOVERY_FILE:=$(_MTB_CORE__QBUILD_MK_FILE)
+else
+_MTB_CORE__AUTO_DISCOVERY_FILE:=$(_MTB_CORE__NINJA_FILE)
+endif
+build build_proj qbuild qbuild_proj app program program_proj: $(_MTB_CORE__AUTO_DISCOVERY_FILE)
+
 ################################################################################
 # Include make files continued only for first build stage
 ################################################################################
 
-ifeq ($(CY_SECONDSTAGE),)
-
 # Check that there's only 1 version of tools and inform the user if there is not.
 ifneq ($(sort $(notdir $(wildcard $(CY_TOOLS_PATHS)))),$(notdir $(CY_TOOLS_DIR)))
-CY_MESSAGE_multi_tools=INFO: Multiple tools versions were found in "$(sort $(CY_TOOLS_PATHS))".\
+$(info INFO: Multiple tools versions were found in "$(sort $(CY_TOOLS_PATHS))".\
 				This build is currently using "$(CY_TOOLS_DIR)".\
 				Check that this is the correct version that should be used in this build.\
 				To stop seeing this message, set the CY_TOOLS_PATHS environment variable to the location of\
-				the tools directory. This can be done either as an environment variable or set in the application Makefile.
-$(eval $(call CY_MACRO_INFO,CY_MESSAGE_multi_tools,$(CY_MESSAGE_multi_tools)))
+				the tools directory. This can be done either as an environment variable or set in the application Makefile.)
 endif
 
 #
 # Help documentation
 #
-CY_TIMESTAMP_HELP_MK_BEGIN=$(call CY_LOG_TIME,firststage,help.mk,BEGIN)
 include $(MTB_TOOLS__CORE_DIR)/make/core/help.mk
-CY_TIMESTAMP_HELP_MK_END=$(call CY_LOG_TIME,firststage,help.mk,END)
 
-CY_TIMESTAMP_PREBUILD_MK_BEGIN=$(call CY_LOG_TIME,firststage,prebuild.mk,BEGIN)
 include $(MTB_TOOLS__CORE_DIR)/make/core/prebuild.mk
-CY_TIMESTAMP_PREBUILD_MK_END=$(call CY_LOG_TIME,firststage,prebuild.mk,END)
-CY_TIMESTAMP_RECIPE_MK_BEGIN=$(call CY_LOG_TIME,firststage,recipe.mk,BEGIN)
 include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe.mk
-CY_TIMESTAMP_RECIPE_MK_END=$(call CY_LOG_TIME,firststage,recipe.mk,END)
 
 #
 # Device transtion related targets
 #
-CY_TIMESTAMP_TRANSITION_MK_BEGIN=$(call CY_LOG_TIME,firststage,transition.mk,BEGIN)
 include $(MTB_TOOLS__CORE_DIR)/make/core/transition.mk
-CY_TIMESTAMP_TRANSITION_MK_END=$(call CY_LOG_TIME,firststage,transition.mk,END)
 
 ##########################
 # Environment check
@@ -300,30 +218,6 @@ check_toolchain:
 	$(error Toolchain validation: FAIL. The TOOLCHAIN=$(TOOLCHAIN) value is not supported. \
 					Supported TOOLCHAIN values are: \
 					$(sort $(MTB_SUPPORTED_TOOLCHAINS) $(CY_SUPPORTED_TOOLCHAINS))))
-
-#
-# Python check for interface version 3.0 only
-#
-ifeq ($(_MTB_CORE__EXPORT_INTERFACE_VERSION),1)
-
-#
-# Find Python path
-# Note: This check has a dependency on target.mk and features.mk and
-# is hence placed after these files are included.
-#
-ifeq ($(filter uvision5,$(MAKECMDGOALS)),uvision5)
-CY_PYTHON_REQUIREMENT=true
-endif
-ifeq ($(filter ewarm8,$(MAKECMDGOALS)),ewarm8)
-CY_PYTHON_REQUIREMENT=true
-endif
-ifeq ($(filter eclipse,$(MAKECMDGOALS)),eclipse)
-# IDE does not require project generation. Hence no python
-ifneq ($(CY_MAKE_IDE),eclipse)
-CY_PYTHON_REQUIREMENT=true
-endif
-endif
-endif # ifeq ($(_MTB_CORE__EXPORT_INTERFACE_VERSION),1)
 
 ifeq ($(CY_PYTHON_REQUIREMENT),true)
 ifeq ($(CY_PYTHON_PATH),)
@@ -402,49 +296,26 @@ endif
 endif # ifeq ($(CY_PYTHON_PATH),)
 endif # ifeq ($(CY_PYTHON_REQUIREMENT),true)
 
-##########################
-# Second build stage target
-##########################
+start_build: check_recipe check_toolchain 
+	@:
+	$(info Initializing build: $(APPNAME)$(LIBNAME) $(CONFIG) $(TARGET) $(TOOLCHAIN))
 
-# Export all the CY_INFO and CY_WARNING variables so that they can all be printed out in secondstage
-export $(filter CY_INFO_%,$(.VARIABLES))
-export $(filter CY_WARNING_%,$(.VARIABLES))
-
-qsecondstage_build: $(_MTB_CORE__QBUILD_MK_FILE)
-secondstage_build: $(_MTB_CORE__FORCEBUILD_MK_FILE)
-
-# Note: always use -f as it's not passed down via MAKEFLAGS
-qsecondstage_build secondstage_build:
-	$(MTB__NOISE)echo "Commencing build operations..."
-	$(MTB__NOISE)echo
-	$(MTB__NOISE)$(MAKE) -f $(abspath $(firstword $(MAKEFILE_LIST))) $(MAKECMDGOALS) CY_SECONDSTAGE=true --no-print-directory
-
-qsecondstage: qsecondstage_build
-secondstage: secondstage_build_check
-
-secondstage qsecondstage: check_toolchain
-
-qsecondstage second_stage:
-	$(info $(subst .cywarning ,$(MTB_NEWLINE),$(subst .cyinfo ,$(MTB_NEWLINE),$(call \
-	mtb__file_read,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cyinfo)$(call \
-	mtb__file_read,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cywarning))))
-
-secondstage_build_check: secondstage_build
+check_recipe: check_toolchain
 ifeq ($(wildcard $(MTB_TOOLS__RECIPE_DIR)),)
 	$(info )
-	$(call mtb__error,Cannot find the base library. Run "make getlibs" and/or check\
-	that the library location is correct in the CY_BASELIB_PATH variable)
+	$(call mtb__error,Cannot find recipe-make. Run "make getlibs" and/or check\
+	the location is correct in the CY_BASELIB_PATH variable)
 endif
 
 ################################################################################
 # Include make files continued for second build stage
 ################################################################################
 
-else # ifeq ($(CY_SECONDSTAGE),)
-
 ##########################
 # User input check
 ##########################
+
+ifeq ($(_MTB_CORE__SKIP_BUILD_MK_FILES),)
 
 ifneq ($(APPNAME),)
 ifneq ($(LIBNAME),)
@@ -488,131 +359,66 @@ endif
 #
 # Build-related routines
 #
-CY_TIMESTAMP_CYQBUILD_MK_BEGIN=$(call CY_LOG_TIME,secondstage,cyqbuild.mk,BEGIN)
-# Skip the auto-discovery and re-use the last build's source list
-include $(_MTB_CORE__QBUILD_MK_FILE)
-CY_TIMESTAMP_CYQBUILD_MK_END=$(call CY_LOG_TIME,secondstage,cyqbuild.mk,END)
+_MTB_CORE__LOAD_QBUILD_MK_FILE:=
+# IDE export always use old auto-discovery
+ifneq ($(filter $(MAKECMDGOALS),eclipse vscode ewarm8 uvision5 ewarm uvision),)
+_MTB_CORE__LOAD_QBUILD_MK_FILE:=1
+else 
+ifeq ($(NINJA),)
+_MTB_CORE__LOAD_QBUILD_MK_FILE:=1
+endif
+endif
+ifneq ($(CY_SIMULATOR_GEN_AUTO),)
+_MTB_CORE__LOAD_QBUILD_MK_FILE:=1
+endif
 
-CY_TIMESTAMP_BUILD_MK_BEGIN=$(call CY_LOG_TIME,secondstage,search_filter.mk,BEGIN)
+ifneq ($(_MTB_CORE__LOAD_QBUILD_MK_FILE),)
+include $(_MTB_CORE__QBUILD_MK_FILE)
 ifneq ($(MTB_GENERATE_DEPENDENCIES),)
 include $(MTB_TOOLS__CORE_DIR)/make/core/search_filter_v2.mk
 else
 include $(MTB_TOOLS__CORE_DIR)/make/core/search_filter_v1.mk
 endif
-CY_TIMESTAMP_BUILD_MK_END=$(call CY_LOG_TIME,secondstage,search_filter.mk,END)
 
-CY_TIMESTAMP_RECIPE_MK_BEGIN=$(call CY_LOG_TIME,secondstage,recipe.mk,BEGIN)
-include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe.mk
-CY_TIMESTAMP_RECIPE_MK_END=$(call CY_LOG_TIME,secondstage,recipe.mk,END)
-
-CY_TIMESTAMP_BUILD_MK_BEGIN=$(call CY_LOG_TIME,secondstage,build.mk,BEGIN)
 ifneq ($(MTB_GENERATE_DEPENDENCIES),)
 include $(MTB_TOOLS__CORE_DIR)/make/core/build_v2.mk
 else
 include $(MTB_TOOLS__CORE_DIR)/make/core/build_v1.mk
 endif
-CY_TIMESTAMP_BUILD_MK_END=$(call CY_LOG_TIME,secondstage,build.mk,END)
 
-CY_TIMESTAMP_BUILD_MK_BEGIN=$(call CY_LOG_TIME,secondstage,postbuild.mk,BEGIN)
+else
+include $(MTB_TOOLS__CORE_DIR)/make/core/ninja.mk
+endif
+
 include $(MTB_TOOLS__CORE_DIR)/make/core/postbuild.mk
-CY_TIMESTAMP_BUILD_MK_END=$(call CY_LOG_TIME,secondstage,postbuild.mk,END)
-
 #
 # Setup JLink path for IDE export and make program
 #
-CY_TIMESTAMP_JLINK_MK_BEGIN=$(call CY_LOG_TIME,secondstage,jlink.mk,BEGIN)
 include $(MTB_TOOLS__CORE_DIR)/make/core/jlink.mk
-CY_TIMESTAMP_JLINK_MK_END=$(call CY_LOG_TIME,secondstage,jlink.mk,END)
 
 #
 # Optional recipe-specific program routine
 #
-ifndef CY_BSP_PROGRAM
-CY_TIMESTAMP_PROGRAM_MK_BEGIN=$(call CY_LOG_TIME,secondstage,program.mk,BEGIN)
 -include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/program.mk
-CY_TIMESTAMP_PROGRAM_MK_END=$(call CY_LOG_TIME,secondstage,program.mk,END)
-endif
 
 ifneq ($(_MTB_CORE__EXPORT_INTERFACE_VERSION),1)
 uvision: uvision5
 ewarm: ewarm8
 endif
-CY_TIMESTAMP_RECIPE_IDE_MK_BEGIN=$(call CY_LOG_TIME,secondstage,recipe_ide.mk,BEGIN)
 -include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/interface_version_$(_MTB_CORE__EXPORT_INTERFACE_VERSION)/recipe_ide.mk
-CY_TIMESTAMP_RECIPE_IDE_MK_END=$(call CY_LOG_TIME,secondstage,recipe_ide.mk,END)
-CY_TIMESTAMP_IDE_MK_BEGIN=$(call CY_LOG_TIME,secondstage,ide.mk,BEGIN)
 include $(MTB_TOOLS__CORE_DIR)/make/core/interface_version_$(_MTB_CORE__EXPORT_INTERFACE_VERSION)/ide.mk
-CY_TIMESTAMP_IDE_MK_END=$(call CY_LOG_TIME,secondstage,ide.mk,END)
-#
-# Gather and print info messages so that they can be shown at the end of secondstage
-#
-CY_PRINT_INFO_VARIABLES=$(filter CY_INFO_%,$(.VARIABLES))
-CY_PRINT_INFO_MESSAGES=$(foreach msg,$(CY_PRINT_INFO_VARIABLES),$($(msg)) .cyinfo )
-ifneq ($(CY_PRINT_INFO_VARIABLES),)
-CY_PRINT_INFO_HEADER=.cyinfo \
-	============================================================================== .cyinfo \
-	= INFO message(s) = .cyinfo \
-	============================================================================== .cyinfo 
-endif
-$(call mtb__file_write,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cyinfo,$(CY_PRINT_INFO_HEADER) $(CY_PRINT_INFO_MESSAGES))
 
-#
-# Gather and print warning messages so that they can be shown at the end of secondstage
-#
-CY_PRINT_WARNING_VARIABLES=$(filter CY_WARNING_%,$(.VARIABLES))
-CY_PRINT_WARNING_MESSAGES=$(foreach msg,$(CY_PRINT_WARNING_VARIABLES),$($(msg)) .cywarning )
-ifneq ($(CY_PRINT_WARNING_VARIABLES),)
-CY_PRINT_WARNING_HEADER=.cywarning \
-	============================================================================== .cywarning \
-	= WARNING message(s) = .cywarning \
-	============================================================================== .cywarning 
-endif
-$(call mtb__file_write,$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cywarning,$(CY_PRINT_WARNING_HEADER) $(CY_PRINT_WARNING_MESSAGES))
+endif #ifneq ($(_MTB_CORE__SKIP_BUILD_MK_FILES),)
 
-# Empty on purpose
-secondstage:
-qsecondstage:
-
-endif # ifeq ($(CY_SECONDSTAGE),)
-
-CY_TIMESTAMP_MAIN_MK_END=$(call CY_LOG_TIME,bothstages,main.mk,END)
-
-#
-# Print the timestamps
-#
-ifneq ($(CY_INSTRUMENT_BUILD),)
-CY_TIMESTAMP_LIST=UTILS_MK RECIPE_VERSION_MK EXTRA_INC FEATURES_MK DEFINES_MK TOOLCHAIN_MK CONFIG_MK TOOLS_MK HELP_MK\
-					PREBUILD_MK RECIPE_MK TRANSITION_MK JLINK_MK \
-					SEARCH_MK CYQBUILD_MK SEARCH_FILTER_MK RECIPE_MK BUILD_MK POSTBUILD_MK PROGRAM_MK RECIPE_IDE_MK IDE_MK
-
-$(info )
-$(info ==============================================================================)
-$(info = Begin timestamps $(MTB_TAB)$(MTB_TAB)$(MTB_TAB)(milliseconds) = )
-$(info ==============================================================================)
-$(info $(CY_TIMESTAMP_MAIN_MK_BEGIN))
-$(foreach timestamp,$(CY_TIMESTAMP_LIST),\
-	$(if $(CY_TIMESTAMP_$(timestamp)_BEGIN),\
-		$(info $(CY_TIMESTAMP_$(timestamp)_BEGIN))\
-		$(info $(CY_TIMESTAMP_$(timestamp)_END))\
-	)\
-)
-$(info $(CY_TIMESTAMP_MAIN_MK_END))
-$(info ==============================================================================)
-$(info = End timestamps = )
-$(info ==============================================================================)
-$(info )
-endif
-
-endif # ifneq ($(_MTB_CORE__NINJA_ENABLED),)
+endif #ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),)
 
 #
 # Identify the phony targets
 #
-.PHONY: all getlibs clean clean_application_bootstrap clean_proj help
+.PHONY: all getlibs clean clean_proj help
 .PHONY: modlibs config config_bt config_usbdev config_secure config_ezpd config_lin
-.PHONY: bsp check get_env_info printlibs check_toolchain
-.PHONY: app memcalc help_default
-.PHONY: secondstage_build_check second_stage qsecondstage secondstage_build qsecondstage_build
+.PHONY: bsp check get_env_info printlibs check_toolchain check_recipe start_build
+.PHONY: app memcalc help_default mtb_conditional_postbuild
 
 .PHONY: build build_proj qbuild qbuild_proj
 .PHONY: program program_proj qprogram debug qdebug erase attach

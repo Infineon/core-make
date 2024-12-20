@@ -247,7 +247,11 @@ CY_HELP_VCORE_ATTRS_VERBOSE=Currently supported values are "SECURE", "NON_SECURE
 CY_HELP_NSC_VENEER=The path of the veneer object file used for Non-Secure-Callbacks.
 CY_HELP_NSC_VENEER_VERBOSE=When specified for a secure project, it specifies the path of the veneer object file to generate.\
 					When specified for a non-secure project, it specifies the path of the veneer object file to include.
-
+CY_HELP_NINJA=Whether To compile and link the source files using ninja build system.\
+					By default this will be enabled when using ModusToolbox tools package 3.4, latest core-make, and latest recipe-make.\
+					This can be disabled by setting NINJA to empty string.
+CY_HELP_NINJA_VERBOSE=When enabled, "make" will use ninja to manage compile and link commands.\
+					In some operating systems, this can speed-up the build process considerably.
 #
 # BSP variables
 #
@@ -493,6 +497,7 @@ mtb_help_header:
 	$(info $(MTB__SPACE)MERGE               $(CY_HELP_MERGE))
 	$(info $(MTB__SPACE)VCORE_ATTRS         $(CY_HELP_VCORE_ATTRS))
 	$(info $(MTB__SPACE)NSC_VENEER          $(CY_HELP_NSC_VENEER))
+	$(info $(MTB__SPACE)NINJA               $(CY_HELP_NINJA))
 	$(info                                                               )
 	$(info =======================================                       )
 	$(info $(MTB__SPACE)BSP make variables                                 )

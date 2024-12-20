@@ -100,28 +100,10 @@ mtb_core__escaped_path=$(subst $(MTB__OPEN_PAREN),\$(MTB__OPEN_PAREN),$(subst $(
 # escape " and \ for json
 mtb_core__json_escaped_string=$(subst ",\",$(subst \,\\,$(strip $1)))
 
-#
-# Prints the warning and creates a variable to hold that warning (for printing later)
-# Note that this doesn't use the $(warning) function as that adds the line number (not useful for end user)
-# $(1) : Message ID
-# $(2) : String to print
-#
-define CY_MACRO_WARNING
-$(info )
-$(info $(2))
-CY_WARNING_$(1)=$(2)
-endef
-
-#
-# Prints the info and creates a variable to hold that info (for printing later)
-# $(1) : Message ID
-# $(2) : String to print
-#
-define CY_MACRO_INFO
-$(info )
-$(info $(2))
-CY_INFO_$(1)=$(2)
-endef
+# recursive wildcard
+# $(1) directory to search
+# $(2) pattern (I.E. *.c)
+mtb_core__rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call mtb_core__rwildcard,$d/,$2) $(filter $2,$d)))
 
 ################################################################################
 # Misc.

@@ -16,8 +16,12 @@ This release of the core GNU make Build System includes a framework to support b
     * LLVM Embedded Toolchain for Arm (Experimental)
 
 ### What Changed?
+#### v3.5.0
+* Core-make 3.5 is incompactible with previous versions of recipe-make.
+* Added Ninja support. Ninja build will be enabled by default with ModusToolbox 3.4, and latest recipe-make. To disable Ninja build set NINJA to empty-String. (For example: "make build NINJA=").
+
 #### v3.4.1
-* Fixed an issue with programming using Eclipse for a hex file built with experimental ninja support.
+* Fixed an issue with programming using Eclipse for a hex file built with experimental Ninja support.
 
 #### v3.4.0
 * Added experimental LLVM Embedded Toolchain for Arm support.
@@ -102,7 +106,7 @@ This version of the core make build system was validated for compatibility with 
 
 | Software and Tools                        | Version |
 | :---                                      | :----:  |
-| ModusToolbox Software Environment         | 3.3     |
+| ModusToolbox Software Environment         | 3.4     |
 | GCC Compiler                              | 11.3    |
 | IAR Compiler                              | 9.3     |
 | ARM Compiler                              | 6.16    |
@@ -115,4 +119,3 @@ Minimum required ModusToolbox Software Environment: v3.0
 
 ---
 (c) 2019-2024, Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation. All rights reserved.
-

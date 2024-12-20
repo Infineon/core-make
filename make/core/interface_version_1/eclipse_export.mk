@@ -51,18 +51,9 @@ endif #($(MTB_TYPE),PROJECT)
 # eclipse targets
 ################################################################################
 
-ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),true)
-# Need to force the other cores in multi-core to not skip first stage.
-eclipse_application_bootstrap:
-	$(MTB__NOISE)$(MAKE) -C .. eclipse CY_SECONDSTAGE=
-
-eclipse: eclipse_application_bootstrap
-else
-# Whether the recipe support eclipse export
-
-
+ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),)
 ifeq ($(LIBNAME),)
-eclipse: eclipse_generate
+eclipse:
 ifeq ($(findstring eclipse,$(MTB_RECIPE__IDE_SUPPORTED)),)
 	$(call mtb__error,Unable to proceed. Export is not supported for this device)
 endif
@@ -95,4 +86,4 @@ eclipse_metadata_file: eclipse_recipe_metadata_file
 
 endif #($(_MTB_CORE__ECLIPSE_CALL_APPLICATION_ECLIPSE),true)
 
-.PHONY: eclipse eclipse_metadata_file eclipse_textdata_file eclipse_application_bootstrap
+.PHONY: eclipse eclipse_metadata_file eclipse_textdata_file
