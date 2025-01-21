@@ -53,11 +53,6 @@ _MTB_CORE__IDE_TEXT_FILE:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/core_ide_text.txt
 # core-make templates to copy for eclipse and vscode
 _MTB_CORE__IDE_TEMPLATE_DIR=$(MTB_TOOLS__CORE_DIR)/make/scripts/interface_version_3
 
-ifeq ($(strip $(filter 3 2 1,$(MTB__MAKE_MAJOR_VER))),)
-# --output-sync argument is only supported on GNU make-4.0 or newer
-_MTB_CORE__IDE_OUTPUT_SYNC=--output-sync
-endif
-
 # warn about unsupported interface
 vscode_generate eclipse_generate: debug_interface_check
 
@@ -105,7 +100,7 @@ else
 endif
 
 core_eclipe_text_data:
-	$(call mtb__file_write,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__IDE_OUTPUT_SYNC&&=$(_MTB_CORE__IDE_OUTPUT_SYNC))
+	$(call mtb__file_write,$(_MTB_CORE__IDE_TEXT_FILE),)
 
 .PHONY: core_eclipse_template_meta_data core_eclipe_meta_data core_eclipe_text_data
 
@@ -161,7 +156,6 @@ core_vscode_text_data:
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__VSCODE_JLINK_EXE_WINDOWS&&=$(_MTB_CORE__VSCODE_JLINK_EXE_WINDOWS))
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__VSCODE_JLINK_EXE_OSX&&=$(_MTB_CORE__VSCODE_JLINK_EXE_OSX))
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__VSCODE_JLINK_EXE_LINUX&&=$(_MTB_CORE__VSCODE_JLINK_EXE_LINUX))
-	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__IDE_OUTPUT_SYNC&&=$(_MTB_CORE__IDE_OUTPUT_SYNC))
 	$(shell echo '&&_MTB_CORE__INCLUDE_LIST&&=$(_MTB_CORE__VSCODE_INCLUDES_LIST)' >> $(_MTB_CORE__IDE_TEXT_FILE))
 	$(shell echo '&&_MTB_CORE__DEFINE_LIST&&=$(_MTB_CORE__VSCODE_DEFINES_LIST)' >> $(_MTB_CORE__IDE_TEXT_FILE))
 	$(shell echo '&&_MTB_CORE__CFLAGS&&=$(_MTB_CORE__CFLAGS)' >> $(_MTB_CORE__IDE_TEXT_FILE))

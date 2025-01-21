@@ -1,0 +1,23 @@
+        {
+            "label": "&&MTB_COMBINE_SIGN_&&IDX&&_CONFIG_NAME&& Program",
+            "type": "process",
+            "command": "bash",
+            "args": [
+                "--norc",
+                "-c",
+                "make -j&&_MTB_CORE___VSCODE_BUILD_NUM_PROCESSOR&& program_proj PROG_FILE=&&MTB_COMBINE_SIGN_&&IDX&&_VSCODE_HEX_PATH&&"
+            ],
+
+            "windows" : {
+                "command": "${config:modustoolbox.toolsPath}/&&_MTB_RECIPE__MODUS_SHELL_BASE&&/bin/bash.exe",
+                "args": [
+                    "--norc",
+                    "-c",
+                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/&&_MTB_RECIPE__MODUS_SHELL_BASE&&/bin/make.exe -j&&_MTB_CORE___VSCODE_BUILD_NUM_PROCESSOR&& program_proj PROG_FILE=&&MTB_COMBINE_SIGN_&&IDX&&_VSCODE_HEX_PATH&&"
+                ]
+            },
+            "problemMatcher": "$&&_MTB_CORE__VSCODE_PROBLEM_MATCHER&&",
+            "group": {
+                "kind": "build"
+            }
+        }

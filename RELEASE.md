@@ -16,8 +16,12 @@ This release of the core GNU make Build System includes a framework to support b
     * LLVM Embedded Toolchain for Arm (Experimental)
 
 ### What Changed?
+#### v3.5.1
+* Remove make build command line option "--output-sync" from eclipse and vscode export. This allows ninja builds in IDE to display incremental progress.
+* Added support for generating additional tasks when exporting to VSCode.
+
 #### v3.5.0
-* Core-make 3.5 is incompactible with previous versions of recipe-make.
+* Core-make 3.5 is incompatible with previous versions of recipe-make.
 * Added Ninja support. Ninja build will be enabled by default with ModusToolbox 3.4, and latest recipe-make. To disable Ninja build set NINJA to empty-String. (For example: "make build NINJA=").
 
 #### v3.4.1

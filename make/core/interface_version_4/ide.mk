@@ -35,7 +35,7 @@ $(MTB_TOOLS__OUTPUT_CONFIG_DIR):
 	$(MTB__NOISE)mkdir -p $(MTB_TOOLS__OUTPUT_CONFIG_DIR);
 
 vscode_generate eclipse_generate: $(MTB_TOOLS__OUTPUT_CONFIG_DIR)
-	$(MTB__NOISE)$(CY_TOOL_mtbideexport_EXE_ABS) -ide $(_MTB_CORE__IDE_EXPORT_TARGET) -export_interface 3.1 $(MTB_CORE__EXPORT_CMDLINE)
+	$(MTB__NOISE)$(CY_TOOL_mtbideexport_EXE_ABS) -ide $(_MTB_CORE__IDE_EXPORT_TARGET) -export_interface 3 $(MTB_CORE__EXPORT_CMDLINE)
 
 .PHONY:vscode eclipse ewarm8 ewarm uvision5 uvision
 
@@ -51,7 +51,7 @@ endif
 _MTB_CORE__IDE_TEMPLATE_META_DATA_FILE:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/core_ide_template_meta_data.txt
 _MTB_CORE__IDE_TEXT_FILE:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/core_ide_text.txt
 # core-make templates to copy for eclipse and vscode
-_MTB_CORE__IDE_TEMPLATE_DIR=$(MTB_TOOLS__CORE_DIR)/make/scripts/interface_version_2
+_MTB_CORE__IDE_TEMPLATE_DIR=$(MTB_TOOLS__CORE_DIR)/make/scripts/interface_version_4
 
 # warn about unsupported interface
 vscode_generate eclipse_generate: debug_interface_check
@@ -161,6 +161,7 @@ core_vscode_text_data:
 	$(shell echo '&&_MTB_CORE__CFLAGS&&=$(_MTB_CORE__CFLAGS)' >> $(_MTB_CORE__IDE_TEXT_FILE))
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__CC&&=$(subst \,,$(CC)))
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__VSCODE_INTELLISENSE_MODE&&=$(MTB_RECIPE__TOOLCHAIN_VSCODE_INTELLISENSE_MODE))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__VSCODE_PROBLEM_MATCHER&&=$(MTB_RECIPE__TOOLCHAIN_VSCODE_PROBLEM_MATCHER))
 
 core_vscode_template_meta_data:
 	$(call mtb__file_write,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),EXTERNAL_REF_KEY=&&LINKED_RESOURCES&&)
