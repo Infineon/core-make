@@ -134,6 +134,8 @@ include $(MTB_TOOLS__CORE_DIR)/make/core/search.mk
 _MTB_CORE__LIB_MK=$(wildcard $(foreach dir,$(SEARCH_MTB_MK),$(dir)/library.mk))
 -include $(_MTB_CORE__LIB_MK)
 
+ifeq ($(MTB_LIBRARY__SKIP_LOAD_MAIN_MK),)
+
 #
 # Configurator-related routines
 #
@@ -409,6 +411,8 @@ endif
 include $(MTB_TOOLS__CORE_DIR)/make/core/interface_version_$(_MTB_CORE__EXPORT_INTERFACE_VERSION)/ide.mk
 
 endif #ifneq ($(_MTB_CORE__SKIP_BUILD_MK_FILES),)
+
+endif #ifeq ($(MTB_LIBRARY__SKIP_LOAD_MAIN_MK),)
 
 endif #ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),)
 

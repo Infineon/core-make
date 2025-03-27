@@ -16,6 +16,10 @@ This release of the core GNU make Build System includes a framework to support b
     * LLVM Embedded Toolchain for Arm (Experimental)
 
 ### What Changed?
+#### v3.5.2
+* Support for PSOCEDGE EAP.
+* Fixed some issue with space handling for ninja builds.
+
 #### v3.5.1
 * Remove make build command line option "--output-sync" from eclipse and vscode export. This allows ninja builds in IDE to display incremental progress.
 * Added support for generating additional tasks when exporting to VSCode.
