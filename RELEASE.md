@@ -16,9 +16,9 @@ This release of the core GNU make Build System includes a framework to support b
     * LLVM Embedded Toolchain for Arm (Experimental)
 
 ### What Changed?
-#### v3.5.2
-* Support for PSOCEDGE EAP.
-* Fixed some issue with space handling for ninja builds.
+#### v3.6.0
+* Added support for GNU assembly syntax when using ARM toolchain.
+* Fixed the issue with space handling for ninja builds.
 
 #### v3.5.1
 * Remove make build command line option "--output-sync" from eclipse and vscode export. This allows ninja builds in IDE to display incremental progress.
@@ -114,16 +114,16 @@ This version of the core make build system was validated for compatibility with 
 
 | Software and Tools                        | Version |
 | :---                                      | :----:  |
-| ModusToolbox Software Environment         | 3.4     |
+| ModusToolbox Software Environment         | 3.5     |
 | GCC Compiler                              | 11.3    |
 | IAR Compiler                              | 9.3     |
 | ARM Compiler                              | 6.16    |
 
-Minimum required ModusToolbox Software Environment: v3.0
+Minimum required ModusToolbox Software Environment: v3.4
 
 ### More information
 * [Infineon GitHub](https://github.com/Infineon)
 * [ModusToolbox](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software)
 
 ---
-(c) 2019-2024, Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation. All rights reserved.
+(c) 2019-2025, Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation. All rights reserved.

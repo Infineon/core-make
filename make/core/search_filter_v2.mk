@@ -1,12 +1,13 @@
 ################################################################################
-# \file search_filter.mk
+# \file search_filter_v2.mk
 #
 # \brief
 # Parses the data from cyqbuild.mk to generate useful build variables
 #
 ################################################################################
 # \copyright
-# Copyright 2021-2024 Cypress Semiconductor Corporation
+# (c) 2021-2025, Cypress Semiconductor Corporation (an Infineon company) or
+# an affiliate of Cypress Semiconductor Corporation. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

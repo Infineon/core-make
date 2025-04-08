@@ -6,7 +6,8 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2024 Cypress Semiconductor Corporation
+# (c) 2018-2025, Cypress Semiconductor Corporation (an Infineon company) or
+# an affiliate of Cypress Semiconductor Corporation. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -193,7 +194,7 @@ CY_HELP_MVE_SELECT_VERBOSE=If not defined, this value defaults to MVE-F.\
 							$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage (within Makefile): MVE_SELECT=MVE-I.\
 							MVE_SELECT is ignored for IAR toolchain.
 CY_HELP_VFP_SELECT=Selects hard/soft ABI or full software for floating-point operations [softfp hardfp softfloat].
-CY_HELP_VFP_SELECT_VERBOSE=If not defined, this value defaults to softfp.\
+CY_HELP_VFP_SELECT_VERBOSE=If not defined, this value defaults to hardfp for CM55 core and softfp for the other cores.\
 							$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage (within Makefile): VFP_SELECT=hardfp
 CY_HELP_VFP_SELECT_PRECISION=Selects single-precision or double-precision operating mode for floating-point operations.
 CY_HELP_VFP_SELECT_PRECISION_VERBOSE=If not defined, this value defaults to double-precision.\
@@ -396,9 +397,9 @@ mtb_help_header:
 	@:
 	$(info                                                                                    )
 	$(info ==============================================================================     )
-	$(info $(MTB__SPACE)Cypress Build System                                                    )
+	$(info $(MTB__SPACE)ModusToolbox Build System                                             )
 	$(info ==============================================================================     )
-	$(info $(MTB__SPACE)(c) 2018-2024, Cypress Semiconductor Corporation (an Infineon company))
+	$(info $(MTB__SPACE)(c) 2018-2025, Cypress Semiconductor Corporation (an Infineon company))
 	$(info $(MTB__SPACE)or an affiliate of Cypress Semiconductor Corporation.  All rights reserved. )
 	$(info $(MTB__SPACE)SPDX-License-Identifier: Apache-2.0                                     )
 	$(info                                                                                    )

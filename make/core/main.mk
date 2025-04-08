@@ -7,7 +7,8 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2024 Cypress Semiconductor Corporation
+# (c) 2018-2025, Cypress Semiconductor Corporation (an Infineon company) or
+# an affiliate of Cypress Semiconductor Corporation. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -99,13 +100,6 @@ endif
 
 $(_MTB_CORE__QBUILD_MK_FILE) $(_MTB_CORE__NINJA_FILE):| start_build
 
-# mtbsearch and mtbninja option
-ifneq ($(ASSET_ARCHIVES),)
-_MTB_CORE__ASSET_ARCHIVES=--archive-assets
-else
-_MTB_CORE__ASSET_ARCHIVES=
-endif
-
 ##########################
 # Include make files
 ##########################
@@ -128,8 +122,6 @@ include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe_toolchain_file_types.mk
 include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/defines.mk
 
 include $(MTB_TOOLS__RECIPE_DIR)/make/recipe/recipe_setup.mk
-
-include $(MTB_TOOLS__CORE_DIR)/make/core/search.mk
 
 _MTB_CORE__LIB_MK=$(wildcard $(foreach dir,$(SEARCH_MTB_MK),$(dir)/library.mk))
 -include $(_MTB_CORE__LIB_MK)
@@ -168,8 +160,9 @@ $(MTB__NEWLINE)See https://community.infineon.com/t5/ModusToolbox/ModusToolbox-i
 endif
 endif
 # Set ninja as default if all assets support a matching version
-_MTB_CORE__NINJA_SUPPORT:=1
-NINJA?=$(filter $(filter $(MTB_RECIPE__NINJA_SUPPORT),$(_MTB_CORE__NINJA_SUPPORT)),$(MTB_TOOLS__NINJA_SUPPORT))
+_MTB_CORE__NINJA_SUPPORT:=1 2
+_MTB_CORE__NINJA_VERSIONS_SUPPORTED:=$(filter $(filter $(MTB_RECIPE__NINJA_SUPPORT),$(_MTB_CORE__NINJA_SUPPORT)),$(MTB_TOOLS__NINJA_SUPPORT))
+NINJA?=$(_MTB_CORE__NINJA_VERSIONS_SUPPORTED)
 
 #
 # Targets that require auto-discovery
@@ -362,16 +355,23 @@ endif
 # Build-related routines
 #
 _MTB_CORE__LOAD_QBUILD_MK_FILE:=
-# IDE export always use old auto-discovery
-ifneq ($(filter $(MAKECMDGOALS),eclipse vscode ewarm8 uvision5 ewarm uvision),)
-_MTB_CORE__LOAD_QBUILD_MK_FILE:=1
-else 
+
 ifeq ($(NINJA),)
 _MTB_CORE__LOAD_QBUILD_MK_FILE:=1
 endif
+
+# IDE export will use old auto-discovery if unless new mtbninja can also generate the qbuild.mk file.
+ifneq ($(filter $(MAKECMDGOALS),eclipse vscode ewarm8 uvision5 ewarm uvision),)
+_MTB_CORE__LOAD_QBUILD_MK_FILE:=1
 endif
 ifneq ($(CY_SIMULATOR_GEN_AUTO),)
 _MTB_CORE__LOAD_QBUILD_MK_FILE:=1
+endif
+
+ifneq ($(ASSET_ARCHIVES),)
+_MTB_CORE__ASSET_ARCHIVES=--archive-assets
+else
+_MTB_CORE__ASSET_ARCHIVES=
 endif
 
 ifneq ($(_MTB_CORE__LOAD_QBUILD_MK_FILE),)
@@ -381,12 +381,15 @@ include $(MTB_TOOLS__CORE_DIR)/make/core/search_filter_v2.mk
 else
 include $(MTB_TOOLS__CORE_DIR)/make/core/search_filter_v1.mk
 endif
+endif
 
+ifeq ($(NINJA),)
 ifneq ($(MTB_GENERATE_DEPENDENCIES),)
 include $(MTB_TOOLS__CORE_DIR)/make/core/build_v2.mk
 else
 include $(MTB_TOOLS__CORE_DIR)/make/core/build_v1.mk
 endif
+include $(MTB_TOOLS__CORE_DIR)/make/core/search.mk
 
 else
 include $(MTB_TOOLS__CORE_DIR)/make/core/ninja.mk

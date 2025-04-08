@@ -6,7 +6,8 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2024 Cypress Semiconductor Corporation
+# (c) 2018-2025, Cypress Semiconductor Corporation (an Infineon company) or
+# an affiliate of Cypress Semiconductor Corporation. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,7 +52,7 @@ endif
 _MTB_CORE__IDE_TEMPLATE_META_DATA_FILE:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/core_ide_template_meta_data.txt
 _MTB_CORE__IDE_TEXT_FILE:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/core_ide_text.txt
 # core-make templates to copy for eclipse and vscode
-_MTB_CORE__IDE_TEMPLATE_DIR=$(MTB_TOOLS__CORE_DIR)/make/scripts/interface_version_4
+_MTB_CORE__IDE_TEMPLATE_DIR:=$(MTB_TOOLS__CORE_DIR)/make/scripts/interface_version_4
 
 # warn about unsupported interface
 vscode_generate eclipse_generate: debug_interface_check

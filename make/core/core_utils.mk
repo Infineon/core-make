@@ -6,7 +6,8 @@
 #
 ################################################################################
 # \copyright
-# Copyright 2018-2024 Cypress Semiconductor Corporation
+# (c) 2018-2025, Cypress Semiconductor Corporation (an Infineon company) or
+# an affiliate of Cypress Semiconductor Corporation. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,14 +32,11 @@ endif
 # Components
 ################################################################################
 
-#
-# VFP-specific component
-#
-ifeq ($(VFP_SELECT),hardfp)
-CY_COMPONENT_VFP:=HARDFP
-else
-CY_COMPONENT_VFP:=SOFTFP
-endif
+# args
+# $1 vfp_select variable
+# $2 what to do if not set
+_mtb_core__vfp_select_map=$(if $1,$(if $(call mtb__equals,$1,hardfp),HARDFP,SOFTFP),$2)
+CY_COMPONENT_VFP=$(call _mtb_core__vfp_select_map,$(VFP_SELECT),$(call _mtb_core__vfp_select_map,$(MTB_RECIPE__VFP_SELECT_DEFAULT),SOFTFP))
 
 MTB_CORE__FULL_COMPONENT_LIST=$(sort $(MTB_RECIPE__CORE) $(MTB_RECIPE__CORE_NAME) $(CY_COMPONENT_VFP) $(COMPONENTS) $(TOOLCHAIN) $(TARGET) $(CONFIG) $(MTB_RECIPE__COMPONENT) $(DEVICE_COMPONENTS) $(BSP_COMPONENTS))
 
@@ -212,6 +210,9 @@ get_app_info_2_1:
 	$(info MTB_OFFLINE_DIR=$(MTB_TOOLS__OFFLINE_DIR))
 	$(info MTB_GLOBAL_DIR=$(MTB_TOOLS__GLOBAL_DIR))
 	$(info MTB_APP_PATH=$(MTB_TOOLS__REL_PRJ_PATH))
+	$(info MTB_APPINFO_DEPENDENCIES=$(MAKEFILE_LIST))
+	$(info MTB_BUILD_LOCATION=$(MTB_TOOLS__OUTPUT_BASE_DIR))
+	$(info MTB_SKIP_CODE_GEN=$(SKIP_CODE_GEN))
 
 get_app_info: get_app_info_$(MTB_CORE__CY_PROTOCOL_VERSION)_$(MTB_CORE__MTB_QUERY)
 	@:
