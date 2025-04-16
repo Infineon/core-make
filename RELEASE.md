@@ -16,6 +16,10 @@ This release of the core GNU make Build System includes a framework to support b
     * LLVM Embedded Toolchain for Arm (Experimental)
 
 ### What Changed?
+#### v3.6.1
+* Fixed a bug introduced in core-make-3.6.0 that broke BWC with IDE export using ModusToolbox 3.4.
+* Fixed a bug causing TrustZone veneer object file to not be linked into the non-secure project.
+
 #### v3.6.0
 * Added support for GNU assembly syntax when using ARM toolchain.
 * Fixed the issue with space handling for ninja builds.

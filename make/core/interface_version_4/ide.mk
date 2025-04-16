@@ -203,7 +203,7 @@ ewarm8 uvision5: MTB_CORE__EXPORT_CMDLINE += -build_data $(_MTB_CORE__IDE_BUILD_
 core_ide_build_data:
 	$(call mtb__file_write,$(_MTB_CORE__IDE_BUILD_DATA_FILE),APPNAME=$(CY_IDE_PRJNAME))
 	$(call mtb__file_append,$(_MTB_CORE__IDE_BUILD_DATA_FILE),SOURCES=$(MTB_RECIPE__SOURCE) $(SOURCES))
-	$(call mtb__file_append,$(_MTB_CORE__IDE_BUILD_DATA_FILE),LIBS=$(MTB_RECIPE__LIBS))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_BUILD_DATA_FILE),LIBS=$(LDLIBS) $(MTB_CORE__SEARCH_APP_LIBS))
 	$(call mtb__file_append,$(_MTB_CORE__IDE_BUILD_DATA_FILE),HEADERS=$(_MTB_CORE__SEACH_APP_HEADERS))
 	$(shell echo INCLUDES=$(patsubst -I%,%,$(MTB_RECIPE__INCLUDES)) >> $(_MTB_CORE__IDE_BUILD_DATA_FILE))
 	$(shell echo DEFINES=$(patsubst -D%,%,$(MTB_RECIPE__DEFINES)) >> $(_MTB_CORE__IDE_BUILD_DATA_FILE))

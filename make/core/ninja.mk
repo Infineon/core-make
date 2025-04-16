@@ -168,7 +168,7 @@ $(call mtb__file_write,$(_MTB_CORE__LDFLAGS_FILE),$(_MTB_CORE__FINAL_LDFLAGS))
 
 $(call mtb__file_write,$(_MTB_CORE__SOURCES_FILE),$(_MTB_CORE__FILTERED_USER_SOURCES))
 $(call mtb__file_write,$(_MTB_CORE__INCLUDES_FILE),$(INCLUDES))
-$(call mtb__file_write,$(_MTB_CORE__LDLIBS_FILE),$(LDLIBS) $(CY_RECIPE_EXTRA_LIBS))
+$(call mtb__file_write,$(_MTB_CORE__LDLIBS_FILE),$(filter-out $(MTB_CORE__SEARCH_APP_LIBS),$(MTB_RECIPE__LIBS)) $(CY_RECIPE_EXTRA_LIBS))
 
 $(info Generating mtbninja data complete...)
 
@@ -211,6 +211,9 @@ endif
 
 else
 _MTB_CORE__NINJA_EXTRA+=--aspath   $(_MTB_CORE__AS_PATH)    --asflags   $(_MTB_CORE__ASFLAGS_FILE)
+
+# generate the cyqbuild.mk file use mtbsearch since the old version of mtbninja does not generate cyqbuild.mk
+include $(MTB_TOOLS__CORE_DIR)/make/core/search.mk
 endif
 
 # Check GCC toolchain is installed.
