@@ -75,6 +75,31 @@ else #($(MTB_TYPE),PROJECT)
 _MTB_CORE__IDE_ROOT_DIR=.
 endif #($(MTB_TYPE),PROJECT)
 
+# Generate a .clangd configuration file.
+_MTB_CORE__IDE_CLANGD_TEMPLATE_META_DATA_FILE:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/core_ide_clangd_template_meta.txt
+eclipse_generate vscode_generate: core_clangd_template_meta_data
+eclipse_generate vscode_generate: MTB_CORE__EXPORT_CMDLINE += -metadata $(_MTB_CORE__IDE_CLANGD_TEMPLATE_META_DATA_FILE)
+
+ifneq (,$(MTB_APPLICATION_SUBPROJECTS))
+_MTB_CORE__IDE_CLANGD_APP_DEST:=../.clangd
+else
+_MTB_CORE__IDE_CLANGD_APP_DEST:=.clangd
+endif
+_MTB_CORE__IDE_CLANGD_SHARED_DEST:=$(patsubst %/,%,$(CY_GETLIBS_SHARED_PATH))/$(CY_GETLIBS_SHARED_NAME)/.clangd
+
+# The source template file copied to mtb_shared/.clangd named shared.clangd to work around a implentation detail in mtbideexport.
+# mtbideexport will store template replace files as a map from source to destination.
+# So if multiple destination files need to be genenerated from the same source file it will not work.
+core_clangd_template_meta_data:
+	$(call mtb__file_write,$(_MTB_CORE__IDE_CLANGD_TEMPLATE_META_DATA_FILE),)
+ifeq (,$(filter $(_MTB_CORE__IDE_CLANGD_APP_DEST),$(wildcard $(_MTB_CORE__IDE_CLANGD_APP_DEST))))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_CLANGD_TEMPLATE_META_DATA_FILE),TEMPLATE_REPLACE=$(_MTB_CORE__IDE_TEMPLATE_DIR)/.clangd=$(_MTB_CORE__IDE_CLANGD_APP_DEST))
+endif
+ifeq (,$(filter $(_MTB_CORE__IDE_CLANGD_SHARED_DEST),$(wildcard $(_MTB_CORE__IDE_CLANGD_SHARED_DEST))))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_CLANGD_TEMPLATE_META_DATA_FILE),TEMPLATE_REPLACE=$(_MTB_CORE__IDE_TEMPLATE_DIR)/shared.clangd=$(_MTB_CORE__IDE_CLANGD_SHARED_DEST))
+endif
+
+.PHONY: core_clangd_template_meta_data
 ##############################################
 # Eclipse
 ##############################################
