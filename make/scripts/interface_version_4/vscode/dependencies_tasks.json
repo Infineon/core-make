@@ -50,6 +50,14 @@
             }
         },
         {
+            "label": "Rebuild",
+            "dependsOrder": "sequence",
+            "dependsOn" : [ "Clean", "Build" ],
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
             "hide": true,
             "label": "Build Application",
             "type": "process",

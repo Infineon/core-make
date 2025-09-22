@@ -13,9 +13,13 @@ This release of the core GNU make Build System includes a framework to support b
     * GCC
     * IAR
     * ARM Compiler 6
-    * LLVM Embedded Toolchain for Arm (Experimental)
+    * LLVM Embedded Toolchain for Arm
 
 ### What Changed?
+#### v3.7.0
+* Improved ability to locate latest JLink installation for windows.
+* Improved UVision and EWARM export setup by generating an ide_postbuild.bat when used with latest recipe-make and ModusToolbox 3.6. This postbuild step will be automatically added to EWARM IDE during export.
+
 #### v3.6.2
 * Improved clangd usability in Eclipse and VS Code by including a .clangd file when exporting.
 

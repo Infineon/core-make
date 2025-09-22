@@ -78,6 +78,10 @@ check get_app_info get_env_info printlibs check_toolchain:
 
 memcalc application_postbuild mtb_conditional_postbuild project_postbuild:
 
+ifneq (,$(MTB_IDE__TARG_FILE))
+$(call mtb__path_normalize,$(MTB_IDE__TARG_FILE)):
+endif
+
 include $(MTB_TOOLS__CORE_DIR)/make/core/application_bootstrap.mk
 
 FORCE:
@@ -94,7 +98,7 @@ endif
 endif
 
 # optimization if command is not one of these (i.e. clean) then don't load files like build.mk and program.mk
-ifeq ($(filter $(MAKECMDGOALS),all build build_proj qbuild qbuild_proj app program program_proj qprogram qprogram_proj debug qdebug erase attach eclipse vscode ewarm8 uvision5 ewarm uvision),)
+ifeq ($(filter $(MAKECMDGOALS),all build build_proj qbuild qbuild_proj app program program_proj qprogram qprogram_proj debug qdebug erase attach eclipse vscode ewarm8 uvision5 ewarm uvision codegen ide_postbuild),)
 _MTB_CORE__SKIP_BUILD_MK_FILES:=1
 endif
 
@@ -136,7 +140,7 @@ include $(MTB_TOOLS__CORE_DIR)/make/core/config.mk
 #
 # Export interface version set up for IDE file generation
 #
-_MTB_CORE__EXPORT_SUPPORTED_INTERFACES:=1 2 3 4
+_MTB_CORE__EXPORT_SUPPORTED_INTERFACES:=1 2 3 4 5
 _MTB_CORE__ALL_SUPPORTED_EXPORT_VERSION:=$(filter $(filter $(_MTB_CORE__EXPORT_SUPPORTED_INTERFACES),$(CY_TOOL_mtbideexport_EXPORT_SUPPORTED_INTERFACES)),$(MTB_RECIPE__EXPORT_INTERFACES))
 
 ifneq ($(_MTB_CORE__ALL_SUPPORTED_EXPORT_VERSION),)
@@ -419,6 +423,9 @@ endif #ifeq ($(MTB_LIBRARY__SKIP_LOAD_MAIN_MK),)
 
 endif #ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),)
 
+# runs all code generation
+codegen: $(_MTB_CORE__NINJA_FILE)
+
 #
 # Identify the phony targets
 #
@@ -428,4 +435,4 @@ endif #ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),)
 .PHONY: app memcalc help_default mtb_conditional_postbuild
 
 .PHONY: build build_proj qbuild qbuild_proj
-.PHONY: program program_proj qprogram debug qdebug erase attach
+.PHONY: program program_proj qprogram debug qdebug erase attach codegen

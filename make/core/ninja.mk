@@ -221,14 +221,16 @@ endif
 # - hex file generation (objcopy)
 # - memcalc (readelf)
 # - debugging (gdb)
-check_gcc_install:
-		$(if $(MTB_TOOLCHAIN_GCC_ARM__BASE_DIR),,$(error GCC Package was not found, \
+check_toolchain_install:
+check_gcc_install: check_toolchain_install
+		$(if $(MTB_TOOLCHAIN_GCC_ARM__BASE_DIR),,$(error Error: GCC Package was not found, \
 					run the ModusToolbox SetupTool and install the GCC package to continue. \
 					More information can be found in the user guide at https://www.infineon.com/ModusToolboxInstallguide))
 
+
 ##########################################################################
 # Where the ninja build "magic" happens
-$(_MTB_RECIPE__TARG_FILE): $(_MTB_CORE__NINJA_FILE) FORCE check_gcc_install
+$(_MTB_RECIPE__TARG_FILE): $(_MTB_CORE__NINJA_FILE) FORCE check_gcc_install check_toolchain_install
 	$(MTB__NOISE)$(CY_TOOL_ninja_EXE_ABS) -f $(_MTB_CORE__NINJA_FILE) -d keeprsp $(NINJAFLAGS)
 
 $(_MTB_CORE__NINJA_FILE):
@@ -256,4 +258,4 @@ $(_MTB_CORE__NINJA_FILE):
 		$(_MTB_CORE__NINJA_EXTRA) \
 		$(_MTB_CORE__SEARCH_GET_APP_INFO_DATA)
 
-.PHONY: app _mtb_build_cdb_postprint check_gcc_install
+.PHONY: app _mtb_build_cdb_postprint check_gcc_install check_toolchain_install

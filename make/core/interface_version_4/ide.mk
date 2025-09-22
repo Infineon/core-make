@@ -158,12 +158,10 @@ endif
 _MTB_CORE__VSCODE_JLINK_EXE_WINDOWS:=$(_MTB_CORE__JLINK_DEFAULT_GDB_WINDOWS)
 _MTB_CORE__VSCODE_JLINK_EXE_OSX:=$(_MTB_CORE__JLINK_DEFAULT_GDB_OSX)
 _MTB_CORE__VSCODE_JLINK_EXE_LINUX:=$(_MTB_CORE__JLINK_DEFAULT_GDB_LINUX)
-ifneq (,$(MTB_JLINK_DIR))
 ifneq (,$(MTB_CORE__JLINK_GDB_EXE))
 _MTB_CORE__VSCODE_JLINK_EXE_WINDOWS:=$(MTB_CORE__JLINK_GDB_EXE)
 _MTB_CORE__VSCODE_JLINK_EXE_OSX:=$(MTB_CORE__JLINK_GDB_EXE)
 _MTB_CORE__VSCODE_JLINK_EXE_LINUX:=$(MTB_CORE__JLINK_GDB_EXE)
-endif
 endif
 
 _mtb_core__vscode_json_string_array=$(subst ','"'"',$(call mtb_core__json_escaped_string,$1))
@@ -248,6 +246,9 @@ uvision5: _MTB_CORE__IDE_EXPORT_TARGET = uvision5
 uvision5: uvision5_check_toolchain
 
 uvision5_check_toolchain:
+ifeq ($(filter uvision uvision5,$(MTB_RECIPE__IDE_SUPPORTED)),)
+	$(error The target device does support exporting to uVision. Supported IDEs are: $(MTB_RECIPE__IDE_SUPPORTED))
+endif
 ifeq ($(TOOLCHAIN), GCC_ARM)
 	$(info WARNING: GCC support in Keil uVision is experimental. To use ARM Compiler 6, run: make uvision5 TOOLCHAIN=ARM.)
 else ifneq ($(TOOLCHAIN), ARM)
@@ -279,6 +280,9 @@ ewarm8: MTB_CORE__EXPORT_CMDLINE += -o $(CY_IDE_PRJNAME).ipcf
 ewarm8: _MTB_CORE__IDE_EXPORT_TARGET = ewarm8
 
 ewarm8: $(MTB_TOOLS__OUTPUT_CONFIG_DIR)
+ifeq ($(filter ewarm ewarm8,$(MTB_RECIPE__IDE_SUPPORTED)),)
+	$(error The target device does support exporting to Embedded Workbench. Supported IDEs are: $(MTB_RECIPE__IDE_SUPPORTED))
+endif
 ifneq ($(TOOLCHAIN), IAR)
 	$(error Unable to proceed. TOOLCHAIN must be set to IAR. Use TOOLCHAIN=IAR on the command line, or edit the Makefile.)
 endif
@@ -306,3 +310,33 @@ endif
 	$(MTB__NOISE)echo;\
 	echo $(_MTB_CORE__IDE_EXPORT_FINAL_MSG);\
 	echo ""
+
+
+##############################################
+# GDB Additional Configurations
+##############################################
+_MTB_CORE__IDE_GDB_DATA_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/core_ide_gdb_data.txt
+
+vscode_generate eclipse_generate: core_ide_gdb_config
+vscode_generate eclipse_generate: MTB_CORE__EXPORT_CMDLINE += -textdata $(_MTB_CORE__IDE_GDB_DATA_FILE)
+
+_MTB_CORE__VSCODE_GDB_DEBUG_FILES:=$(patsubst %,"add-symbol-file %"$(MTB__COMMA),$(strip $(MTB_GDB_ADDITIONAL_DBG_FILE)))
+_MTB_CORE__VSCODE_GDB_SEARCH_DIR:=$(patsubst %,"directory %"$(MTB__COMMA),$(strip $(MTB_GDB_SEARCH_DIR)))
+
+# The pound character is the start of a comment in makefiles. So, it need to be escaped.
+# However, depending on the version of make and situation it is used, the \# may either evaluate to \# or just #.
+# By setting it in variable first workaround this issue.
+_MTB_CORE__ECLIPSE_GDB_DEBUG_FILE_ADD_SYMBOL:=add-symbol-file %&\#13;&\#10;
+_MTB_CORE__ECLIPSE_GDB_DEBUG_FILE_DIRECTORY:=directory %&\#13;&\#10;
+
+_MTB_CORE__ECLIPSE_GDB_DEBUG_FILES:=$(patsubst %,$(_MTB_CORE__ECLIPSE_GDB_DEBUG_FILE_ADD_SYMBOL),$(strip $(MTB_GDB_ADDITIONAL_DBG_FILE)))
+_MTB_CORE__ECLIPSE_GDB_SEARCH_DIR:=$(patsubst %,$(_MTB_CORE__ECLIPSE_GDB_DEBUG_FILE_DIRECTORY),$(strip $(MTB_GDB_SEARCH_DIR)))
+
+core_ide_gdb_config:
+	$(call mtb__file_write,$(_MTB_CORE__IDE_GDB_DATA_FILE),)
+	$(call mtb__file_append,$(_MTB_CORE__IDE_GDB_DATA_FILE),&&_MTB_CORE__VSCODE_GDB_DEBUG_FILES&&=$(_MTB_CORE__VSCODE_GDB_DEBUG_FILES))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_GDB_DATA_FILE),&&_MTB_CORE__VSCODE_GDB_SEARCH_DIR&&=$(_MTB_CORE__VSCODE_GDB_SEARCH_DIR))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_GDB_DATA_FILE),&&_MTB_CORE__ECLIPSE_GDB_DEBUG_FILES&&=$(_MTB_CORE__ECLIPSE_GDB_DEBUG_FILES))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_GDB_DATA_FILE),&&_MTB_CORE__ECLIPSE_GDB_SEARCH_DIR&&=$(_MTB_CORE__ECLIPSE_GDB_SEARCH_DIR))
+
+.PHONY: core_ide_gdb_config

@@ -38,6 +38,8 @@ endif
 # If we not doing a build operation (like sign_combine), then the postbuild.mk is not included and mtb_conditional_postbuild has no dependency.
 mtb_conditional_postbuild: project_postbuild
 
+ide_postbuild: application_postbuild project_postbuild
+
 recipe_postbuild: $(_MTB_CORE__BUILD_TARGET)
 
 bsp_postbuild: recipe_postbuild

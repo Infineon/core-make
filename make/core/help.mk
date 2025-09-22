@@ -140,8 +140,8 @@ CY_HELP_project_postbuild_VERBOSE=This target defines the commands that run for 
 # Basic configuration
 #
 CY_HELP_TARGET=Specifies the target board/kit. (e.g. CY8CPROTO-062-4343W)
-CY_HELP_TARGET_VERBOSE=Current target in this application is, [ $(CY_TARGET_MAKEFILE) ].\
-						$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make build TARGET=CY8CPROTO-062-4343W
+CY_HELP_TARGET_VERBOSE=Current target in this application is, [ $(TARGET) stored at $(SEARCH_TARGET_$(TARGET)) ].\
+						$(MTB__NEWLINE)$(MTB__NEWLINE)Note: To change the TARGET for an application, use the Library Manager GUI or CLI.
 CY_HELP_CORE=Specifies the name of the Arm core for which a project is building (e.g. CM4).
 CY_HELP_CORE_VERBOSE=Use this variable to select compiler and linker options to build a project for a specified Arm core.\
 				$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make build CORE=CM4
@@ -331,9 +331,15 @@ CY_HELP_CY_COMPILER_ARM_DIR_VERBOSE=Setting this path overrides the default ARM 
 					Make uses this variable for the path to the assembler, compiler, linker, objcopy, and other toolchain binaries.\
 					For example, CY_COMPILER_ARM_DIR=C:/Program Files/ARMCompiler6.16\
 					NOTE: when set in the Makefile, no quotes are required.
+CY_HELP_CY_COMPILER_LLVM_ARM_DIR=Absolute path to the LLVM_ARM toolchain directory.
+CY_HELP_CY_COMPILER_LLVM_ARM_DIR_VERBOSE=Setting this path overrides the default LLVM_ARM toolchain directory.\
+					It is used when the compiler is located at a non-default directory.\
+					Make uses this variable for the path to the assembler, compiler, linker, objcopy, and other toolchain binaries.\
+					For example, CY_COMPILER_LLVM_ARM_DIR=C:/LLVM-ET-Arm-19.1.5-Windows-x86_64\
+					NOTE: when set in the Makefile, no quotes are required.
 CY_HELP_CY_TOOLS_DIR=Absolute path to the tools root directory.
 CY_HELP_CY_TOOLS_DIR_VERBOSE=Applications must specify the directory of the tools install, which contains the\
-					root Makefile and the necessary tools and scripts to build an application. Application Makefiles\
+					included makefiles and the necessary tools and scripts to build an application. Application Makefiles\
 					are configured to automatically search in the standard locations for various platforms.\
 					If the tools are not located in the standard location, you may explicitly set this.\
 					$(MTB__NEWLINE)$(MTB__NEWLINE)Example Usage: make build CY_TOOLS_DIR="path/to/ModusToolbox/tools_x.y"
@@ -532,6 +538,7 @@ endif
 	$(info $(MTB__SPACE)CY_COMPILER_GCC_ARM_DIR $(CY_HELP_CY_COMPILER_GCC_ARM_DIR))
 	$(info $(MTB__SPACE)CY_COMPILER_IAR_DIR $(CY_HELP_CY_COMPILER_IAR_DIR))
 	$(info $(MTB__SPACE)CY_COMPILER_ARM_DIR $(CY_HELP_CY_COMPILER_ARM_DIR))
+	$(info $(MTB__SPACE)CY_COMPILER_LLVM_ARM_DIR $(CY_HELP_CY_COMPILER_LLVM_ARM_DIR))
 	$(info $(MTB__SPACE)CY_TOOLS_DIR        $(CY_HELP_CY_TOOLS_DIR))
 	$(info $(MTB__SPACE)CY_BUILD_LOCATION   $(CY_HELP_CY_BUILD_LOCATION))
 	$(info $(MTB__SPACE)CY_PYTHON_PATH      $(CY_HELP_CY_PYTHON_PATH))
