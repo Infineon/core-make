@@ -109,7 +109,7 @@ _MTB_RECIPE__TARG_FILE:=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).$(MTB_RECIPE_
 endif
 
 _MTB_CORE__ELF_FILE=$(_MTB_RECIPE__TARG_FILE)
-_MTB_CORE__HEX_FILE=$(_MTB_CORE__ELF_FILE:.$(MTB_RECIPE__SUFFIX_TARGET)=.hex)
+_MTB_CORE__LIB_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(LIBNAME).$(MTB_RECIPE__SUFFIX_A)
 _MTB_CORE__MAP_FILE=$(_MTB_CORE__ELF_FILE:.$(MTB_RECIPE__SUFFIX_TARGET)=.$(MTB_RECIPE__SUFFIX_MAP))
 
 _MTB_CORE__DEFINES_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.defines
@@ -194,12 +194,22 @@ endif
 
 _MTB_CORE__NINJA_EXTRA:=
 
+ifeq ($(LIBNAME),)
+_MTB_CORE__BUILD_TARGET:=$(_MTB_CORE__ELF_FILE)
+_MTB_CORE__NINJA_EXTRA+=--elffile $(_MTB_CORE__BUILD_TARGET) --mapfile  $(_MTB_CORE__MAP_FILE)
+else
+_MTB_CORE__BUILD_TARGET=$(_MTB_CORE__LIB_FILE)
+_MTB_CORE__NINJA_EXTRA+=--libfile $(_MTB_CORE__BUILD_TARGET)
+endif
+
 ##########################################################################
 # Only include the new options when the recipe has a separate LC assembler
 # defined and when we are supporting the ninja interface greater than 1
 # which has support for multiple assemblers.
 ifneq ($(strip $(filter-out 0 1,$(_MTB_CORE__NINJA_VERSIONS_SUPPORTED))),)
+ifeq ($(LIBNAME),)
 _MTB_CORE__NINJA_EXTRA+=--ld-ext   $(MTB_RECIPE__SUFFIX_LS)
+endif
 _MTB_CORE__NINJA_EXTRA+=--aspath_s $(_MTB_CORE__AS_LC_PATH) --asflags_s $(_MTB_CORE__ASFLAGS_LC_FILE)
 _MTB_CORE__NINJA_EXTRA+=--aspath   $(_MTB_CORE__AS_UC_PATH) --asflags   $(_MTB_CORE__ASFLAGS_UC_FILE)
 _MTB_CORE__NINJA_EXTRA+= --out-mk $(_MTB_CORE__QBUILD_MK_FILE)
@@ -230,7 +240,7 @@ check_gcc_install: check_toolchain_install
 
 ##########################################################################
 # Where the ninja build "magic" happens
-$(_MTB_RECIPE__TARG_FILE): $(_MTB_CORE__NINJA_FILE) FORCE check_gcc_install check_toolchain_install
+$(_MTB_CORE__BUILD_TARGET): $(_MTB_CORE__NINJA_FILE) FORCE check_gcc_install check_toolchain_install
 	$(MTB__NOISE)$(CY_TOOL_ninja_EXE_ABS) -f $(_MTB_CORE__NINJA_FILE) -d keeprsp $(NINJAFLAGS)
 
 $(_MTB_CORE__NINJA_FILE):
@@ -244,8 +254,6 @@ $(_MTB_CORE__NINJA_FILE):
 		--ldpath   $(_MTB_CORE__LD_PATH) \
 		--arpath   $(_MTB_CORE__AR_PATH) \
 		--objcopypath $(_MTB_CORE__OBJCOPY_PATH) \
-		--elffile  $(_MTB_CORE__ELF_FILE) \
-		--mapfile  $(_MTB_CORE__MAP_FILE) \
 		--defines  $(_MTB_CORE__DEFINES_FILE) \
 		--cflags   $(_MTB_CORE__CFLAGS_FILE) \
 		--cppflags $(_MTB_CORE__CXXFLAGS_FILE) \

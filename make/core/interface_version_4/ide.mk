@@ -127,6 +127,7 @@ endif
 
 core_eclipe_text_data:
 	$(call mtb__file_write,$(_MTB_CORE__IDE_TEXT_FILE),)
+	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&DEVICE&&=$(DEVICE))
 
 .PHONY: core_eclipse_template_meta_data core_eclipe_meta_data core_eclipe_text_data
 
@@ -186,6 +187,7 @@ core_vscode_text_data:
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__CC&&=$(subst \,,$(CC)))
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__VSCODE_INTELLISENSE_MODE&&=$(MTB_RECIPE__TOOLCHAIN_VSCODE_INTELLISENSE_MODE))
 	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&_MTB_CORE__VSCODE_PROBLEM_MATCHER&&=$(MTB_RECIPE__TOOLCHAIN_VSCODE_PROBLEM_MATCHER))
+	$(call mtb__file_append,$(_MTB_CORE__IDE_TEXT_FILE),&&DEVICE&&=$(DEVICE))
 
 core_vscode_template_meta_data:
 	$(call mtb__file_write,$(_MTB_CORE__IDE_TEMPLATE_META_DATA_FILE),EXTERNAL_REF_KEY=&&LINKED_RESOURCES&&)

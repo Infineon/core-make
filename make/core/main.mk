@@ -89,7 +89,7 @@ _MTB_CORE__SKIP_BUILD_MK_FILES:=
 ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),)
 
 _MTB_CORE__QBUILD_MK_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/cyqbuild.mk
-_MTB_CORE__NINJA_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME).ninja
+_MTB_CORE__NINJA_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME)$(LIBNAME).ninja
 ifneq ($(filter $(MAKECMDGOALS),all build build_proj app program program_proj debug erase attach eclipse vscode ewarm8 uvision5 ewarm uvision),)
 $(_MTB_CORE__NINJA_FILE): FORCE prebuild
 ifeq ($(MAKE_RESTARTS),)

@@ -40,16 +40,25 @@ mtb_conditional_postbuild: project_postbuild
 
 ide_postbuild: application_postbuild project_postbuild
 
+ifeq (,$(MTB_IDE__TARG_FILE))
 recipe_postbuild: $(_MTB_CORE__BUILD_TARGET)
+else
+recipe_postbuild:
+endif
 
 bsp_postbuild: recipe_postbuild
 
 project_postbuild: bsp_postbuild
 
+ifneq (,$(APPNAME))
+_mtb_build_postprint: project_postbuild
+else
+_mtb_build_postprint: $(_MTB_CORE__BUILD_TARGET)
+endif
 #
 # Perform the post build print step, basically stating we are done
 #
-_mtb_build_postprint: project_postbuild
+_mtb_build_postprint:
 	$(info ==============================================================================)
 	$(info = Build complete =)
 	$(info ==============================================================================)

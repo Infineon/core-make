@@ -16,6 +16,10 @@ This release of the core GNU make Build System includes a framework to support b
     * LLVM Embedded Toolchain for Arm
 
 ### What Changed?
+
+#### v3.8.0
+* Added support for ninja build to generate an output library instead of  elf file when used with ModusToolbox 3.7 or newer.
+
 #### v3.7.0
 * Improved ability to locate latest JLink installation for windows.
 * Improved UVision and EWARM export setup by generating an ide_postbuild.bat when used with latest recipe-make and ModusToolbox 3.6. This postbuild step will be automatically added to EWARM IDE during export.
