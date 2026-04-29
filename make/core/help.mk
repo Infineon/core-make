@@ -6,8 +6,8 @@
 #
 ################################################################################
 # \copyright
-# (c) 2018-2025, Cypress Semiconductor Corporation (an Infineon company) or
-# an affiliate of Cypress Semiconductor Corporation. All rights reserved.
+# Copyright (c) 2018-2026, Infineon Technologies AG, or an affiliate of
+# Infineon Technologies AG. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,6 +61,11 @@ CY_HELP_qprogram_VERBOSE=This target allows programming an existing artifact to 
 CY_HELP_qprogram_proj=Programs the current built project to the target device without rebuilding.\
 					In single-core applications, this target is the same as the "qprogram" target.
 CY_HELP_qprogram_proj_VERBOSE=This target allows programming an existing artifact to the board without a build step.
+CY_HELP_erase=Erase the MCU's internal flash memory and, optionally, any connected external nonvolatile memory. This operation is irreversible.
+CY_HELP_erase_VERBOSE=This target performs a mass erase of the device's internal nonvolatile memory, removing firmware including any user data, configuration settings,\
+					and calibration data. By default, only internal memory is erased. To include supported external memory (for example, QSPI flash),\
+					use "make erase MTB_ERASE_EXT_MEM=1". Erase is irreversible and may be blocked by device protection or security settings; unlock or\
+					clear protection first if required. Ensure there is stable power and do not interrupt the debug session during the operation.
 CY_HELP_clean=Cleans the application and project "build" directories.
 CY_HELP_clean_VERBOSE=The directories and all its contents are deleted from disk.
 CY_HELP_clean_proj=Clean the current project's "build" directory.\
@@ -135,6 +140,14 @@ CY_HELP_project_postbuild=Project specific postbuild target.
 CY_HELP_project_postbuild_VERBOSE=This target defines the commands that run for a project during the postbuild step\
 					between the linking and hex file generation. Leave this target empty if no postbuild commands are\
 					required for the project.
+
+#
+# Application defined targets
+#
+CY_HELP_user_application_postbuild=Application-specific postbuild target. Will not run when building sub-projects.
+CY_HELP_user_application_postbuild_VERBOSE=This target defines the commands that run for the application during the postbuild step\
+					after all sub-projects have been built and the combined hex file has been generated.\
+					Leave this target empty if no postbuild commands are required for the application.
 
 #
 # Basic configuration
@@ -371,7 +384,7 @@ CY_HELP_CY_SIMULATOR_GEN_AUTO_VERBOSE=When enabled, build make target will gener
 # Pass these to CY_HELP to get the full verbose info
 
 CY_HELP_TARGETS_ALL=all getlibs build build_proj qbuild qbuild_proj program program_proj qprogram qprogram_proj \
-					debug qdebug attach clean prebuild help check project_prebuild project_postbuild \
+					debug qdebug attach clean prebuild help check project_prebuild project_postbuild user_application_postbuild \
 					eclipse vscode ewarm uvision modlibs check printlibs
 CY_HELP_BASIC_CFG_ALL=TARGET CORE CORE_NAME APPNAME TOOLCHAIN CONFIG VERBOSE
 CY_HELP_ADVANCED_CFG_ALL=SOURCES INCLUDES DEFINES VFP_SELECT CFLAGS CXXFLAGS ASFLAGS LDFLAGS LDLIBS LINKER_SCRIPT \
@@ -405,8 +418,8 @@ mtb_help_header:
 	$(info ==============================================================================     )
 	$(info $(MTB__SPACE)ModusToolbox Build System                                             )
 	$(info ==============================================================================     )
-	$(info $(MTB__SPACE)(c) 2018-2025, Cypress Semiconductor Corporation (an Infineon company))
-	$(info $(MTB__SPACE)or an affiliate of Cypress Semiconductor Corporation.  All rights reserved. )
+	$(info $(MTB__SPACE)Copyright (c) 2018-2026, Infineon Technologies AG, or an affiliate of )
+	$(info $(MTB__SPACE)Infineon Technologies AG. All rights reserved.                        )
 	$(info $(MTB__SPACE)SPDX-License-Identifier: Apache-2.0                                     )
 	$(info                                                                                    )
 	$(info $(MTB__SPACE)Licensed under the Apache License, Version 2.0 (the "License");         )
@@ -422,7 +435,7 @@ mtb_help_header:
 	$(info $(MTB__SPACE)limitations under the License.                                          )
 	$(info ==============================================================================     )
 	$(info                                                                                    )
-	$(info $(MTB__SPACE)This is the help documentation for the Cypress build system.            )
+	$(info $(MTB__SPACE)This is the help documentation for the Infineon build system.            )
 	$(info $(MTB__SPACE)It lists the supported make targets and make variables.                 )
 	$(info                                                                                    )
 	$(info $(MTB__SPACE)Usage:   make [target][variable]                                        )
@@ -447,10 +460,12 @@ mtb_help_header:
 	$(info $(MTB__SPACE)program_proj        $(CY_HELP_program_proj))
 	$(info $(MTB__SPACE)qprogram            $(CY_HELP_qprogram))
 	$(info $(MTB__SPACE)qprogram_proj       $(CY_HELP_qprogram_proj))
+	$(info $(MTB__SPACE)erase               $(CY_HELP_erase))
 	$(info $(MTB__SPACE)clean               $(CY_HELP_clean))
 	$(info $(MTB__SPACE)clean_proj          $(CY_HELP_clean_proj))
 	$(info $(MTB__SPACE)help                $(CY_HELP_help))
 	$(info $(MTB__SPACE)prebuild            $(CY_HELP_prebuild))
+	$(info $(MTB__SPACE)check               $(CY_HELP_check))
 	$(info                                                               )
 	$(info =======================================                       )
 	$(info $(MTB__SPACE)IDE make targets                                   )
@@ -468,6 +483,13 @@ mtb_help_header:
 	$(info $(MTB__SPACE)progtool            $(CY_HELP_progtool))
 	$(info $(MTB__SPACE)printlibs           $(CY_HELP_printlibs))
 	$(info $(MTB__SPACE)check               $(CY_HELP_check))
+	$(info )
+	$(info ========================================                    )
+	$(info $(MTB__SPACE)User defined make targets                      )
+	$(info ========================================                    )
+	$(info $(MTB__SPACE)project_prebuild     $(CY_HELP_project_prebuild))
+	$(info $(MTB__SPACE)project_postbuild    $(CY_HELP_project_postbuild))
+	$(info $(MTB__SPACE)user_application_postbuild $(CY_HELP_user_application_postbuild))
 	$(info                                                               )
 	$(info =======================================                       )
 	$(info $(MTB__SPACE)Basic configuration make variables                 )

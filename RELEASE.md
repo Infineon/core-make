@@ -17,6 +17,9 @@ This release of the core GNU make Build System includes a framework to support b
 
 ### What Changed?
 
+#### v3.9.0
+* Added tasks.json templates for single core devices that requires signer combiner tool.
+
 #### v3.8.0
 * Added support for ninja build to generate an output library instead of  elf file when used with ModusToolbox 3.7 or newer.
 
@@ -141,4 +144,4 @@ Minimum required ModusToolbox Software Environment: v3.4
 * [ModusToolbox](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software)
 
 ---
-(c) 2019-2025, Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation. All rights reserved.
+Copyright (c) 2019-2026, Infineon Technologies AG, or an affiliate of Infineon Technologies AG. All rights reserved.

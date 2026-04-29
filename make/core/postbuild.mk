@@ -6,8 +6,8 @@
 #
 ################################################################################
 # \copyright
-# (c) 2018-2025, Cypress Semiconductor Corporation (an Infineon company) or
-# an affiliate of Cypress Semiconductor Corporation. All rights reserved.
+# Copyright (c) 2018-2026, Infineon Technologies AG, or an affiliate of
+# Infineon Technologies AG. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,7 +43,7 @@ ide_postbuild: application_postbuild project_postbuild
 ifeq (,$(MTB_IDE__TARG_FILE))
 recipe_postbuild: $(_MTB_CORE__BUILD_TARGET)
 else
-recipe_postbuild:
+recipe_postbuild: cpy_recipe_trg
 endif
 
 bsp_postbuild: recipe_postbuild

@@ -1,0 +1,18 @@
+        {
+            "label": "Tool: Library Manager",
+            "type": "process",
+            "command": "bash",
+            "args": [
+                "--norc",
+                "-c",
+                "make modlibs MTB__JOB_BACKGROUND="
+            ],
+            "windows" : {
+                "command": "${config:modustoolbox.toolsPath}/&&_MTB_RECIPE__MODUS_SHELL_BASE&&/bin/bash.exe",
+                "args": [
+                    "--norc",
+                    "-c",
+                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/&&_MTB_RECIPE__MODUS_SHELL_BASE&&/bin/make.exe modlibs MTB__JOB_BACKGROUND="
+                ]
+            }
+        }

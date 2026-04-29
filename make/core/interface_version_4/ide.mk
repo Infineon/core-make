@@ -6,8 +6,8 @@
 #
 ################################################################################
 # \copyright
-# (c) 2018-2025, Cypress Semiconductor Corporation (an Infineon company) or
-# an affiliate of Cypress Semiconductor Corporation. All rights reserved.
+# Copyright (c) 2018-2026, Infineon Technologies AG, or an affiliate of
+# Infineon Technologies AG. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -261,15 +261,14 @@ uvision5: $(MTB_TOOLS__OUTPUT_CONFIG_DIR)
 	$(MTB__NOISE)$(CY_TOOL_mtbideexport_EXE_ABS) -ide $(_MTB_CORE__IDE_EXPORT_TARGET) -export_interface 3.1 $(MTB_CORE__EXPORT_CMDLINE)
 ifneq ($(filter SECURE,$(VCORE_ATTRS)),)
 	$(MTB__NOISE)echo;\
-	echo "The project is an ARM Trustzone secure project. The following need to be enabled in UVision IDE:";\
-	echo "    Project->Options->Target->Software Model"
+	echo "The project is an ARM Trustzone secure project. Check the uVision IDE";\
+	echo "    Project->Options->Target->Software Model to ensure \"Secure\" is enabled."
 endif
 ifneq ($(filter NON_SECURE,$(VCORE_ATTRS)),)
 	$(MTB__NOISE)echo;\
-	echo "The project is an ARM Trustzone non-secure project. The following need to be enabled in UVision IDE:";\
-	echo "    Project->Options->Target->Software Model";\
-	echo "The generated veneer file from secure project need to be added to this Option:";\
-	echo "    Project->Options->Linker->Misc Control"
+	echo "The project is an ARM Trustzone non-secure project. Check the uVision IDE";\
+	echo "    Project->Options->Target->Software Model to ensure \"Non-Secure\" is enabled.";\
+	echo "    Project->Options->Linker->Misc Control to ensure the veneer file from secure project is added."
 endif
 	$(MTB__NOISE)echo;\
 	echo $(_MTB_CORE__IDE_EXPORT_FINAL_MSG);\

@@ -1,0 +1,22 @@
+        {
+            "label": "Erase All",
+            "type": "process",
+            "command": "bash",
+            "args": [
+                "--norc",
+                "-c",
+                "make -j&&_MTB_CORE___VSCODE_BUILD_NUM_PROCESSOR&& erase MTB_ERASE_EXT_MEM=1"
+            ],
+
+            "windows" : {
+                "command": "${config:modustoolbox.toolsPath}/&&_MTB_RECIPE__MODUS_SHELL_BASE&&/bin/bash.exe",
+                "args": [
+                    "--norc",
+                    "-c",
+                    "export PATH=/bin:/usr/bin:$PATH ; ${config:modustoolbox.toolsPath}/&&_MTB_RECIPE__MODUS_SHELL_BASE&&/bin/make.exe -j&&_MTB_CORE___VSCODE_BUILD_NUM_PROCESSOR&& erase MTB_ERASE_EXT_MEM=1"
+                ]
+            },
+            "group": {
+                "kind": "build"
+            }
+        }

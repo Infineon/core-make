@@ -7,8 +7,8 @@
 #
 ################################################################################
 # \copyright
-# (c) 2018-2025, Cypress Semiconductor Corporation (an Infineon company) or
-# an affiliate of Cypress Semiconductor Corporation. All rights reserved.
+# Copyright (c) 2018-2026, Infineon Technologies AG, or an affiliate of
+# Infineon Technologies AG. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,7 +90,7 @@ ifeq ($(MTB_CORE__APPLICATION_BOOTSTRAP),)
 
 _MTB_CORE__QBUILD_MK_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/cyqbuild.mk
 _MTB_CORE__NINJA_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(APPNAME)$(LIBNAME).ninja
-ifneq ($(filter $(MAKECMDGOALS),all build build_proj app program program_proj debug erase attach eclipse vscode ewarm8 uvision5 ewarm uvision),)
+ifneq ($(filter $(MAKECMDGOALS),all build build_proj app program program_proj debug erase attach eclipse vscode ewarm8 uvision5 ewarm uvision codegen),)
 $(_MTB_CORE__NINJA_FILE): FORCE prebuild
 ifeq ($(MAKE_RESTARTS),)
 $(_MTB_CORE__QBUILD_MK_FILE): FORCE prebuild
@@ -242,7 +242,7 @@ else
 CY_PYTHON_FROM_CMD=
 endif
 
-# Look for python install in the cypress tools directory
+# Look for python install in the ModusToolbox tools directory
 ifeq ($(wildcard $(CY_TOOL_python_EXE_ABS)),)
 CY_PYTHON_SEARCH_PATH=NotFoundError
 else

@@ -7,8 +7,8 @@
 #
 ################################################################################
 # \copyright
-# (c) 2024-2025, Cypress Semiconductor Corporation (an Infineon company) or
-# an affiliate of Cypress Semiconductor Corporation. All rights reserved.
+# Copyright (c) 2024-2026, Infineon Technologies AG, or an affiliate of
+# Infineon Technologies AG. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -112,24 +112,24 @@ _MTB_CORE__ELF_FILE=$(_MTB_RECIPE__TARG_FILE)
 _MTB_CORE__LIB_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/$(LIBNAME).$(MTB_RECIPE__SUFFIX_A)
 _MTB_CORE__MAP_FILE=$(_MTB_CORE__ELF_FILE:.$(MTB_RECIPE__SUFFIX_TARGET)=.$(MTB_RECIPE__SUFFIX_MAP))
 
-_MTB_CORE__DEFINES_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.defines
-_MTB_CORE__ASFLAGS_UC_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.asflags
-_MTB_CORE__ASFLAGS_LC_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.asflags_s
-
+# These files are used by mtbninja to generate the ninja build file.
+# These files may also be used by internal tools to improve IDE integration. (DO NOT RENAME OR MOVE)
+_MTB_CORE__DEFINES_FILE=$(MTB_TOOLS__OUTPUT_BASE_DIR)/.defines
+_MTB_CORE__ASFLAGS_UC_FILE=$(MTB_TOOLS__OUTPUT_BASE_DIR)/.asflags
+_MTB_CORE__ASFLAGS_LC_FILE=$(MTB_TOOLS__OUTPUT_BASE_DIR)/.asflags_s
 ifeq ($(TOOLCHAIN),ARM)
 _MTB_CORE__ASFLAGS_FILE=$(_MTB_CORE__ASFLAGS_LC_FILE)
 else
 _MTB_CORE__ASFLAGS_FILE=$(_MTB_CORE__ASFLAGS_UC_FILE)
 endif
+_MTB_CORE__CFLAGS_FILE=$(MTB_TOOLS__OUTPUT_BASE_DIR)/.cflags
+_MTB_CORE__CXXFLAGS_FILE=$(MTB_TOOLS__OUTPUT_BASE_DIR)/.cxxflags
+_MTB_CORE__ARFLAGS_FILE=$(MTB_TOOLS__OUTPUT_BASE_DIR)/.arflags
+_MTB_CORE__LDFLAGS_FILE=$(MTB_TOOLS__OUTPUT_BASE_DIR)/.ldflags
 
-_MTB_CORE__CFLAGS_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cflags
-_MTB_CORE__CXXFLAGS_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.cxxflags
-_MTB_CORE__ARFLAGS_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.arflags
-_MTB_CORE__LDFLAGS_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.ldflags
-
-_MTB_CORE__SOURCES_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.sources
-_MTB_CORE__INCLUDES_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.includes
-_MTB_CORE__LDLIBS_FILE=$(MTB_TOOLS__OUTPUT_CONFIG_DIR)/.ldlibs
+_MTB_CORE__SOURCES_FILE=$(MTB_TOOLS__OUTPUT_BASE_DIR)/.sources
+_MTB_CORE__INCLUDES_FILE=$(MTB_TOOLS__OUTPUT_BASE_DIR)/.includes
+_MTB_CORE__LDLIBS_FILE=$(MTB_TOOLS__OUTPUT_BASE_DIR)/.ldlibs
 
 _MTB_CORE__TMP_LDFLAGS=$(MTB_RECIPE__LDFLAGS) $(MTB_RECIPE__MAPFILE)@mapfile $(MTB_RECIPE__STARTGROUP) @objs $(MTB_RECIPE__ENDGROUP) $(MTB_RECIPE__OUTPUT_OPTION) @elffile
 
@@ -157,7 +157,7 @@ _MTB_CORE__FILTERED_USER_SOURCES=$(SOURCES)
 
 # NOTE: this is such a small fraction of a second we just (re)write them every build.
 $(info Generating mtbninja data files...)
-$(shell mkdir -p $(dir $(_MTB_CORE__DEFINES_FILE)))
+$(shell mkdir -p $(dir $(_MTB_CORE__NINJA_FILE)))
 $(call mtb__file_write,$(_MTB_CORE__DEFINES_FILE),$(_MTB_CORE__FINAL_DEFINES))
 $(call mtb__file_write,$(_MTB_CORE__ASFLAGS_UC_FILE),$(_MTB_CORE__FINAL_ASFLAGS_UC))
 $(call mtb__file_write,$(_MTB_CORE__ASFLAGS_LC_FILE),$(_MTB_CORE__FINAL_ASFLAGS_LC))
